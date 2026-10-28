@@ -1,7 +1,9 @@
 package com.bladesmelody.naturaldisasters.engine;
 
 import com.bladesmelody.naturaldisasters.Config;
+import com.bladesmelody.naturaldisasters.disaster.Blizzard;
 import com.bladesmelody.naturaldisasters.disaster.Earthquake;
+import com.bladesmelody.naturaldisasters.disaster.Hailstorm;
 import com.bladesmelody.naturaldisasters.disaster.Flood;
 import com.bladesmelody.naturaldisasters.disaster.Hurricane;
 import com.bladesmelody.naturaldisasters.disaster.Tsunami;
@@ -30,6 +32,8 @@ public final class DisasterTypes {
     public static final DisasterType<Volcano> VOLCANO = register("volcano", Volcano::new).weight(0.3).where(Places::openSky);
     public static final DisasterType<Wildfire> WILDFIRE = register("wildfire", Wildfire::new).weight(0.8)
             .where((level, pos) -> Places.forest(level, pos) || Places.hot(level, pos));
+    public static final DisasterType<Blizzard> BLIZZARD = register("blizzard", Blizzard::new).weight(0.8).where(Places::cold);
+    public static final DisasterType<Hailstorm> HAILSTORM = register("hailstorm", Hailstorm::new).weight(0.8).where(Places::wet);
     public static final DisasterType<Flood> FLOOD = register("flood", Flood::new).weight(0.8).where(Places::wet);
     public static final DisasterType<Tsunami> TSUNAMI = register("tsunami", Tsunami::new).weight(0.5).where(Places::nearOcean);
 

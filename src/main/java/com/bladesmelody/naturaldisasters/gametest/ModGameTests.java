@@ -1,7 +1,9 @@
 package com.bladesmelody.naturaldisasters.gametest;
 
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
+import com.bladesmelody.naturaldisasters.disaster.Blizzard;
 import com.bladesmelody.naturaldisasters.disaster.Earthquake;
+import com.bladesmelody.naturaldisasters.disaster.Hailstorm;
 import com.bladesmelody.naturaldisasters.disaster.Flood;
 import com.bladesmelody.naturaldisasters.disaster.Hurricane;
 import com.bladesmelody.naturaldisasters.disaster.Meteor;
@@ -88,6 +90,8 @@ public final class ModGameTests {
         FUNCTIONS.register("hurricane_wind_and_surge", () -> ModGameTests::hurricaneWindAndSurge);
         FUNCTIONS.register("volcano_builds_and_erupts", () -> ModGameTests::volcanoBuildsAndErupts);
         FUNCTIONS.register("wildfire_burns_forest", () -> ModGameTests::wildfireBurnsForest);
+        FUNCTIONS.register("blizzard_buries_and_freezes", () -> ModGameTests::blizzardBuriesAndFreezes);
+        FUNCTIONS.register("hailstorm_pelts", () -> ModGameTests::hailstormPelts);
         FUNCTIONS.register("command_start_list_stop", () -> ModGameTests::commandStartListStop);
     }
 
@@ -109,6 +113,8 @@ public final class ModGameTests {
         test(event, "earthquake_wrecks_house", arena(env, 500));
         test(event, "earthquake_save_roundtrip", arena(env, 20));
         test(event, "command_start_list_stop", arena(env, 40));
+        test(event, "blizzard_buries_and_freezes", arena(env, 300));
+        test(event, "hailstorm_pelts", arena(env, 300));
         test(event, "volcano_builds_and_erupts", arena(env, 500));
         test(event, "wildfire_burns_forest", arena(env, 400));
         test(event, "hurricane_wind_and_surge", arena(env, 300));
@@ -684,6 +690,66 @@ public final class ModGameTests {
             int scorched = count(helper, FLOOR_TOP, FLOOR_TOP, s -> s.is(Blocks.COARSE_DIRT));
             helper.assertTrue(logsLeft < logsBefore * 0.6 && leavesLeft < leavesBefore * 0.5 && scorched > 20,
                     "logs " + logsLeft + "/" + logsBefore + ", leaves " + leavesLeft + "/" + leavesBefore + ", scorched " + scorched);
+        });
+    }
+
+    /** A blizzard snows the arena in (to its depth limit), freezes a pond and chills a pig. */
+    private static void blizzardBuriesAndFreezes(GameTestHelper helper) {
+        fillFloor(helper);
+        fill(helper, FLOOR_TOP, FLOOR_TOP, Blocks.GRASS_BLOCK.defaultBlockState());
+        ServerLevel level = helper.getLevel();
+        for (int dx = -2; dx <= 2; dx++)
+            for (int dz = -2; dz <= 2; dz++)
+                level.setBlock(helper.absolutePos(CENTER.offset(dx - 6, 0, dz)), Blocks.WATER.defaultBlockState(), Block.UPDATE_CLIENTS);
+        Pig pig = helper.spawn(EntityType.PIG, CENTER.offset(5, 1, 5));
+        int[] frozen = {0};
+        Blizzard blizzard = Blizzard.create(helper.absolutePos(CENTER), 5, new Blizzard.Params(14, 120, 4, 4), 41L, 0);
+        DisasterManager.add(level, blizzard);
+        helper.onEachTick(() -> {
+            if (pig.isAlive()) frozen[0] = Math.max(frozen[0], pig.getTicksFrozen());
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(blizzard.isFinished(), "blizzard still running");
+            int snowy = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 1, s -> s.is(Blocks.SNOW) || s.is(Blocks.SNOW_BLOCK));
+            helper.assertTrue(snowy > 300, "only " + snowy + " snowy columns");
+            int tooDeep = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 1, s -> s.is(Blocks.SNOW_BLOCK));
+            helper.assertTrue(tooDeep == 0, tooDeep + " columns deeper than the 4-layer limit");
+            int ice = count(helper, FLOOR_TOP, FLOOR_TOP, s -> s.is(Blocks.ICE));
+            helper.assertTrue(ice > 10, "pond barely froze: " + ice + "/25 ice");
+            helper.assertTrue(frozen[0] > 60, "pig never got cold (frozen ticks " + frozen[0] + ")");
+        });
+    }
+
+    /** Hail breaks exposed glass, flattens crops and hurts a pig in the open. */
+    private static void hailstormPelts(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        int glass = 0, wheat = 0;
+        for (int dx = -10; dx <= 10; dx++) {
+            for (int dz = -10; dz <= 10; dz++) {
+                if (dx * dx + dz * dz > 100) continue;
+                if (dx < 0) {
+                    helper.setBlock(CENTER.offset(dx, 1, dz), Blocks.GLASS);
+                    glass++;
+                } else if (dx > 1) {
+                    helper.setBlock(CENTER.offset(dx, 0, dz), Blocks.FARMLAND);
+                    helper.setBlock(CENTER.offset(dx, 1, dz), Blocks.WHEAT);
+                    wheat++;
+                }
+            }
+        }
+        int glassBefore = glass, wheatBefore = wheat;
+        Pig pig = helper.spawn(EntityType.PIG, CENTER.offset(1, 1, 0));
+        float pigHealth = pig.getHealth();
+        Hailstorm hail = Hailstorm.create(helper.absolutePos(CENTER), 6, new Hailstorm.Params(14, 120, 3, 0.02), 43L, 0);
+        DisasterManager.add(level, hail);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(hail.isFinished(), "hailstorm still running");
+            int glassLeft = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 1, s -> s.is(Blocks.GLASS));
+            int wheatLeft = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 1, s -> s.is(Blocks.WHEAT));
+            helper.assertTrue(glassLeft < glassBefore * 0.7, glassLeft + "/" + glassBefore + " glass intact");
+            helper.assertTrue(wheatLeft < wheatBefore * 0.7, wheatLeft + "/" + wheatBefore + " wheat intact");
+            helper.assertTrue(!pig.isAlive() || pig.getHealth() < pigHealth, "pig in the open was not hurt");
         });
     }
 

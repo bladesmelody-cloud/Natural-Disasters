@@ -195,6 +195,26 @@ have done tornados pretty well".
   removed to air, so fire next to quiet lava or flood water doesn't set it
   flowing.
 
+### Blizzard — freestyled, all **MINE**
+- Radius 48 + 24·M, lasts 60 + 20·M s, buries the ground in snow up to
+  2/4/6/8/10/12/14/16/20/24 layers (M1–M10; 8 layers = 1 block, so M10 is three
+  blocks deep), building up evenly over the storm. Open water freezes to ice,
+  fires go out. Creatures under the sky freeze like in powder snow (vanilla
+  freeze damage and frost overlay; leather armour still protects), faster at
+  higher magnitude. Dense snowflake whiteout around players, wind sound.
+  Snow stays after the storm (melts the vanilla way, i.e. only near light).
+- Random blizzards only in cold places, weight 0.8.
+
+### Hailstorm — freestyled, all **MINE**
+- Radius 48 + 16·M, lasts 40 + 10·M s, hailstone size 1–5 (M1–2 … M9–10).
+  Thunderstorm weather. Hail hits the top of random columns: glass shatters
+  (15 % × size per hit), leaves shredded, crops/flowers/grass/saplings/turtle
+  eggs flattened, and 3 % of solid tops get a dusting (1 snow layer).
+- Creatures under the open sky: every 0.5 s a 35–75 % chance of `size` damage
+  from the new `naturaldisasters:hail` damage type (armour soaks it; a roof
+  stops it). Snowball-crumb particles and clatter sounds near players.
+- Random hailstorms where it rains, weight 0.8.
+
 ### Location
 - Disasters strike **near a random online player** (within some distance), so
   they are seen and unloaded chunks aren't touched.

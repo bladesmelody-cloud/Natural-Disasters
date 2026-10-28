@@ -4,5 +4,7 @@
   "item.naturaldisasters.meteorite_chunk": "Meteorite Chunk",
   "item.naturaldisasters.meteoric_iron_ingot": "Meteoric Iron Ingot",
   "entity.naturaldisasters.meteor": "Meteor",
-  "entity.naturaldisasters.tornado": "Tornado"
+  "entity.naturaldisasters.tornado": "Tornado",
+  "death.attack.naturaldisasters.hail": "%1$s was pelted to death by hail",
+  "death.attack.naturaldisasters.hail.player": "%1$s was pelted to death by hail while fighting %2$s"
 }
