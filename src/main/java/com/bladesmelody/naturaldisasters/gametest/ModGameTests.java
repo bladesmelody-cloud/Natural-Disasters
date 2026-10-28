@@ -2,6 +2,9 @@ package com.bladesmelody.naturaldisasters.gametest;
 
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
 import com.bladesmelody.naturaldisasters.disaster.Earthquake;
+import com.bladesmelody.naturaldisasters.disaster.Meteor;
+import com.bladesmelody.naturaldisasters.entity.MeteorEntity;
+import com.bladesmelody.naturaldisasters.registry.ModRegistry;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
 import com.bladesmelody.naturaldisasters.engine.DisasterManager;
@@ -22,6 +25,13 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.pig.Pig;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
@@ -57,6 +67,10 @@ public final class ModGameTests {
         FUNCTIONS.register("earthquake_wrecks_house", () -> ModGameTests::earthquakeWrecksHouse);
         FUNCTIONS.register("earthquake_heaves_ground", () -> ModGameTests::earthquakeHeavesGround);
         FUNCTIONS.register("earthquake_save_roundtrip", () -> ModGameTests::earthquakeSaveRoundtrip);
+        FUNCTIONS.register("meteor_magnitude_table", () -> ModGameTests::meteorMagnitudeTable);
+        FUNCTIONS.register("meteor_makes_crater", () -> ModGameTests::meteorMakesCrater);
+        FUNCTIONS.register("meteor_save_roundtrip", () -> ModGameTests::meteorSaveRoundtrip);
+        FUNCTIONS.register("meteorite_drops_and_smelts", () -> ModGameTests::meteoriteDropsAndSmelts);
         FUNCTIONS.register("command_start_list_stop", () -> ModGameTests::commandStartListStop);
     }
 
@@ -78,6 +92,10 @@ public final class ModGameTests {
         test(event, "earthquake_wrecks_house", arena(env, 500));
         test(event, "earthquake_save_roundtrip", arena(env, 20));
         test(event, "command_start_list_stop", arena(env, 40));
+        test(event, "meteor_magnitude_table", new TestData<>(env, EMPTY, 20, 0, true));
+        test(event, "meteor_makes_crater", arena(env, 300));
+        test(event, "meteor_save_roundtrip", arena(env, 20));
+        test(event, "meteorite_drops_and_smelts", new TestData<>(env, EMPTY, 20, 0, true));
     }
 
     /** The arena with sky access: without it the test gets a barrier roof, which quakes can't break. */
@@ -302,6 +320,80 @@ public final class ModGameTests {
         Disaster loaded = DisasterTypes.load(first).orElseThrow();
         helper.assertTrue(loaded instanceof Earthquake, "loaded as " + loaded.getClass().getSimpleName());
         helper.assertTrue(first.equals(loaded.save()), "save differs after reload:\n" + first + "\n" + loaded.save());
+        helper.succeed();
+    }
+
+    /** Meteor showers grow with magnitude; only M8+ bring a giant impact. */
+    private static void meteorMagnitudeTable(GameTestHelper helper) {
+        helper.assertTrue(Meteor.Params.forMagnitude(1).count() == 10, "M1 count");
+        helper.assertTrue(Meteor.Params.forMagnitude(7).giantRadius() == 0, "no giant at M7");
+        helper.assertTrue(Meteor.Params.forMagnitude(8).giantRadius() > 0, "giant at M8");
+        helper.assertTrue(Meteor.Params.forMagnitude(10).giantRadius() == 64, "M10 giant radius");
+        helper.succeed();
+    }
+
+    /**
+     * One meteor aimed at the arena centre: a meteor entity flies in, the pig
+     * next to the impact gets hurt, and a scorched crater with meteorite ore
+     * is left, with nothing changed beyond the crater.
+     */
+    private static void meteorMakesCrater(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        Pig pig = helper.spawn(EntityType.PIG, CENTER.offset(3, 1, 0));
+        float pigHealth = pig.getHealth();
+        int radius = 6;
+        Meteor meteor = Meteor.create(helper.absolutePos(CENTER), 1, new Meteor.Params(0, 20, 1, radius, radius, 0), 31L, 0);
+        DisasterManager.add(level, meteor);
+        boolean[] sawMeteor = {false};
+        helper.onEachTick(() -> {
+            if (!level.getEntitiesOfClass(MeteorEntity.class, new AABB(helper.absolutePos(CENTER)).inflate(300)).isEmpty()) sawMeteor[0] = true;
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(meteor.isFinished(), "meteor still running");
+            helper.assertTrue(sawMeteor[0], "no meteor entity was seen in the sky");
+            helper.assertTrue(!pig.isAlive() || pig.getHealth() < pigHealth, "pig next to the impact was not hurt");
+            helper.assertTrue(helper.getBlockState(CENTER).isAir() && helper.getBlockState(CENTER.below()).isAir(), "no crater at the centre");
+            int ore = count(helper, 1, FLOOR_TOP, s -> s.is(ModRegistry.METEORITE_ORE.get()));
+            helper.assertTrue(ore >= 1, "no meteorite ore in the crater");
+            int scorched = count(helper, 1, FLOOR_TOP, s -> s.is(Blocks.MAGMA_BLOCK) || s.is(Blocks.BLACKSTONE) || s.is(Blocks.OBSIDIAN));
+            helper.assertTrue(scorched >= 10, "only " + scorched + " scorched blocks");
+            int outside = 0;
+            for (int x = 0; x < SIZE; x++) {
+                for (int z = 0; z < SIZE; z++) {
+                    int dx = x - CENTER.getX(), dz = z - CENTER.getZ();
+                    if (dx * dx + dz * dz <= (radius + 1) * (radius + 1)) continue;
+                    for (int y = 1; y <= FLOOR_TOP; y++) if (!helper.getBlockState(new BlockPos(x, y, z)).is(Blocks.STONE)) outside++;
+                }
+            }
+            helper.assertTrue(outside == 0, outside + " blocks changed outside the crater");
+        });
+    }
+
+    /** A shower with a crater half dug saves and loads back the same. */
+    private static void meteorSaveRoundtrip(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        Meteor meteor = Meteor.create(helper.absolutePos(CENTER), 1, new Meteor.Params(0, 1, 1, 8, 8, 0), 77L, 0);
+        for (int i = 0; i < 64; i++) meteor.tick(level, new BlockWriter(level, 30, Long.MAX_VALUE));
+        CompoundTag first = meteor.save();
+        helper.assertTrue(!first.getCompoundOrEmpty("data").getListOrEmpty("craters").isEmpty(), "expected a crater in progress: " + first);
+        Disaster loaded = DisasterTypes.load(first).orElseThrow();
+        helper.assertTrue(loaded instanceof Meteor, "loaded as " + loaded.getClass().getSimpleName());
+        helper.assertTrue(first.equals(loaded.save()), "save differs after reload:\n" + first + "\n" + loaded.save());
+        helper.succeed();
+    }
+
+    /** Meteorite ore drops a chunk with an iron pickaxe, and the chunk smelts to an ingot. */
+    private static void meteoriteDropsAndSmelts(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        var drops = Block.getDrops(ModRegistry.METEORITE_ORE.get().defaultBlockState(), level, helper.absolutePos(BlockPos.ZERO),
+                null, null, new ItemStack(Items.IRON_PICKAXE));
+        helper.assertTrue(drops.stream().anyMatch(s -> s.is(ModRegistry.METEORITE_CHUNK.get())), "ore dropped " + drops);
+        SingleRecipeInput input = new SingleRecipeInput(new ItemStack(ModRegistry.METEORITE_CHUNK.get()));
+        var recipe = level.recipeAccess().getRecipeFor(RecipeType.SMELTING, input, level);
+        helper.assertTrue(recipe.isPresent(), "no smelting recipe for meteorite chunk");
+        helper.assertTrue(recipe.get().value().assemble(input).is(ModRegistry.METEORIC_IRON_INGOT.get()), "smelts to the wrong item");
         helper.succeed();
     }
 

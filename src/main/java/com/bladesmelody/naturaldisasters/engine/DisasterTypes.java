@@ -2,6 +2,7 @@ package com.bladesmelody.naturaldisasters.engine;
 
 import com.bladesmelody.naturaldisasters.Config;
 import com.bladesmelody.naturaldisasters.disaster.Earthquake;
+import com.bladesmelody.naturaldisasters.disaster.Meteor;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -14,6 +15,8 @@ public final class DisasterTypes {
 
     public static final DisasterType<Earthquake> EARTHQUAKE =
             register(new DisasterType<>("earthquake", Earthquake::new, Config.EARTHQUAKE_RANDOM::getAsBoolean));
+    public static final DisasterType<Meteor> METEOR =
+            register(new DisasterType<>("meteor", Meteor::new, Config.METEOR_RANDOM::getAsBoolean));
 
     private DisasterTypes() {}
 

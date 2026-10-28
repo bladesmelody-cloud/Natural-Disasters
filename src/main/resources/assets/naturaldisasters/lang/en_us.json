@@ -1,3 +1,7 @@
 {
-  "itemGroup.naturaldisasters": "Natural Disasters"
+  "itemGroup.naturaldisasters": "Natural Disasters",
+  "block.naturaldisasters.meteorite_ore": "Meteorite Ore",
+  "item.naturaldisasters.meteorite_chunk": "Meteorite Chunk",
+  "item.naturaldisasters.meteoric_iron_ingot": "Meteoric Iron Ingot",
+  "entity.naturaldisasters.meteor": "Meteor"
 }

@@ -18,6 +18,7 @@ public final class Config {
     public static final ModConfigSpec.IntValue STRIKE_MAX_DISTANCE;
 
     public static final ModConfigSpec.BooleanValue EARTHQUAKE_RANDOM;
+    public static final ModConfigSpec.BooleanValue METEOR_RANDOM;
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
@@ -48,6 +49,10 @@ public final class Config {
 
         b.push("earthquake");
         EARTHQUAKE_RANDOM = b.comment("Earthquakes can happen randomly.").define("random", true);
+        b.pop();
+
+        b.push("meteor");
+        METEOR_RANDOM = b.comment("Meteor showers can happen randomly.").define("random", true);
         b.pop();
 
         SPEC = b.build();

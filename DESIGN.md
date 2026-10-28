@@ -56,6 +56,41 @@ mods (Ooze Gal-Ore, Golemancy).
 - Big quakes **only affect loaded chunks**; damage stops at the loaded edge (no
   force-loading).
 
+### Meteor (second disaster)
+- **Shower + rare big impact**: usually a shower of small meteors over an area
+  for a while; at high magnitude one giant meteor leaving a huge crater. Same
+  1–10 magnitude scale.
+- Aftermath: **crater + fire** (crater lined with scorched blocks such as magma,
+  blackstone, obsidian; fires around the rim) and **meteorite ore** (a new
+  block in the crater centre that drops a special material).
+- **Real falling entity**: a fiery meteor streaks down with a trail and
+  explodes on impact; players can see and dodge it (fancy model later).
+- Material: **crafting ingredient, uses decided later**: Meteorite Ore drops
+  Meteorite Chunk, which smelts to Meteoric Iron Ingot.
+- Sizes: owner chose **"Bigger"** (~2x crater sizes and counts) over Claude's
+  first proposal. Resulting table is **MINE**, configurable:
+
+  | Magnitude | Area radius | Meteors | Crater radius | Big impact | Shower |
+  |---|---|---|---|---|---|
+  | M1–4 | 48–96 | 10–32 | 4–8 | – | 30 s |
+  | M5–7 | 128 | 30–50 | 8–14 | – | 40 s |
+  | M8–9 | 160 | 40–50 | 8–12 | radius ~32 | 50 s |
+  | M10 | 192 | 40 | ~10 | radius ~64 | 60 s |
+
+- **Blast damage + knockback**: explosion-like damage falling off with distance
+  from the impact; a direct hit is usually lethal at big sizes.
+
+- Implementation (**MINE**): meteors fly 3 s (giant 5 s) from ~120+ blocks up
+  at an angle; the entity is only the visual (fire/smoke/lava particle trail,
+  no model yet), the disaster's seeded schedule decides impacts so showers
+  resume after restarts. Craters are bowls half as deep as wide, dug centre-out
+  through the block budget; floor lined with magma/blackstone/obsidian
+  (denser near the middle), meteorite ore in the middle (more in bigger
+  craters), a lava pool in craters of radius 24+, fire around the rim. Blast:
+  damage up to 2 + 1.5 × crater radius, reach 1.5 × radius, knockback.
+  Warning: faint thunder and shooting-star particles. Meteorite ore needs an
+  iron pickaxe; ore and chunk smelt/blast to the ingot.
+
 ### Location
 - Disasters strike **near a random online player** (within some distance), so
   they are seen and unloaded chunks aren't touched.
