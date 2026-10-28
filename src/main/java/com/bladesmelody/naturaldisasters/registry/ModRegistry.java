@@ -86,7 +86,7 @@ public final class ModRegistry {
 
     private static DeferredBlock<InstrumentBlock> instrument(Instrument instrument, MapColor color, SoundType sound) {
         return BLOCKS.registerBlock(instrument.id(), p -> new InstrumentBlock(instrument, p),
-                p -> p.mapColor(color).strength(2.0F, 6.0F).requiresCorrectToolForDrops().sound(sound));
+                p -> p.mapColor(color).strength(2.0F, 6.0F).requiresCorrectToolForDrops().sound(sound).noOcclusion());
     }
 
     public static void register(IEventBus modBus) {

@@ -498,6 +498,12 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
 - Earlier warning: a disaster that starts with any matching instrument in
   range (loaded or not; positions are saved per dimension) gets twice the
   warning time.
+- Models (owner picked "Better instrument models"; shapes **MINE**): the
+  seismograph is a stone base with a paper drum and an iron stylus arm (on
+  alert: red stylus, jagged red trace); the barometer is an upright copper
+  case with a dial on front and back (on alert: the needle swings into the
+  red); the sky watcher is a copper telescope tilted up on a dark stand (on
+  alert: the lens glows blue). They face the player who places them.
 - Recipes (**MINE**): seismograph = iron, paper, redstone, a piston,
   smooth stone; barometer = copper, glass pane, glass bottle, redstone;
   sky watcher = spyglass, copper, redstone, iron. Pickaxe to mine.

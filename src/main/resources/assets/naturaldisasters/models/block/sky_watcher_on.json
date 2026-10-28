@@ -1,1 +1,184 @@
-{"parent": "minecraft:block/cube_bottom_top", "textures": {"side": "naturaldisasters:block/sky_watcher_side", "top": "naturaldisasters:block/sky_watcher_top_on", "bottom": "naturaldisasters:block/instrument_bottom"}}
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "particle": "minecraft:block/copper_block",
+  "copper": "minecraft:block/copper_block",
+  "stand": "minecraft:block/polished_deepslate",
+  "lens": "naturaldisasters:block/sky_watcher_lens_on"
+ },
+ "elements": [
+  {
+   "from": [
+    3,
+    0,
+    3
+   ],
+   "to": [
+    13,
+    1,
+    13
+   ],
+   "faces": {
+    "north": {
+     "texture": "#stand"
+    },
+    "south": {
+     "texture": "#stand"
+    },
+    "east": {
+     "texture": "#stand"
+    },
+    "west": {
+     "texture": "#stand"
+    },
+    "up": {
+     "texture": "#stand"
+    },
+    "down": {
+     "texture": "#stand"
+    }
+   }
+  },
+  {
+   "from": [
+    7,
+    1,
+    7
+   ],
+   "to": [
+    9,
+    8,
+    9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#stand"
+    },
+    "south": {
+     "texture": "#stand"
+    },
+    "east": {
+     "texture": "#stand"
+    },
+    "west": {
+     "texture": "#stand"
+    },
+    "up": {
+     "texture": "#stand"
+    },
+    "down": {
+     "texture": "#stand"
+    }
+   }
+  },
+  {
+   "from": [
+    6,
+    7,
+    2
+   ],
+   "to": [
+    10,
+    11,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#lens",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#copper"
+    },
+    "east": {
+     "texture": "#copper",
+     "uv": [
+      2,
+      5,
+      14,
+      9
+     ]
+    },
+    "west": {
+     "texture": "#copper",
+     "uv": [
+      2,
+      5,
+      14,
+      9
+     ]
+    },
+    "up": {
+     "texture": "#copper",
+     "uv": [
+      6,
+      2,
+      10,
+      14
+     ]
+    },
+    "down": {
+     "texture": "#copper",
+     "uv": [
+      6,
+      2,
+      10,
+      14
+     ]
+    }
+   },
+   "rotation": {
+    "origin": [
+     8,
+     9,
+     8
+    ],
+    "axis": "x",
+    "angle": 22.5
+   }
+  },
+  {
+   "from": [
+    5.5,
+    6.5,
+    1.5
+   ],
+   "to": [
+    10.5,
+    11.5,
+    3
+   ],
+   "faces": {
+    "south": {
+     "texture": "#copper"
+    },
+    "east": {
+     "texture": "#copper"
+    },
+    "west": {
+     "texture": "#copper"
+    },
+    "up": {
+     "texture": "#copper"
+    },
+    "down": {
+     "texture": "#copper"
+    }
+   },
+   "rotation": {
+    "origin": [
+     8,
+     9,
+     8
+    ],
+    "axis": "x",
+    "angle": 22.5
+   }
+  }
+ ]
+}
