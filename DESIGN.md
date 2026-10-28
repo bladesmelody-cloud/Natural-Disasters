@@ -563,13 +563,11 @@ during an M6 volcano + M6 flood together, and around autosaves; typical
 10–25 ms) with up to three big disasters at once.
 
 ## Open questions
-- Review every **MINE** number together (owner: "we can go over the numbers
-  and magnitude later"), **one disaster at a time** (owner's choice), Keep /
-  Bigger / Smaller per table.
-- Blizzard in a warm biome shows rain, not snow (vanilla weather follows the
-  biome); our snowflake particles are thin. Visual pass.
-- Hurricane has no visual of its own beyond the storm (eye/clouds). Visual pass.
-- Tornado funnel uses vanilla smoke particles (small); custom big funnel
-  particles in the visual pass.
-- Earthquake strength: owner **"Fine, judge after play-testing"** — revisit
-  once they've felt quakes in their own world.
+- Earthquake strength: owner **"Fine, judge after play-testing"**; still to
+  judge.
+- Sounds are vanilla-made, owner **"Passable for now"**; real recordings
+  later?
+- Not started (offered, not yet chosen): meteorite uses, land-claim
+  support, admin tools (undo, safe zones), scaling with player count,
+  advancements, other dimensions (Nether), proper textures, release prep,
+  in-game config screen.
