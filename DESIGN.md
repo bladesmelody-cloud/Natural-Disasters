@@ -165,6 +165,36 @@ have done tornados pretty well".
   water itself rise (quiet tracked water), drained once the storm passes.
 - Random hurricanes only near an ocean, weight 0.6.
 
+### Volcano — freestyled, all **MINE**
+- Cone height 8–72 (M1–M10), base radius 2.2 × height, crater radius height/5
+  (min 2), crater floor a quarter of the height below the summit. The cone
+  rises centre-out over 20 s + height/2 s with tremors; creatures caught are
+  lifted onto the new surface. Rock: stone with blackstone inside, surface
+  basalt/blackstone/tuff.
+- Then a lava lake fills the crater and it erupts for 30 + 10·M s: 2 + M/2
+  lava rivers creep 1 block every 4 ticks down the steepest slope (never
+  uphill) for up to 1.3 × base radius, lighting plants and wood they pass;
+  volcanic bombs (meteor visual) every 22 − 2·M ticks land within 1.5 × base
+  radius in a small magma/blackstone splash with fire, 6 damage and burning;
+  ash column (signal smoke + lava sparks) and falling ash around players.
+- Afterwards the rivers cool to basalt (20 % magma); the mountain and crater
+  lake stay. Lava is placed quietly so it stays where it's put.
+- Random volcanoes anywhere with a sky, weight 0.3 (rarest).
+
+### Wildfire — freestyled, all **MINE**
+- 1 + M/2 ignition points within a third of radius 32–256; burns for
+  60 + 20·M s with one wind direction. Each burning spot waits 1 s, then can
+  light fuel up to 1 block away (2 downwind, embers), much likelier downwind,
+  then burns out: logs gone or left as charred (stripped dark oak) trunks,
+  leaves/planks/wool/hay/crops/plants gone, grass → coarse dirt.
+- Own spread (works with fire tick off, stays inside the radius, capped at
+  1500 + 500·M burning spots); vanilla fire may add to it. Smoke and crackle.
+- Random wildfires in forests, taigas, savannas, jungles or hot places,
+  weight 0.8.
+- Engine note: the block writer now wakes fluids only when a block is
+  removed to air, so fire next to quiet lava or flood water doesn't set it
+  flowing.
+
 ### Location
 - Disasters strike **near a random online player** (within some distance), so
   they are seen and unloaded chunks aren't touched.

@@ -6,6 +6,8 @@ import com.bladesmelody.naturaldisasters.disaster.Flood;
 import com.bladesmelody.naturaldisasters.disaster.Hurricane;
 import com.bladesmelody.naturaldisasters.disaster.Meteor;
 import com.bladesmelody.naturaldisasters.disaster.Tsunami;
+import com.bladesmelody.naturaldisasters.disaster.Volcano;
+import com.bladesmelody.naturaldisasters.disaster.Wildfire;
 import com.bladesmelody.naturaldisasters.disaster.Tornado;
 import com.bladesmelody.naturaldisasters.entity.MeteorEntity;
 import com.bladesmelody.naturaldisasters.entity.TornadoEntity;
@@ -84,6 +86,8 @@ public final class ModGameTests {
         FUNCTIONS.register("tsunami_wave_smashes_and_drains", () -> ModGameTests::tsunamiWave);
         FUNCTIONS.register("quiet_water_stays_put", () -> ModGameTests::quietWaterStaysPut);
         FUNCTIONS.register("hurricane_wind_and_surge", () -> ModGameTests::hurricaneWindAndSurge);
+        FUNCTIONS.register("volcano_builds_and_erupts", () -> ModGameTests::volcanoBuildsAndErupts);
+        FUNCTIONS.register("wildfire_burns_forest", () -> ModGameTests::wildfireBurnsForest);
         FUNCTIONS.register("command_start_list_stop", () -> ModGameTests::commandStartListStop);
     }
 
@@ -105,6 +109,8 @@ public final class ModGameTests {
         test(event, "earthquake_wrecks_house", arena(env, 500));
         test(event, "earthquake_save_roundtrip", arena(env, 20));
         test(event, "command_start_list_stop", arena(env, 40));
+        test(event, "volcano_builds_and_erupts", arena(env, 500));
+        test(event, "wildfire_burns_forest", arena(env, 400));
         test(event, "hurricane_wind_and_surge", arena(env, 300));
         test(event, "quiet_water_stays_put", arena(env, 100));
         test(event, "flood_rises_and_drains", arena(env, 400));
@@ -611,6 +617,73 @@ public final class ModGameTests {
             helper.assertTrue(surgeMax[0] > 10, "no storm surge (max " + surgeMax[0] + " water blocks above the channel)");
             int left = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 3, s -> s.getFluidState().isSource());
             helper.assertTrue(left == 0, left + " surge water left");
+        });
+    }
+
+    /**
+     * A small volcano: a cone rises, erupts with lava rivers and bombs, and
+     * when it's over the rivers have cooled to basalt while the crater keeps
+     * its lava lake.
+     */
+    private static void volcanoBuildsAndErupts(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        Volcano volcano = Volcano.create(helper.absolutePos(CENTER), 3, new Volcano.Params(8, 12, 2, 60, 120, 2, 14, 10), 17L, 0);
+        DisasterManager.add(level, volcano);
+        boolean[] sawLavaRiver = {false};
+        helper.onEachTick(() -> {
+            if (count(helper, FLOOR_TOP + 1, FLOOR_TOP + 8, s -> s.is(Blocks.LAVA)) > 20) sawLavaRiver[0] = true;
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(volcano.isFinished(), "volcano still running");
+            int peak = helper.getLevel().getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,
+                    helper.absolutePos(CENTER.offset(3, 0, 0)).getX(), helper.absolutePos(CENTER).getZ()) - 1 - helper.absolutePos(BlockPos.ZERO).getY();
+            helper.assertTrue(peak >= FLOOR_TOP + 4, "no cone: ground next to the vent is at " + peak);
+            helper.assertTrue(sawLavaRiver[0], "never saw lava rivers");
+            int basalt = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 9, s -> s.is(Blocks.BASALT) || s.is(Blocks.MAGMA_BLOCK));
+            helper.assertTrue(basalt > 20, "only " + basalt + " basalt/magma");
+            int lavaOutside = 0;
+            for (int x = 0; x < SIZE; x++)
+                for (int z = 0; z < SIZE; z++) {
+                    int dx = x - CENTER.getX(), dz = z - CENTER.getZ();
+                    if (dx * dx + dz * dz <= 9) continue;
+                    for (int y = 1; y < 24; y++) if (helper.getBlockState(new BlockPos(x, y, z)).is(Blocks.LAVA)) lavaOutside++;
+                }
+            helper.assertTrue(lavaOutside == 0, lavaOutside + " lava blocks outside the crater didn't cool");
+        });
+    }
+
+    /** A wildfire burns through a little forest and leaves scorched ground. */
+    private static void wildfireBurnsForest(GameTestHelper helper) {
+        fillFloor(helper);
+        fill(helper, FLOOR_TOP, FLOOR_TOP, Blocks.GRASS_BLOCK.defaultBlockState());
+        ServerLevel level = helper.getLevel();
+        int logs = 0, leaves = 0;
+        for (int dx = -12; dx <= 12; dx += 4) {
+            for (int dz = -12; dz <= 12; dz += 4) {
+                if (dx * dx + dz * dz > 150) continue;
+                BlockPos base = CENTER.offset(dx, 1, dz);
+                for (int y = 0; y < 4; y++, logs++) helper.setBlock(base.above(y), Blocks.OAK_LOG);
+                for (int ox = -1; ox <= 1; ox++)
+                    for (int oz = -1; oz <= 1; oz++)
+                        for (int y = 3; y <= 4; y++) {
+                            if (ox == 0 && oz == 0 && y == 3) continue;
+                            helper.setBlock(base.offset(ox, y, oz), Blocks.OAK_LEAVES.defaultBlockState()
+                                    .setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true));
+                            leaves++;
+                        }
+            }
+        }
+        int logsBefore = logs, leavesBefore = leaves;
+        Wildfire fire = Wildfire.create(helper.absolutePos(CENTER.offset(2, 1, 0)), 5, new Wildfire.Params(16, 200, 1, 0.6, 300, 3000), 23L, 0);
+        DisasterManager.add(level, fire);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(fire.isFinished(), "fire still burning (" + fire.burning() + " spots)");
+            int logsLeft = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 6, s -> s.is(Blocks.OAK_LOG));
+            int leavesLeft = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 6, s -> s.is(Blocks.OAK_LEAVES));
+            int scorched = count(helper, FLOOR_TOP, FLOOR_TOP, s -> s.is(Blocks.COARSE_DIRT));
+            helper.assertTrue(logsLeft < logsBefore * 0.6 && leavesLeft < leavesBefore * 0.5 && scorched > 20,
+                    "logs " + logsLeft + "/" + logsBefore + ", leaves " + leavesLeft + "/" + leavesBefore + ", scorched " + scorched);
         });
     }
 

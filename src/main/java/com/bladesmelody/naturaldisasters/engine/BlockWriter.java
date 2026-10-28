@@ -81,7 +81,9 @@ public final class BlockWriter {
         level.setBlock(pos, state, FLAGS);
         remaining--;
         changed++;
-        if (state.isAir() || state.canBeReplaced()) wakeNeighbors(pos);
+        // Only a hole wakes fluids (fire and plants are "replaceable" too, but waking
+        // quiet lava or flood water next to them would set it flowing for good).
+        if (state.isAir()) wakeNeighbors(pos);
         if (state.getBlock() instanceof FallingBlock) level.scheduleTick(pos, state.getBlock(), 2);
         return true;
     }
