@@ -19,6 +19,10 @@ neoForge {
     runs {
         client {
             client()
+            // ./gradlew runClient -PjoinServer=localhost:25565 joins a server straight away (cloud screenshots).
+            if (project.hasProperty('joinServer')) {
+                programArguments.addAll('--quickPlayMultiplayer', project.property('joinServer').toString(), '--username', 'Tester')
+            }
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
         server {

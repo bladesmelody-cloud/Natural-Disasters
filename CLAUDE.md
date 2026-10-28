@@ -30,5 +30,20 @@ function in `FUNCTIONS` and the test in `onRegisterTests`.
   `repo1.maven.org` to `https://maven-central.storage-download.googleapis.com/maven2/`
   (pluginManagement, buildscript and project repositories). Never commit it.
 - First build decompiles Minecraft (~3–4 min).
-- Screenshots: real client under Xvfb with Mesa software GL
-  (`LIBGL_ALWAYS_SOFTWARE=1 xvfb-run`), joining a dev server, RCON to set scenes.
+- Screenshots: `run/server.properties` with `online-mode=false`,
+  `enable-rcon=true`, `rcon.password=...`, `pause-when-empty-seconds=-1`
+  (otherwise an empty server pauses and disasters don't run), `run/eula.txt`.
+  Start `./gradlew runServer`, then `Xvfb :99 &` and
+  `DISPLAY=:99 LIBGL_ALWAYS_SOFTWARE=1 ./gradlew runClient -PjoinServer=localhost:25565`
+  (joins as `Tester`). Set scenes over RCON (`gamemode spectator Tester`,
+  `tp Tester ... facing ...`, `forceload add ...`), grab frames with
+  `DISPLAY=:99 import -window root shot.png`. Measure lag with `tick query`.
+  Put `onboardAccessibility:false` in `run/options.txt` to skip the first-run screen.
+
+## Code map
+- `engine/`: `BlockWriter` (budgeted block edits), `Disaster` (base class,
+  warning → active, save/load), `DisasterType(s)` (registry), `DisasterData`
+  (per-dimension saved data), `DisasterManager` (tick loop, adaptive budget),
+  `RandomDisasters` (scheduler).
+- `disaster/Earthquake.java`; `command/DisasterCommand.java`; `Config.java`
+  (server config).

@@ -90,5 +90,38 @@ mods (Ooze Gal-Ore, Golemancy).
 ### Destruction
 - **Fully destructive**: no safety net; builds can be wrecked.
 
+## Implementation notes (v0.1 engine + Earthquake)
+Numbers/choices below are **MINE** unless quoted; all tunable.
+- Disasters *pull* work: each tick every active disaster gets an even share of
+  the block budget and resumes from saved cursors, so nothing huge is queued in
+  memory and only cursors/seed are saved. Shapes (fissure paths, heave
+  patches) are rebuilt from the seed.
+- Block changes skip neighbor updates (main lag source); nearby water/lava and
+  sand/gravel above a removed block are woken so water still pours into
+  fissures. Bedrock/unbreakable blocks and unloaded chunks are never touched.
+- Hard cap of 15 ms of disaster work per tick, on top of the adaptive budget.
+- `/disaster start` hits immediately (no warning); `/disaster random now`
+  triggers a random disaster with the normal warning (for testing).
+- Random disasters land 16–64 blocks from the chosen player; timer only counts
+  while players are online; magnitudes rolled with each step ~0.6x as likely
+  as the one below (M1 ≈ 40 %, M10 ≈ 0.4 %).
+- Earthquake details: shaking damage reaches 12 blocks below the surface;
+  glass/panes shatter, leaves fall (50 %), stone/deepslate/bricks crack,
+  cobblestone → gravel (30 %). Collapse looks 24 blocks down for blocks with air
+  below and < 2 side neighbours; surface edges over a drop crumble in. At most
+  8 falling-block entities per second per quake, the rest move instantly.
+  Heave moves the top 12 blocks of each column. Fissures open during the first
+  60 % of the shaking. Knockback = 0.02 × magnitude every 5 ticks.
+- Random disasters skip players in dimensions with a ceiling (the Nether) for
+  now; `/disaster start` there still works but treats the roof as surface.
+- Warning: low distant boom + ground particles at players' feet every 2 s.
+- **Deferred to visual polish**: client camera shake, custom sounds.
+- Measured (dev server, 400 chunks loaded, no players): M9 quake (radius 160)
+  averaged 8–10 ms/tick, P99 ≤ 26 ms, vs 5 ms idle; M7 on a village peaked at
+  P99 16 ms.
+
 ## Open questions
 - Rest of the build order after Meteor and Tornado.
+- Should disasters happen in the Nether / End, and how?
+- First screenshots: an M7 quake on a village is visible but fairly subtle
+  (fissures, buckled paths, water pouring in); houses mostly stand. Tune up?

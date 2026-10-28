@@ -1,0 +1,74 @@
+package com.bladesmelody.naturaldisasters.engine;
+
+import com.bladesmelody.naturaldisasters.Config;
+import com.bladesmelody.naturaldisasters.NaturalDisasters;
+import java.util.List;
+import java.util.Optional;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.levelgen.Heightmap;
+
+/**
+ * Starts disasters on their own: on average every {@code intervalDays} in-game
+ * days (counting only while players are online), near a random player, with a
+ * warning first.
+ */
+public final class RandomDisasters {
+    private RandomDisasters() {}
+
+    static void tick(MinecraftServer server) {
+        if (!Config.RANDOM_ENABLED.getAsBoolean()) return;
+        if (server.getPlayerList().getPlayers().isEmpty()) return;
+        DisasterData data = DisasterData.get(server.overworld());
+        if (data.ticksUntilRandom < 0) data.ticksUntilRandom = rollInterval(server.overworld().getRandom());
+        if (--data.ticksUntilRandom > 0) {
+            if (data.ticksUntilRandom % 200 == 0) data.setDirty();
+            return;
+        }
+        data.ticksUntilRandom = rollInterval(server.overworld().getRandom());
+        data.setDirty();
+        trigger(server, Config.WARNING_SECONDS.getAsInt() * 20);
+    }
+
+    private static long rollInterval(RandomSource random) {
+        double mean = Config.RANDOM_INTERVAL_DAYS.getAsDouble() * 24000;
+        return Math.max(1, (long) (mean * (0.5 + random.nextDouble())));
+    }
+
+    /** Starts a random disaster near a random online player now. */
+    public static Optional<Disaster> trigger(MinecraftServer server, int warningTicks) {
+        RandomSource random = server.overworld().getRandom();
+        // Not under a ceiling (Nether): the "surface" there is the bedrock roof.
+        List<ServerPlayer> players = server.getPlayerList().getPlayers().stream()
+                .filter(p -> !p.isSpectator() && !p.level().dimensionType().hasCeiling()).toList();
+        List<DisasterType<?>> types = DisasterTypes.all().stream().filter(DisasterType::randomEnabled).toList();
+        if (players.isEmpty() || types.isEmpty()) return Optional.empty();
+
+        ServerPlayer player = players.get(random.nextInt(players.size()));
+        ServerLevel level = player.level();
+        BlockPos center = pickCenter(level, player.blockPosition(), random);
+        DisasterType<?> type = types.get(random.nextInt(types.size()));
+        int magnitude = DisasterType.rollMagnitude(random);
+        Disaster d = DisasterManager.start(level, type, center, magnitude, warningTicks);
+        NaturalDisasters.LOGGER.info("Random {} M{} at {} near {}", type.name(), magnitude, center.toShortString(), player.getName().getString());
+        return Optional.of(d);
+    }
+
+    private static BlockPos pickCenter(ServerLevel level, BlockPos near, RandomSource random) {
+        int min = Config.STRIKE_MIN_DISTANCE.getAsInt();
+        int max = Math.max(min, Config.STRIKE_MAX_DISTANCE.getAsInt());
+        for (int attempt = 0; attempt < 8; attempt++) {
+            double angle = random.nextDouble() * Math.PI * 2;
+            double dist = Mth.lerp(random.nextDouble(), min, max);
+            BlockPos p = near.offset((int) (Math.cos(angle) * dist), 0, (int) (Math.sin(angle) * dist));
+            if (BlockWriter.isLoaded(level, p.atY(level.getMinY()))) {
+                return p.atY(level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, p.getX(), p.getZ()));
+            }
+        }
+        return near;
+    }
+}
