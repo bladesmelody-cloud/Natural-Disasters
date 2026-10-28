@@ -221,7 +221,10 @@ public class Meteor extends Disaster {
         Vec3 to = new Vec3(s.x + 0.5, ground, s.z + 0.5);
         double height = 120 + s.radius * 2;
         Vec3 from = to.add(Math.cos(s.angle) * height * 0.7, height, Math.sin(s.angle) * height * 0.7);
-        if (!level.isLoaded(BlockPos.containing(from))) from = to.add(0, height, 0);
+        // A meteor entity in a chunk that doesn't tick would hang there in the sky. Fall straight down
+        // instead, or (target not ticking either) skip the visual: the impact still comes on schedule.
+        if (!level.isPositionEntityTicking(BlockPos.containing(from))) from = to.add(0, height, 0);
+        if (!level.isPositionEntityTicking(BlockPos.containing(to))) return;
         MeteorEntity.launch(level, from, to, s.flight, Math.max(1.0F, s.radius / 3.0F));
         level.playSound(null, from.x, from.y, from.z, ModSounds.METEOR_WHOOSH.get(), SoundSource.AMBIENT, 6.0F, 1.0F);
     }
@@ -247,6 +250,7 @@ public class Meteor extends Disaster {
             e.hurtServer(level, level.damageSources().explosion(null, null), (float) (maxDamage * falloff));
             Vec3 push = (dist < 0.01 ? new Vec3(0, 1, 0) : away.normalize()).scale(1.5 * falloff);
             e.push(push.x, push.y * 0.5 + 0.4 * falloff, push.z);
+            carried(e);
         }
         Shake.near(level, at.x, at.z, radius * 8 + 16, Math.min(4F, 0.5F + radius / 6F), 20);
         level.sendParticles(radius >= 16 ? ParticleTypes.EXPLOSION_EMITTER : ParticleTypes.EXPLOSION, false, true,

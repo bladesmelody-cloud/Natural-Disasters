@@ -249,6 +249,7 @@ public class Hurricane extends Disaster {
             double lift = wind > 100 && e.onGround() && level.getRandom().nextInt(10) == 0 ? 0.25 + wind / 170.0 * 0.2 : 0;
             e.setDeltaMovement(e.getDeltaMovement().add(spin.x, lift, spin.z));
             e.hurtMarked = true;
+            carried(e);
         }
     }
 
@@ -280,6 +281,9 @@ public class Hurricane extends Disaster {
     @Override
     protected void onEnd(ServerLevel level) {
         SkyZones.remove(id);
+        // It may sit in a chunk that doesn't tick, where it can't time out by itself.
+        if (marker != null) marker.discard();
+        marker = null;
     }
 
     @Override

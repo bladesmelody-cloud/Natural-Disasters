@@ -524,6 +524,36 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
   smooth stone; barometer = copper, glass pane, glass bottle, redstone;
   sky watcher = spyglass, copper, redstone, iron. Pickaxe to mine.
 
+## Full check-over (owner picked it; owner can't play-test)
+- Fresh world, server only, 9 force-loaded areas 600 blocks apart. Wave 1:
+  hurricane M8, two EF4 tornadoes, quake M8, volcano M7 (VEI 5, so a
+  world-wide ash cloud and its own quake), flood M7, wildfire M8, meteor M9,
+  blizzard M7, hailstorm M7, acid rain M7, drought M6, all at once. Wave 2
+  (after a restart mid-disaster): tornado, meteor, hurricane, quake,
+  tsunami, flood, wildfire. Then a client joined for random disasters and
+  an EF5 lifting a survival player.
+- Lag: 39 samples, mean 7.7 ms per tick, worst P95 26 ms, worst P99 48 ms
+  (target 50). No errors or warnings from the mod in server or client logs.
+- Restart mid-disaster: blizzard, drought and the ash cloud resumed. Ending
+  the ash cloud un-paused the clock and moved it to morning.
+- Fixed:
+  - Meteors launched from (or aimed at) a chunk that is loaded but not
+    ticking froze in the sky as visible leftovers. Now they fall straight
+    down from above the target, or the visual is skipped if the target
+    doesn't tick (the impact still lands on schedule).
+  - A tornado funnel or hurricane eye marker that had drifted into a
+    non-ticking chunk stayed there after the disaster ended. Both are now
+    removed when the disaster ends.
+  - Safeguard: players moved by a disaster get vanilla's "floating" counter
+    reset (as a teleport does), so being carried for over 4 s can't get them
+    kicked where flight isn't allowed. Couldn't make it happen even with an
+    EF5 (the tossing up and down resets the counter), but it's one line per
+    disaster.
+- Left as is (vanilla behaviour): debris thrown into chunks that don't tick
+  waits there mid-air until a player comes near, then falls.
+- Not a mod issue: /forceload of new chunks on this slow container blocked a
+  tick for 60 s (world generation) and the watchdog stopped the server.
+
 ## Status (end of the freestyle night)
 All 12 disasters are in, each with game tests (28 total, stable over many
 runs) and checked in a real world: Earthquake, Meteor, Tornado, Hurricane,

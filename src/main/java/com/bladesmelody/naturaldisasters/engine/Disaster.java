@@ -86,6 +86,15 @@ public abstract class Disaster {
         return Math.max(0, warningTicks - age);
     }
 
+    /**
+     * Call after a disaster moves an entity. A player carried through the air
+     * (a tornado's lift, a hurricane, a wave) would otherwise be kicked by the
+     * server for "floating too long" after 4 s where flight isn't allowed.
+     */
+    protected static void carried(net.minecraft.world.entity.Entity e) {
+        if (e instanceof ServerPlayer p) p.connection.resetFlyingTicks();
+    }
+
     protected java.util.List<ServerPlayer> playersNear(ServerLevel level, double range) {
         double r2 = range * range;
         return level.getPlayers(p -> !p.isSpectator() && p.distanceToSqr(center.getX() + 0.5, p.getY(), center.getZ() + 0.5) <= r2);

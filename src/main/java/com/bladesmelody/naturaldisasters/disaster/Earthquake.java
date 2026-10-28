@@ -470,6 +470,7 @@ public class Earthquake extends Disaster {
             if (dist > r) continue;
             double f = params.knockback * (1 - 0.5 * dist / r);
             e.push((random.nextDouble() * 2 - 1) * f, random.nextDouble() * f * 0.5, (random.nextDouble() * 2 - 1) * f);
+            carried(e);
         }
     }
 

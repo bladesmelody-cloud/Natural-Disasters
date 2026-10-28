@@ -255,6 +255,7 @@ public class Tsunami extends Disaster {
             double push = 0.25 + 0.03 * params.height;
             e.setDeltaMovement(e.getDeltaMovement().add(new Vec3(dirX * push, 0.05, dirZ * push)));
             e.hurtMarked = true;
+            carried(e);
             if (e instanceof LivingEntity living && along > front - 2 && level.getRandom().nextInt(4) == 0) {
                 living.hurtServer(level, level.damageSources().drown(), 1.0F + params.height / 6.0F);
             }

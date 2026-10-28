@@ -260,6 +260,7 @@ public class Tornado extends Disaster {
             if (v.length() > maxSpeed) v = v.normalize().scale(maxSpeed);
             e.setDeltaMovement(v);
             e.hurtMarked = true;
+            carried(e);
             if (lift > 0) e.resetFallDistance();
         }
     }
@@ -277,6 +278,13 @@ public class Tornado extends Disaster {
             float volume = (float) Math.max(0.2, 1.5 - d / (params.coreRadius * 6));
             level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.TORNADO_ROAR.get(), SoundSource.WEATHER, volume, 1.0F);
         }
+    }
+
+    @Override
+    protected void onEnd(ServerLevel level) {
+        // The funnel may have wandered into a chunk that doesn't tick, where it can't time out by itself.
+        if (funnel != null) funnel.discard();
+        funnel = null;
     }
 
     // ---- Saving ----
