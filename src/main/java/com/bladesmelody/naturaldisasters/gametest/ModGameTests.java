@@ -103,6 +103,7 @@ public final class ModGameTests {
         FUNCTIONS.register("instruments_sense_and_warn", () -> ModGameTests::instrumentsSenseAndWarn);
         FUNCTIONS.register("safe_zone_stops_quake", () -> ModGameTests::safeZoneStopsQuake);
         FUNCTIONS.register("undo_restores_without_dupes", () -> ModGameTests::undoRestoresWithoutDupes);
+        FUNCTIONS.register("survivor_advancement", () -> ModGameTests::survivorAdvancement);
         FUNCTIONS.register("safe_zone_spares_and_crumbles", () -> ModGameTests::safeZoneSparesAndCrumbles);
         if (net.neoforged.fml.ModList.get().isLoaded("openpartiesandclaims")) {
             FUNCTIONS.register("opac_claim_is_protected", () -> ClaimTests::opacClaimIsProtected);
@@ -126,6 +127,9 @@ public final class ModGameTests {
 
     private static void onRegisterTests(RegisterGameTestsEvent event) {
         Holder<TestEnvironmentDefinition<?>> env = event.registerEnvironment(id("default"));
+        // Tests with (mock) players run in their own batch, after the rest: disasters react to players
+        // (the world-wide ash cloud ashes the chunks around them), which would slow down the other tests.
+        Holder<TestEnvironmentDefinition<?>> withPlayers = event.registerEnvironment(id("with_players"));
         test(event, "smoke", new TestData<>(env, EMPTY, 20, 0, true));
         test(event, "block_budget_caps_changes", arena(env, 20));
         test(event, "magnitude_table", new TestData<>(env, EMPTY, 20, 0, true));
@@ -143,6 +147,7 @@ public final class ModGameTests {
         test(event, "instruments_sense_and_warn", arena(env, 20));
         test(event, "safe_zone_stops_quake", arena(env, 300));
         test(event, "undo_restores_without_dupes", arena(env, 100));
+        test(event, "survivor_advancement", arena(withPlayers, 400));
         test(event, "safe_zone_spares_and_crumbles", arena(env, 60));
         if (net.neoforged.fml.ModList.get().isLoaded("openpartiesandclaims")) test(event, "opac_claim_is_protected", arena(env, 20));
         if (net.neoforged.fml.ModList.get().isLoaded("flan")) test(event, "flan_claim_is_protected", arena(env, 20));
@@ -384,6 +389,41 @@ public final class ModGameTests {
                     new net.minecraft.world.phys.AABB(helper.absolutePos(CENTER)).inflate(8)).size();
             helper.assertTrue(left == 0, left + " dropped stacks still lying around (duplicates)");
             helper.assertTrue(DisasterManager.all(level.getServer()).stream().noneMatch(r -> r.disaster() == quake), "disaster not stopped");
+        });
+    }
+
+    /**
+     * A player caught in a small quake earns "Still Standing" when it ends;
+     * one who dies during it doesn't. All 16 advancements load.
+     */
+    private static void survivorAdvancement(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        var advancements = level.getServer().getAdvancements();
+        for (String name : List.of("root", "survivor", "seen_it_all", "the_big_one", "not_in_kansas", "category_five",
+                "year_without_summer", "eye_of_the_storm", "ride_the_wind", "no_rest", "seismograph", "barometer",
+                "sky_watcher", "forewarned", "fallen_star", "star_metal")) {
+            helper.assertTrue(advancements.get(net.minecraft.resources.Identifier.fromNamespaceAndPath("naturaldisasters", name)) != null,
+                    "advancement " + name + " didn't load");
+        }
+        var survivor = advancements.get(net.minecraft.resources.Identifier.fromNamespaceAndPath("naturaldisasters", "survivor"));
+        var lives = helper.makeMockServerPlayerInLevel();
+        var dies = helper.makeMockServerPlayerInLevel();
+        lives.snapTo(helper.absolutePos(CENTER.above()).getCenter());
+        dies.snapTo(helper.absolutePos(CENTER.above().east(2)).getCenter());
+        Earthquake quake = startQuake(helper, 1, params(0, 0, 0), 9L);
+        // Freshly joined players are briefly invulnerable, so die directly (same death event as a real death).
+        helper.runAfterDelay(10, () -> {
+            dies.setHealth(0);
+            dies.die(level.damageSources().genericKill());
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(quake.isFinished() && DisasterManager.all(level.getServer()).stream().noneMatch(r -> r.disaster() == quake), "quake still running");
+            helper.assertTrue(lives.getAdvancements().getOrStartProgress(survivor).isDone(), "survivor didn't get Still Standing");
+            helper.assertTrue(!dies.getAdvancements().getOrStartProgress(survivor).isDone(), "a player who died got Still Standing");
+            // Mock players stay in the world otherwise, and disasters in later tests react to them.
+            level.getServer().getPlayerList().remove(lives);
+            level.getServer().getPlayerList().remove(dies);
         });
     }
 

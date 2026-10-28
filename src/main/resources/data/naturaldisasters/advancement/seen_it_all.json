@@ -1,0 +1,127 @@
+{
+  "parent": "naturaldisasters:survivor",
+  "display": {
+    "icon": {
+      "id": "minecraft:recovery_compass"
+    },
+    "title": {
+      "translate": "advancements.naturaldisasters.seen_it_all.title"
+    },
+    "description": {
+      "translate": "advancements.naturaldisasters.seen_it_all.description"
+    },
+    "frame": "challenge"
+  },
+  "criteria": {
+    "earthquake": {
+      "trigger": "naturaldisasters:survived",
+      "conditions": {
+        "type": "earthquake"
+      }
+    },
+    "meteor": {
+      "trigger": "naturaldisasters:survived",
+      "conditions": {
+        "type": "meteor"
+      }
+    },
+    "tornado": {
+      "trigger": "naturaldisasters:survived",
+      "conditions": {
+        "type": "tornado"
+      }
+    },
+    "hurricane": {
+      "trigger": "naturaldisasters:survived",
+      "conditions": {
+        "type": "hurricane"
+      }
+    },
+    "acid_rain": {
+      "trigger": "naturaldisasters:survived",
+      "conditions": {
+        "type": "acid_rain"
+      }
+    },
+    "drought": {
+      "trigger": "naturaldisasters:survived",
+      "conditions": {
+        "type": "drought"
+      }
+    },
+    "flood": {
+      "trigger": "naturaldisasters:survived",
+      "conditions": {
+        "type": "flood"
+      }
+    },
+    "tsunami": {
+      "trigger": "naturaldisasters:survived",
+      "conditions": {
+        "type": "tsunami"
+      }
+    },
+    "volcano": {
+      "trigger": "naturaldisasters:survived",
+      "conditions": {
+        "type": "volcano"
+      }
+    },
+    "wildfire": {
+      "trigger": "naturaldisasters:survived",
+      "conditions": {
+        "type": "wildfire"
+      }
+    },
+    "blizzard": {
+      "trigger": "naturaldisasters:survived",
+      "conditions": {
+        "type": "blizzard"
+      }
+    },
+    "hailstorm": {
+      "trigger": "naturaldisasters:survived",
+      "conditions": {
+        "type": "hailstorm"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "earthquake"
+    ],
+    [
+      "meteor"
+    ],
+    [
+      "tornado"
+    ],
+    [
+      "hurricane"
+    ],
+    [
+      "acid_rain"
+    ],
+    [
+      "drought"
+    ],
+    [
+      "flood"
+    ],
+    [
+      "tsunami"
+    ],
+    [
+      "volcano"
+    ],
+    [
+      "wildfire"
+    ],
+    [
+      "blizzard"
+    ],
+    [
+      "hailstorm"
+    ]
+  ]
+}

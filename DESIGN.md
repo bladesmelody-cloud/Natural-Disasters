@@ -617,6 +617,20 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
 - Owner pick: **own tab, ~15**: survive each disaster type, extremes (EF5,
   cat 5, VEI 6+, M9 quake), build each instrument, find meteorite, smelt
   meteoric iron, try to sleep under world-wide ash, and so on.
+- Built (titles and details **MINE**), a "Natural Disasters" tab:
+  - Still Standing (survive any disaster) → Seen It All (all 12 kinds,
+    challenge), The Big One (M9+ quake), Not in Kansas Anymore (EF5 tornado),
+    Category Five (cat 5 hurricane), Year Without a Summer (VEI 6+, hidden),
+    Eye of the Storm (stand in a hurricane's eye), Ride the Wind (carried 30
+    blocks up by a tornado, hidden).
+  - No Rest for the Weary (try to sleep under world-wide ash, hidden).
+  - Listening to the Earth / Under Pressure / Eyes on the Sky (get each
+    instrument), Forewarned (an instrument warns you).
+  - Fallen Star (find meteorite) → Star Metal (smelt meteoric iron).
+  - "Survived" = in the disaster's area at some point while it raged
+    (tornado: near the funnel; hurricane: within its radius of the eye) and
+    alive when it ends on its own; dying in between doesn't count, nor
+    does a disaster stopped by command.
 
 ## Status (end of the freestyle night)
 All 12 disasters are in, each with game tests (28 total, stable over many

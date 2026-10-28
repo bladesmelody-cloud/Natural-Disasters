@@ -1,0 +1,29 @@
+{
+  "parent": "naturaldisasters:survivor",
+  "display": {
+    "icon": {
+      "id": "minecraft:wind_charge"
+    },
+    "title": {
+      "translate": "advancements.naturaldisasters.not_in_kansas.title"
+    },
+    "description": {
+      "translate": "advancements.naturaldisasters.not_in_kansas.description"
+    },
+    "frame": "challenge"
+  },
+  "criteria": {
+    "tornado": {
+      "trigger": "naturaldisasters:survived",
+      "conditions": {
+        "type": "tornado",
+        "min_magnitude": 10
+      }
+    }
+  },
+  "requirements": [
+    [
+      "tornado"
+    ]
+  ]
+}

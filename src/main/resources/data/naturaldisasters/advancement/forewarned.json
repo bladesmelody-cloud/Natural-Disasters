@@ -1,0 +1,27 @@
+{
+  "parent": "naturaldisasters:root",
+  "display": {
+    "icon": {
+      "id": "minecraft:bell"
+    },
+    "title": {
+      "translate": "advancements.naturaldisasters.forewarned.title"
+    },
+    "description": {
+      "translate": "advancements.naturaldisasters.forewarned.description"
+    }
+  },
+  "criteria": {
+    "warned": {
+      "trigger": "naturaldisasters:event",
+      "conditions": {
+        "event": "instrument_warning"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "warned"
+    ]
+  ]
+}

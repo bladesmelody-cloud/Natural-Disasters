@@ -1,0 +1,34 @@
+{
+  "parent": "naturaldisasters:root",
+  "display": {
+    "icon": {
+      "id": "naturaldisasters:meteorite_chunk"
+    },
+    "title": {
+      "translate": "advancements.naturaldisasters.fallen_star.title"
+    },
+    "description": {
+      "translate": "advancements.naturaldisasters.fallen_star.description"
+    }
+  },
+  "criteria": {
+    "item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "naturaldisasters:meteorite_chunk",
+              "naturaldisasters:meteorite_ore"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "item"
+    ]
+  ]
+}

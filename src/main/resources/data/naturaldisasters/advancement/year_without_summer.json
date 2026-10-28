@@ -1,0 +1,30 @@
+{
+  "parent": "naturaldisasters:survivor",
+  "display": {
+    "icon": {
+      "id": "naturaldisasters:volcanic_ash_block"
+    },
+    "title": {
+      "translate": "advancements.naturaldisasters.year_without_summer.title"
+    },
+    "description": {
+      "translate": "advancements.naturaldisasters.year_without_summer.description"
+    },
+    "frame": "challenge",
+    "hidden": true
+  },
+  "criteria": {
+    "volcano": {
+      "trigger": "naturaldisasters:survived",
+      "conditions": {
+        "type": "volcano",
+        "min_magnitude": 8
+      }
+    }
+  },
+  "requirements": [
+    [
+      "volcano"
+    ]
+  ]
+}

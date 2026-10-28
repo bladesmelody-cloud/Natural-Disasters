@@ -1,0 +1,31 @@
+{
+  "parent": "naturaldisasters:root",
+  "display": {
+    "icon": {
+      "id": "naturaldisasters:seismograph"
+    },
+    "title": {
+      "translate": "advancements.naturaldisasters.seismograph.title"
+    },
+    "description": {
+      "translate": "advancements.naturaldisasters.seismograph.description"
+    }
+  },
+  "criteria": {
+    "item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "naturaldisasters:seismograph"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "item"
+    ]
+  ]
+}

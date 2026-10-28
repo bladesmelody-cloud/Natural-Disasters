@@ -39,11 +39,18 @@ public final class SkyEvents {
     }
 
     private static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity() instanceof ServerPlayer p) PacketDistributor.sendToPlayer(p, new SkyZonesPayload(SkyZones.serverZones()));
+        if (event.getEntity() instanceof ServerPlayer p && p.connection.hasChannel(SkyZonesPayload.TYPE)) {
+            PacketDistributor.sendToPlayer(p, new SkyZonesPayload(SkyZones.serverZones()));
+        }
     }
 
     private static void onServerTick(ServerTickEvent.Post event) {
-        if (SkyZones.takeDirty()) PacketDistributor.sendToAllPlayers(new SkyZonesPayload(SkyZones.serverZones()));
+        if (!SkyZones.takeDirty()) return;
+        // Only to players with the mod: vanilla clients can join (the payload is optional) and see a vanilla sky.
+        SkyZonesPayload payload = new SkyZonesPayload(SkyZones.serverZones());
+        for (ServerPlayer p : event.getServer().getPlayerList().getPlayers()) {
+            if (p.connection.hasChannel(SkyZonesPayload.TYPE)) PacketDistributor.sendToPlayer(p, payload);
+        }
     }
 
     private static void onServerStopped(ServerStoppedEvent event) {
@@ -65,6 +72,7 @@ public final class SkyEvents {
         if (event.getLevel() instanceof ServerLevel level) {
             for (ServerPlayer p : level.players()) {
                 p.sendOverlayMessage(Component.translatable("message.naturaldisasters.ash_blots_sun"));
+                if (p.isSleeping()) com.bladesmelody.naturaldisasters.advancement.ModTriggers.event(p, com.bladesmelody.naturaldisasters.advancement.ModTriggers.SLEEP_IN_ASH);
             }
         }
     }

@@ -16,7 +16,8 @@ public final class Shake {
             if (d2 > r2) continue;
             float falloff = (float) (1 - Math.sqrt(d2) / radius);
             float strength = intensity * (0.3F + 0.7F * falloff);
-            if (strength > 0.02F) PacketDistributor.sendToPlayer(p, new ShakePayload(strength, ticks));
+            // Players without the mod can join (the payload is optional); they just get no shake.
+            if (strength > 0.02F && p.connection.hasChannel(ShakePayload.TYPE)) PacketDistributor.sendToPlayer(p, new ShakePayload(strength, ticks));
         }
     }
 }

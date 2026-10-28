@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.advancement.ModTriggers;
 import com.bladesmelody.naturaldisasters.protect.Protection;
 import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
@@ -174,6 +175,11 @@ public class Hurricane extends Disaster {
         eyeX += Math.cos(heading) * params.speed;
         eyeZ += Math.sin(heading) * params.speed;
         updateEyeMarker(level);
+        if (activeTicks % 20 == 0) {
+            for (ServerPlayer p : level.players()) {
+                if (!p.isSpectator() && Terrain.dist(p.getX(), p.getZ(), eyeX, eyeZ) < params.eyeRadius * 0.7) ModTriggers.event(p, ModTriggers.HURRICANE_EYE);
+            }
+        }
         RandomSource random = RandomSource.create(seed ^ (activeTicks * 0x9E3779B97F4A7C15L));
 
         int samples = (int) Math.min(MAX_SAMPLES, Math.PI * params.radius * params.radius * params.density);
@@ -278,6 +284,11 @@ public class Hurricane extends Disaster {
             level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.HURRICANE_HOWL.get(), SoundSource.WEATHER,
                     (float) Math.min(1.5, wind / 120), 0.9F + (float) Math.min(0.3, wind / 600));
         }
+    }
+
+    @Override
+    protected boolean caughtIn(ServerPlayer p) {
+        return Terrain.dist(p.getX(), p.getZ(), eyeX, eyeZ) < params.radius;
     }
 
     @Override

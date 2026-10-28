@@ -1,0 +1,28 @@
+{
+  "parent": "naturaldisasters:survivor",
+  "display": {
+    "icon": {
+      "id": "minecraft:ender_eye"
+    },
+    "title": {
+      "translate": "advancements.naturaldisasters.eye_of_the_storm.title"
+    },
+    "description": {
+      "translate": "advancements.naturaldisasters.eye_of_the_storm.description"
+    },
+    "frame": "goal"
+  },
+  "criteria": {
+    "eye": {
+      "trigger": "naturaldisasters:event",
+      "conditions": {
+        "event": "hurricane_eye"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "eye"
+    ]
+  ]
+}

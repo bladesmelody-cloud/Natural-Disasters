@@ -112,7 +112,10 @@ public final class Instruments {
                 Component.translatable("block.naturaldisasters." + instrument.id()), what, d.magnitude(), where, when);
         double r2 = ANNOUNCE_RANGE * ANNOUNCE_RANGE;
         for (ServerPlayer p : level.players()) {
-            if (p.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= r2) p.sendSystemMessage(message);
+            if (p.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= r2) {
+                p.sendSystemMessage(message);
+                com.bladesmelody.naturaldisasters.advancement.ModTriggers.event(p, com.bladesmelody.naturaldisasters.advancement.ModTriggers.INSTRUMENT_WARNING);
+            }
         }
     }
 

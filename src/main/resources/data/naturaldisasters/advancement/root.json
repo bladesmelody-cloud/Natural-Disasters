@@ -1,0 +1,26 @@
+{
+  "display": {
+    "icon": {
+      "id": "naturaldisasters:seismograph"
+    },
+    "title": {
+      "translate": "advancements.naturaldisasters.root.title"
+    },
+    "description": {
+      "translate": "advancements.naturaldisasters.root.description"
+    },
+    "background": "minecraft:gui/advancements/backgrounds/stone",
+    "show_toast": false,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "tick": {
+      "trigger": "minecraft:tick"
+    }
+  },
+  "requirements": [
+    [
+      "tick"
+    ]
+  ]
+}

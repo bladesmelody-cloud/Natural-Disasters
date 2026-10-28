@@ -1,0 +1,29 @@
+{
+  "parent": "naturaldisasters:survivor",
+  "display": {
+    "icon": {
+      "id": "minecraft:cracked_stone_bricks"
+    },
+    "title": {
+      "translate": "advancements.naturaldisasters.the_big_one.title"
+    },
+    "description": {
+      "translate": "advancements.naturaldisasters.the_big_one.description"
+    },
+    "frame": "challenge"
+  },
+  "criteria": {
+    "quake": {
+      "trigger": "naturaldisasters:survived",
+      "conditions": {
+        "type": "earthquake",
+        "min_magnitude": 9
+      }
+    }
+  },
+  "requirements": [
+    [
+      "quake"
+    ]
+  ]
+}

@@ -1,6 +1,7 @@
 package com.bladesmelody.naturaldisasters;
 
 import com.bladesmelody.naturaldisasters.sky.SkyEvents;
+import com.bladesmelody.naturaldisasters.advancement.ModTriggers;
 import com.bladesmelody.naturaldisasters.command.DisasterCommand;
 import com.bladesmelody.naturaldisasters.engine.DisasterManager;
 import com.bladesmelody.naturaldisasters.gametest.ModGameTests;
@@ -27,6 +28,7 @@ public class NaturalDisasters {
         container.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
         ModRegistry.register(modBus);
         ModSounds.register(modBus);
+        ModTriggers.register(modBus);
         SkyEvents.register(modBus);
         ModGameTests.register(modBus);
         NeoForge.EVENT_BUS.addListener(DisasterManager::onServerTick);
@@ -39,6 +41,7 @@ public class NaturalDisasters {
         NeoForge.EVENT_BUS.addListener(Undo::onServerTick);
         NeoForge.EVENT_BUS.addListener(Undo::onBlockBreak);
         NeoForge.EVENT_BUS.addListener(Undo::onBlockPlace);
+        NeoForge.EVENT_BUS.addListener(ModTriggers::onDeath);
         NeoForge.EVENT_BUS.addListener(DisasterCommand::register);
     }
 }

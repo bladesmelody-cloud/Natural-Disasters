@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.advancement.ModTriggers;
 import com.bladesmelody.naturaldisasters.protect.Protection;
 import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.Config;
@@ -266,6 +267,7 @@ public class Tornado extends Disaster {
             e.hurtMarked = true;
             carried(e);
             if (lift > 0) e.resetFallDistance();
+            if (e instanceof ServerPlayer sp && height >= 30) ModTriggers.event(sp, ModTriggers.TORNADO_RIDE);
         }
     }
 
@@ -282,6 +284,11 @@ public class Tornado extends Disaster {
             float volume = (float) Math.max(0.2, 1.5 - d / (params.coreRadius * 6));
             level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.TORNADO_ROAR.get(), SoundSource.WEATHER, volume, 1.0F);
         }
+    }
+
+    @Override
+    protected boolean caughtIn(ServerPlayer p) {
+        return Terrain.dist(p.getX(), p.getZ(), x, z) < params.coreRadius * 8;
     }
 
     @Override

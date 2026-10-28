@@ -1,0 +1,25 @@
+{
+  "parent": "naturaldisasters:root",
+  "display": {
+    "icon": {
+      "id": "minecraft:shield"
+    },
+    "title": {
+      "translate": "advancements.naturaldisasters.survivor.title"
+    },
+    "description": {
+      "translate": "advancements.naturaldisasters.survivor.description"
+    }
+  },
+  "criteria": {
+    "survived": {
+      "trigger": "naturaldisasters:survived",
+      "conditions": {}
+    }
+  },
+  "requirements": [
+    [
+      "survived"
+    ]
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "parent": "naturaldisasters:fallen_star",
+  "display": {
+    "icon": {
+      "id": "naturaldisasters:meteoric_iron_ingot"
+    },
+    "title": {
+      "translate": "advancements.naturaldisasters.star_metal.title"
+    },
+    "description": {
+      "translate": "advancements.naturaldisasters.star_metal.description"
+    }
+  },
+  "criteria": {
+    "item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "naturaldisasters:meteoric_iron_ingot"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "item"
+    ]
+  ]
+}

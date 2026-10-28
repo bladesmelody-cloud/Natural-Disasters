@@ -78,6 +78,10 @@ function in `FUNCTIONS` and the test in `onRegisterTests`.
   item tagging, debris landings), `UndoTask` (restores chunk by chunk).
   `BlockWriter` records into the disaster's log (`DisasterManager` passes
   it); other code that removes blocks must call `w.recordFall(...)`.
+- `advancement/`: `SurvivedTrigger` (`naturaldisasters:survived`, type +
+  min_magnitude), `EventTrigger` (`naturaldisasters:event`), `ModTriggers`
+  (registration, `disasterSurvived`, death listener). `Disaster` tracks
+  witnesses (`caughtIn`). Advancement JSONs in `data/naturaldisasters/advancement`.
 - `registry/ModSounds` + `assets/.../sounds.json`: disaster sounds made from
   vanilla files (pitch is clamped to 0.5–2.0).
 - `shake/`: `ShakePayload` + `Shake.near(...)` (server sends camera shake);
@@ -108,5 +112,10 @@ function in `FUNCTIONS` and the test in `onRegisterTests`.
   `MONSTERS_BURN` is false until the first dawn; tests sample at day-2 noon.
 - `Protection` caches answers per tick: anything that changes protection
   (e.g. adding a safe zone) must call `Protection.invalidate()`.
+- Payloads are optional (vanilla clients can join): check
+  `player.connection.hasChannel(TYPE)` before sending, or it throws.
+- Game tests with mock players go in the `with_players` environment (own
+  batch) and must remove the players at the end: disasters react to
+  players and slow the shared test world down otherwise.
 - Don't put doubles that change every tick into a `SkyZones.Zone`: any change
   re-sends the zone list to every player.

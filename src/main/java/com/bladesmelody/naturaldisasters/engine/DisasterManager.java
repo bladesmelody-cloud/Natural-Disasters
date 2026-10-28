@@ -1,6 +1,7 @@
 package com.bladesmelody.naturaldisasters.engine;
 
 import com.bladesmelody.naturaldisasters.instrument.Instruments;
+import com.bladesmelody.naturaldisasters.advancement.ModTriggers;
 import com.bladesmelody.naturaldisasters.undo.Undo;
 import com.bladesmelody.naturaldisasters.Config;
 import java.util.ArrayList;
@@ -55,6 +56,7 @@ public final class DisasterManager {
             data.active.removeIf(d -> {
                 if (!d.isFinished()) return false;
                 d.end(level);
+                ModTriggers.disasterSurvived(server, d);
                 return true;
             });
             data.setDirty();

@@ -1,0 +1,28 @@
+{
+  "parent": "naturaldisasters:root",
+  "display": {
+    "icon": {
+      "id": "minecraft:red_bed"
+    },
+    "title": {
+      "translate": "advancements.naturaldisasters.no_rest.title"
+    },
+    "description": {
+      "translate": "advancements.naturaldisasters.no_rest.description"
+    },
+    "hidden": true
+  },
+  "criteria": {
+    "sleep": {
+      "trigger": "naturaldisasters:event",
+      "conditions": {
+        "event": "sleep_in_ash"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "sleep"
+    ]
+  ]
+}

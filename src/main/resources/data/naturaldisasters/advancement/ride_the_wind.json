@@ -1,0 +1,28 @@
+{
+  "parent": "naturaldisasters:survivor",
+  "display": {
+    "icon": {
+      "id": "minecraft:feather"
+    },
+    "title": {
+      "translate": "advancements.naturaldisasters.ride_the_wind.title"
+    },
+    "description": {
+      "translate": "advancements.naturaldisasters.ride_the_wind.description"
+    },
+    "hidden": true
+  },
+  "criteria": {
+    "ride": {
+      "trigger": "naturaldisasters:event",
+      "conditions": {
+        "event": "tornado_ride"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "ride"
+    ]
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "parent": "naturaldisasters:survivor",
+  "display": {
+    "icon": {
+      "id": "minecraft:trident"
+    },
+    "title": {
+      "translate": "advancements.naturaldisasters.category_five.title"
+    },
+    "description": {
+      "translate": "advancements.naturaldisasters.category_five.description"
+    },
+    "frame": "challenge"
+  },
+  "criteria": {
+    "hurricane": {
+      "trigger": "naturaldisasters:survived",
+      "conditions": {
+        "type": "hurricane",
+        "min_magnitude": 9
+      }
+    }
+  },
+  "requirements": [
+    [
+      "hurricane"
+    ]
+  ]
+}

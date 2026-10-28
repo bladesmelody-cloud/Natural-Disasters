@@ -43,8 +43,26 @@ public abstract class Disaster {
             tickWarning(level, warningTicks - age);
         } else {
             tickActive(level, writer, age - warningTicks);
+            if ((age - warningTicks) % 20 == 0) {
+                for (ServerPlayer p : level.players()) {
+                    if (!p.isSpectator() && p.isAlive() && caughtIn(p)) witnesses.add(p.getUUID());
+                }
+            }
         }
         age++;
+    }
+
+    /** Players who were in it while it raged (and haven't died since): they survive it when it ends. */
+    private final java.util.Set<java.util.UUID> witnesses = new java.util.HashSet<>();
+
+    /** Whether a player is in the disaster's area right now (moving ones override this). */
+    protected boolean caughtIn(ServerPlayer p) {
+        double dx = p.getX() - (center.getX() + 0.5), dz = p.getZ() - (center.getZ() + 0.5);
+        return dx * dx + dz * dz <= (double) radius() * radius();
+    }
+
+    public java.util.Set<java.util.UUID> witnesses() {
+        return witnesses;
     }
 
     /** Runs the disaster's effects; {@code activeTicks} counts from 0 once the warning is over. */
@@ -142,6 +160,11 @@ public abstract class Disaster {
         tag.putLong("seed", seed);
         tag.putInt("warning", warningTicks);
         tag.putInt("age", age);
+        if (!witnesses.isEmpty()) {
+            net.minecraft.nbt.ListTag list = new net.minecraft.nbt.ListTag();
+            witnesses.stream().sorted().forEach(u -> list.add(new net.minecraft.nbt.IntArrayTag(net.minecraft.core.UUIDUtil.uuidToIntArray(u))));
+            tag.put("witnesses", list);
+        }
         CompoundTag extra = new CompoundTag();
         saveExtra(extra);
         tag.put("data", extra);
@@ -153,6 +176,10 @@ public abstract class Disaster {
         center = BlockPos.of(tag.getLongOr("center", 0L));
         magnitude = tag.getIntOr("magnitude", 1);
         seed = tag.getLongOr("seed", 0L);
+        witnesses.clear();
+        for (net.minecraft.nbt.Tag t : tag.getListOrEmpty("witnesses")) {
+            if (t instanceof net.minecraft.nbt.IntArrayTag a && a.getAsIntArray().length == 4) witnesses.add(net.minecraft.core.UUIDUtil.uuidFromIntArray(a.getAsIntArray()));
+        }
         warningTicks = tag.getIntOr("warning", 0);
         age = tag.getIntOr("age", 0);
         loadExtra(tag.getCompoundOrEmpty("data"));
