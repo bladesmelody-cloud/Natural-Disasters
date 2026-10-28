@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/cube_bottom_top", "textures": {"side": "naturaldisasters:block/sky_watcher_side", "top": "naturaldisasters:block/sky_watcher_top", "bottom": "naturaldisasters:block/instrument_bottom"}}

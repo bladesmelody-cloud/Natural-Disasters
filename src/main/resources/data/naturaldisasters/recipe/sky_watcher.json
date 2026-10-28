@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "Y": "minecraft:spyglass",
+    "C": "minecraft:copper_ingot",
+    "R": "minecraft:redstone",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    " Y ",
+    "CRC",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "naturaldisasters:sky_watcher"
+  }
+}

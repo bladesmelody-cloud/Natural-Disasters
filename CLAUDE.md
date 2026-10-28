@@ -61,6 +61,13 @@ function in `FUNCTIONS` and the test in `onRegisterTests`.
   world-wide ash). `ash/AshLayerBlock`. `disaster/AshCloud` is the
   long-lived event a big eruption leaves; `disaster/Builds` scores how
   built-up a spot is (random disasters avoid builds).
+- `instrument/`: `Instrument` (seismograph/barometer/sky watcher, which
+  disasters each senses, range), `InstrumentBlock` (redstone power),
+  `InstrumentData` (saved positions per dimension), `Instruments` (once-a-second
+  sensing, chat, alarm; `anyInRange` doubles a new disaster's warning in
+  `DisasterManager.add`).
+- `registry/ModSounds` + `assets/.../sounds.json`: disaster sounds made from
+  vanilla files (pitch is clamped to 0.5–2.0).
 - `shake/`: `ShakePayload` + `Shake.near(...)` (server sends camera shake);
   `client/ClientShake` applies it; `ClientConfig` (client toggles).
 - `mixin/` (`naturaldisasters.mixins.json`): `EnvironmentAttributeSystemMixin`

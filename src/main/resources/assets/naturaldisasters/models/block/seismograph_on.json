@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/cube_bottom_top", "textures": {"side": "naturaldisasters:block/seismograph_side_on", "top": "naturaldisasters:block/seismograph_top_on", "bottom": "naturaldisasters:block/instrument_bottom"}}

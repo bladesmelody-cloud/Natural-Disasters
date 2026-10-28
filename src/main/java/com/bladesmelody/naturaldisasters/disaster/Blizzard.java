@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.sky.SkyZones;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
@@ -10,7 +11,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -113,7 +113,7 @@ public class Blizzard extends Disaster {
         if (activeTicks % 2 == 0) whiteout(level);
         if (activeTicks % 40 == 0) {
             for (ServerPlayer p : playersNear(level, params.radius)) {
-                level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.ELYTRA_FLYING, SoundSource.WEATHER, 0.5F, 1.2F);
+                level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.BLIZZARD_WIND.get(), SoundSource.WEATHER, 0.6F, 1.0F);
             }
         }
     }

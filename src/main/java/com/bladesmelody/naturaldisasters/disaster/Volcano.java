@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.Config;
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
@@ -236,7 +237,7 @@ public class Volcano extends Disaster {
                 6, 1.5, 0.2, 1.5, 0.02);
         if (ticksLeft % 40 == 0) {
             for (ServerPlayer p : playersNear(level, params.baseRadius * 3)) {
-                level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.AMBIENT, 0.3F, 0.2F);
+                level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.VOLCANO_RUMBLE.get(), SoundSource.AMBIENT, 0.4F, 1.0F);
             }
         }
     }
@@ -464,7 +465,8 @@ public class Volcano extends Disaster {
                 e.igniteForTicks(80);
             }
             level.sendParticles(ParticleTypes.EXPLOSION, false, true, at.x, at.y, at.z, 1, 0, 0, 0, 0);
-            level.playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE, SoundSource.AMBIENT, 2.0F, 0.9F);
+            level.playSound(null, at.x, at.y, at.z, ModSounds.VOLCANO_LAVA.get(), SoundSource.AMBIENT, 2.0F, 1.0F);
+            level.playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE, SoundSource.AMBIENT, 1.5F, 0.9F);
         }
     }
 
@@ -482,7 +484,7 @@ public class Volcano extends Disaster {
     private void boom(ServerLevel level) {
         Shake.near(level, center.getX() + 0.5, center.getZ() + 0.5, params.baseRadius * 4 + 32, 0.6F + 0.25F * params.vei, 20);
         for (ServerPlayer p : playersNear(level, params.baseRadius * 4)) {
-            level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.AMBIENT, 0.8F, 0.3F);
+            level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.VOLCANO_BLAST.get(), SoundSource.AMBIENT, 1.0F, 0.9F + level.getRandom().nextFloat() * 0.2F);
         }
     }
 

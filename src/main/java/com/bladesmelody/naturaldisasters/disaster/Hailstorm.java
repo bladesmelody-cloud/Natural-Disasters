@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
@@ -13,7 +14,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -118,7 +118,7 @@ public class Hailstorm extends Disaster {
         if (s.is(Tags.Blocks.GLASS_BLOCKS) || s.is(Tags.Blocks.GLASS_PANES)) {
             if (random.nextFloat() < 0.15F * force) {
                 w.set(top, Blocks.AIR.defaultBlockState());
-                level.playSound(null, top, SoundEvents.GLASS_BREAK, SoundSource.BLOCKS, 0.6F, 1.2F);
+                level.playSound(null, top, ModSounds.HAIL_SHATTER.get(), SoundSource.BLOCKS, 0.6F, 1.0F);
             }
         } else if (s.is(BlockTags.LEAVES)) {
             if (random.nextFloat() < 0.15F * force) w.set(top, Blocks.AIR.defaultBlockState());
@@ -150,7 +150,7 @@ public class Hailstorm extends Disaster {
                     10 + 5 * params.size, 8, 2, 8, 0.0);
             if (random.nextInt(3) == 0) {
                 level.playSound(null, p.getX() + (random.nextDouble() - 0.5) * 8, p.getY(), p.getZ() + (random.nextDouble() - 0.5) * 8,
-                        SoundEvents.STONE_HIT, SoundSource.WEATHER, 0.4F + 0.1F * params.size, 1.6F);
+                        ModSounds.HAIL_HIT.get(), SoundSource.WEATHER, 0.4F + 0.1F * params.size, 0.9F + random.nextFloat() * 0.2F);
             }
         }
     }

@@ -21,6 +21,8 @@ import net.minecraft.util.ColorRGBA;
 import net.minecraft.world.level.block.ColoredFallingBlock;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import com.bladesmelody.naturaldisasters.ash.AshLayerBlock;
+import com.bladesmelody.naturaldisasters.instrument.Instrument;
+import com.bladesmelody.naturaldisasters.instrument.InstrumentBlock;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
@@ -53,6 +55,12 @@ public final class ModRegistry {
             p -> new ColoredFallingBlock(new ColorRGBA(0xFF6B6662), p),
             p -> p.mapColor(MapColor.COLOR_GRAY).strength(0.5F).sound(SoundType.SAND));
     public static final DeferredItem<BlockItem> VOLCANIC_ASH_BLOCK_ITEM = ITEMS.registerSimpleBlockItem(VOLCANIC_ASH_BLOCK);
+    public static final DeferredBlock<InstrumentBlock> SEISMOGRAPH = instrument(Instrument.SEISMOGRAPH, MapColor.STONE, SoundType.STONE);
+    public static final DeferredBlock<InstrumentBlock> BAROMETER = instrument(Instrument.BAROMETER, MapColor.COLOR_ORANGE, SoundType.COPPER);
+    public static final DeferredBlock<InstrumentBlock> SKY_WATCHER = instrument(Instrument.SKY_WATCHER, MapColor.METAL, SoundType.METAL);
+    public static final DeferredItem<BlockItem> SEISMOGRAPH_ITEM = ITEMS.registerSimpleBlockItem(SEISMOGRAPH);
+    public static final DeferredItem<BlockItem> BAROMETER_ITEM = ITEMS.registerSimpleBlockItem(BAROMETER);
+    public static final DeferredItem<BlockItem> SKY_WATCHER_ITEM = ITEMS.registerSimpleBlockItem(SKY_WATCHER);
     public static final DeferredItem<Item> METEORITE_CHUNK = ITEMS.registerSimpleItem("meteorite_chunk");
     public static final DeferredItem<Item> METEORIC_IRON_INGOT = ITEMS.registerSimpleItem("meteoric_iron_ingot");
 
@@ -76,6 +84,11 @@ public final class ModRegistry {
 
     private ModRegistry() {}
 
+    private static DeferredBlock<InstrumentBlock> instrument(Instrument instrument, MapColor color, SoundType sound) {
+        return BLOCKS.registerBlock(instrument.id(), p -> new InstrumentBlock(instrument, p),
+                p -> p.mapColor(color).strength(2.0F, 6.0F).requiresCorrectToolForDrops().sound(sound));
+    }
+
     public static void register(IEventBus modBus) {
         BLOCKS.register(modBus);
         ITEMS.register(modBus);
@@ -89,6 +102,11 @@ public final class ModRegistry {
             event.accept(METEORITE_ORE_ITEM);
             event.accept(VOLCANIC_ASH_ITEM);
             event.accept(VOLCANIC_ASH_BLOCK_ITEM);
+        }
+        if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS || event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
+            event.accept(SEISMOGRAPH_ITEM);
+            event.accept(BAROMETER_ITEM);
+            event.accept(SKY_WATCHER_ITEM);
         }
         if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(METEORITE_CHUNK);

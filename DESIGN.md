@@ -453,6 +453,55 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
   degrees, weaker further out), meteor impacts and volcano booms. Client
   config `cameraShake` (on/off) and `cameraShakeStrength` (0–3×).
 
+## Hurricane polish (after the visual pass)
+- Owner: **"Thicker bands + lighter eye"**, and "less rain in the eye too".
+- Built (**MINE**): about twice as many band clouds, darker and bigger; in
+  the eye (inner 60 % of the eye radius, fading out at its edge) the sky
+  turns pale blue, fog and clouds lighten, daylight comes back up, and no
+  rain falls in the inner 80 %.
+
+## Sounds
+- Owner: **"Vanilla, reworked"**: every disaster has its own sound event
+  (`registry/ModSounds`), built in `sounds.json` from vanilla sound files,
+  layered and re-pitched. Real recordings can replace them there later
+  without code changes.
+- The mix (**MINE**): warning hint = distant low thunder and cave sounds;
+  quake rumble = basalt-delta debris + deep explosions, plus ground cracks
+  (earth crack, deepslate, heavy mace smash); meteor = low rocket whoosh,
+  deep explosion + far firework blast, a warden sonic boom for big impacts;
+  tornado roar = slowed elytra wind + breeze whirl + soul-sand-valley wind;
+  hurricane howl and blizzard wind = the same winds at higher pitches; hail =
+  high stone/amethyst clicks and glass breaking; volcano = deep rumble,
+  blasts (explosion + sonic boom + trident thunder), bubbling lava;
+  tsunami = heavy splash + water + rain; flood = rushing water; acid =
+  high fizz; wildfire = low fire roar.
+- Minecraft clamps pitch to 0.5–2.0, so nothing goes deeper than half pitch.
+
+## Instruments (warnings and detection)
+- Owner picks: **themed instruments**, warning by **redstone signal, chat
+  message, alarm sound and earlier warning**; **three** instruments;
+  range **scaled by size**; **double the warning**; **mid-game vanilla**
+  recipes.
+- Seismograph: earthquake, tsunami, volcano. Barometer: tornado, hurricane,
+  blizzard, hailstorm, flood, acid rain, wildfire, drought. Sky watcher:
+  meteor.
+- Range: 2 × the disaster's radius, at least 128 blocks, from its centre.
+- Redstone (**MINE**): 1–15, ceil(15 × closeness × (0.5 + M/20)), where
+  closeness is 1 at the centre and 0 at the edge of range. M10 on top of it
+  gives 15.
+- Chat (**MINE**): when an instrument first senses a disaster, players
+  within 48 blocks get e.g. "[Barometer] Flood (M1) 22 blocks to the
+  northeast, starting in about 40 s".
+- Alarm (**MINE**): every 3 s while the sensed disaster is still in its
+  warning stage (seismograph: deep bells, barometer: raid horn, sky
+  watcher: amethyst chime). Silent once the disaster has started.
+- Earlier warning: a disaster that starts with any matching instrument in
+  range (loaded or not; positions are saved per dimension) gets twice the
+  warning time.
+- Recipes (**MINE**): seismograph = iron, paper, redstone, a piston,
+  smooth stone; barometer = copper, glass pane, glass bottle, redstone;
+  sky watcher = spyglass, copper, redstone, iron. Pickaxe to mine.
+
 ## Status (end of the freestyle night)
 All 12 disasters are in, each with game tests (28 total, stable over many
 runs) and checked in a real world: Earthquake, Meteor, Tornado, Hurricane,

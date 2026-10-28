@@ -35,6 +35,14 @@ public final class SkyZones {
             return weight(px, pz) > 0;
         }
 
+        /** How far into the clear hole a point is: 1 in its middle, 0 at its edge and outside. */
+        public float inHole(double px, double pz) {
+            if (hole <= 0) return 0;
+            double dx = px - x, dz = pz - z;
+            double d = Math.sqrt(dx * dx + dz * dz);
+            return d >= hole ? 0 : (float) Math.min(1, (hole - d) / (hole * 0.4));
+        }
+
         /** 1 inside, fading to 0 over the outer 15 % so a zone's edge isn't a hard line; clear in the hole. */
         public float weight(double px, double pz) {
             if (radius <= 0) return 1;

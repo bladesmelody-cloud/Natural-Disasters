@@ -1,0 +1,603 @@
+{
+  "warning": {
+    "subtitle": "subtitles.naturaldisasters.warning",
+    "sounds": [
+      {
+        "name": "minecraft:ambient/weather/thunder1",
+        "pitch": 0.5,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:ambient/weather/thunder2",
+        "pitch": 0.5,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:ambient/weather/thunder3",
+        "pitch": 0.5,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:ambient/cave/cave13",
+        "pitch": 0.6,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:ambient/cave/cave14",
+        "pitch": 0.6,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:ambient/cave/cave18",
+        "pitch": 0.6,
+        "volume": 0.8
+      }
+    ]
+  },
+  "earthquake.rumble": {
+    "subtitle": "subtitles.naturaldisasters.earthquake.rumble",
+    "sounds": [
+      {
+        "name": "minecraft:ambient/nether/basalt_deltas/long_debris1",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:ambient/nether/basalt_deltas/long_debris2",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:ambient/nether/basalt_deltas/debris1",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:ambient/nether/basalt_deltas/debris2",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:ambient/nether/basalt_deltas/debris3",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:random/explode1",
+        "pitch": 0.5,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:random/explode2",
+        "pitch": 0.5,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:random/explode3",
+        "pitch": 0.5,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:random/explode4",
+        "pitch": 0.5,
+        "volume": 0.7
+      }
+    ]
+  },
+  "earthquake.crack": {
+    "subtitle": "subtitles.naturaldisasters.earthquake.crack",
+    "sounds": [
+      {
+        "name": "minecraft:ambient/underwater/additions/earth_crack",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:block/deepslate/break1",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:block/deepslate/break2",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:block/deepslate/break3",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:block/deepslate/break4",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:item/mace/smash_ground_heavy",
+        "pitch": 0.5
+      }
+    ]
+  },
+  "meteor.whoosh": {
+    "subtitle": "subtitles.naturaldisasters.meteor.whoosh",
+    "sounds": [
+      {
+        "name": "minecraft:fireworks/launch1",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:mob/breeze/wind_burst1",
+        "pitch": 0.5,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:mob/breeze/wind_burst2",
+        "pitch": 0.5,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:mob/breeze/wind_burst3",
+        "pitch": 0.5,
+        "volume": 0.8
+      }
+    ]
+  },
+  "meteor.impact": {
+    "subtitle": "subtitles.naturaldisasters.meteor.impact",
+    "sounds": [
+      {
+        "name": "minecraft:random/explode1",
+        "pitch": 0.55
+      },
+      {
+        "name": "minecraft:random/explode2",
+        "pitch": 0.55
+      },
+      {
+        "name": "minecraft:random/explode3",
+        "pitch": 0.55
+      },
+      {
+        "name": "minecraft:random/explode4",
+        "pitch": 0.55
+      },
+      {
+        "name": "minecraft:fireworks/largeblast_far1",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:item/mace/smash_ground_heavy",
+        "pitch": 0.5
+      }
+    ]
+  },
+  "meteor.sonic_boom": {
+    "subtitle": "subtitles.naturaldisasters.meteor.sonic_boom",
+    "sounds": [
+      {
+        "name": "minecraft:mob/warden/sonic_boom1",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:mob/warden/sonic_boom2",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:mob/warden/sonic_boom3",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:mob/warden/sonic_boom4",
+        "pitch": 0.5
+      }
+    ]
+  },
+  "tornado.roar": {
+    "subtitle": "subtitles.naturaldisasters.tornado.roar",
+    "sounds": [
+      {
+        "name": "minecraft:item/elytra/elytra_loop",
+        "pitch": 0.5,
+        "stream": true
+      },
+      {
+        "name": "minecraft:mob/breeze/whirl",
+        "pitch": 0.5,
+        "stream": true
+      },
+      {
+        "name": "minecraft:ambient/nether/soulsand_valley/wind1",
+        "pitch": 0.55,
+        "stream": true
+      },
+      {
+        "name": "minecraft:ambient/nether/soulsand_valley/wind2",
+        "pitch": 0.55,
+        "stream": true
+      },
+      {
+        "name": "minecraft:ambient/nether/soulsand_valley/wind3",
+        "pitch": 0.55,
+        "stream": true
+      },
+      {
+        "name": "minecraft:ambient/nether/soulsand_valley/wind4",
+        "pitch": 0.55,
+        "stream": true
+      }
+    ]
+  },
+  "hurricane.howl": {
+    "subtitle": "subtitles.naturaldisasters.hurricane.howl",
+    "sounds": [
+      {
+        "name": "minecraft:item/elytra/elytra_loop",
+        "pitch": 0.7,
+        "stream": true
+      },
+      {
+        "name": "minecraft:ambient/nether/soulsand_valley/wind1",
+        "pitch": 0.8,
+        "stream": true
+      },
+      {
+        "name": "minecraft:ambient/nether/soulsand_valley/wind2",
+        "pitch": 0.8,
+        "stream": true
+      },
+      {
+        "name": "minecraft:ambient/nether/soulsand_valley/wind3",
+        "pitch": 0.8,
+        "stream": true
+      },
+      {
+        "name": "minecraft:ambient/nether/soulsand_valley/wind4",
+        "pitch": 0.8,
+        "stream": true
+      }
+    ]
+  },
+  "blizzard.wind": {
+    "subtitle": "subtitles.naturaldisasters.blizzard.wind",
+    "sounds": [
+      {
+        "name": "minecraft:item/elytra/elytra_loop",
+        "pitch": 1.15,
+        "volume": 0.8,
+        "stream": true
+      },
+      {
+        "name": "minecraft:ambient/nether/soulsand_valley/wind1",
+        "pitch": 1.25,
+        "stream": true
+      },
+      {
+        "name": "minecraft:ambient/nether/soulsand_valley/wind2",
+        "pitch": 1.25,
+        "stream": true
+      },
+      {
+        "name": "minecraft:ambient/nether/soulsand_valley/wind3",
+        "pitch": 1.25,
+        "stream": true
+      },
+      {
+        "name": "minecraft:ambient/nether/soulsand_valley/wind4",
+        "pitch": 1.25,
+        "stream": true
+      }
+    ]
+  },
+  "hail.hit": {
+    "subtitle": "subtitles.naturaldisasters.hail.hit",
+    "sounds": [
+      {
+        "name": "minecraft:step/stone1",
+        "pitch": 1.5,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:step/stone2",
+        "pitch": 1.5,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:step/stone3",
+        "pitch": 1.5,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:step/stone4",
+        "pitch": 1.5,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:step/stone5",
+        "pitch": 1.5,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:step/stone6",
+        "pitch": 1.5,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block/amethyst/step1",
+        "pitch": 1.6,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:block/amethyst/step2",
+        "pitch": 1.6,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:block/amethyst/step3",
+        "pitch": 1.6,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:block/amethyst/step4",
+        "pitch": 1.6,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:block/amethyst/step5",
+        "pitch": 1.6,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:block/amethyst/step6",
+        "pitch": 1.6,
+        "volume": 0.6
+      }
+    ]
+  },
+  "hail.shatter": {
+    "subtitle": "subtitles.naturaldisasters.hail.shatter",
+    "sounds": [
+      {
+        "name": "minecraft:random/glass1",
+        "pitch": 1.2
+      },
+      {
+        "name": "minecraft:random/glass2",
+        "pitch": 1.2
+      },
+      {
+        "name": "minecraft:random/glass3",
+        "pitch": 1.2
+      }
+    ]
+  },
+  "volcano.rumble": {
+    "subtitle": "subtitles.naturaldisasters.volcano.rumble",
+    "sounds": [
+      {
+        "name": "minecraft:ambient/nether/basalt_deltas/long_debris1",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:ambient/nether/basalt_deltas/long_debris2",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:random/explode1",
+        "pitch": 0.5,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:random/explode2",
+        "pitch": 0.5,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:random/explode3",
+        "pitch": 0.5,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:random/explode4",
+        "pitch": 0.5,
+        "volume": 0.8
+      }
+    ]
+  },
+  "volcano.blast": {
+    "subtitle": "subtitles.naturaldisasters.volcano.blast",
+    "sounds": [
+      {
+        "name": "minecraft:random/explode1",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:random/explode2",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:random/explode3",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:random/explode4",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:mob/warden/sonic_boom1",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:mob/warden/sonic_boom2",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:mob/warden/sonic_boom3",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:mob/warden/sonic_boom4",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:item/trident/thunder1",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:item/trident/thunder2",
+        "pitch": 0.5
+      }
+    ]
+  },
+  "volcano.lava": {
+    "subtitle": "subtitles.naturaldisasters.volcano.lava",
+    "sounds": [
+      {
+        "name": "minecraft:liquid/lava",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:liquid/lavapop",
+        "pitch": 0.6
+      }
+    ]
+  },
+  "tsunami.roar": {
+    "subtitle": "subtitles.naturaldisasters.tsunami.roar",
+    "sounds": [
+      {
+        "name": "minecraft:liquid/heavy_splash",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:ambient/underwater/additions/water1",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:ambient/underwater/additions/water2",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:ambient/weather/rain1",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:ambient/weather/rain2",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:ambient/weather/rain3",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:ambient/weather/rain4",
+        "pitch": 0.5
+      }
+    ]
+  },
+  "flood.rush": {
+    "subtitle": "subtitles.naturaldisasters.flood.rush",
+    "sounds": [
+      {
+        "name": "minecraft:liquid/water",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:ambient/weather/rain1",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:ambient/weather/rain2",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:ambient/weather/rain3",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:ambient/weather/rain4",
+        "pitch": 0.6
+      }
+    ]
+  },
+  "acid.sizzle": {
+    "subtitle": "subtitles.naturaldisasters.acid.sizzle",
+    "sounds": [
+      {
+        "name": "minecraft:random/fizz",
+        "pitch": 1.6
+      },
+      {
+        "name": "minecraft:random/fizz",
+        "pitch": 1.3
+      }
+    ]
+  },
+  "wildfire.roar": {
+    "subtitle": "subtitles.naturaldisasters.wildfire.roar",
+    "sounds": [
+      {
+        "name": "minecraft:fire/fire",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:fire/fire",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:ambient/nether/basalt_deltas/twist1",
+        "pitch": 0.6,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:ambient/nether/basalt_deltas/twist2",
+        "pitch": 0.6,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:ambient/nether/basalt_deltas/twist3",
+        "pitch": 0.6,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:ambient/nether/basalt_deltas/twist4",
+        "pitch": 0.6,
+        "volume": 0.6
+      }
+    ]
+  },
+  "instrument.seismograph": {
+    "subtitle": "subtitles.naturaldisasters.instrument.seismograph",
+    "sounds": [
+      {
+        "name": "minecraft:note/bell",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:note/cow_bell",
+        "pitch": 0.6
+      }
+    ]
+  },
+  "instrument.barometer": {
+    "subtitle": "subtitles.naturaldisasters.instrument.barometer",
+    "sounds": [
+      {
+        "name": "minecraft:event/raid/raidhorn_01",
+        "pitch": 1.3,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:event/raid/raidhorn_02",
+        "pitch": 1.3,
+        "volume": 0.5
+      }
+    ]
+  },
+  "instrument.sky_watcher": {
+    "subtitle": "subtitles.naturaldisasters.instrument.sky_watcher",
+    "sounds": [
+      {
+        "name": "minecraft:block/amethyst/resonate1",
+        "pitch": 1.4
+      },
+      {
+        "name": "minecraft:block/amethyst/resonate2",
+        "pitch": 1.4
+      },
+      {
+        "name": "minecraft:block/beacon/power1",
+        "pitch": 1.6
+      }
+    ]
+  }
+}

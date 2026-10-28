@@ -48,6 +48,14 @@ public final class SkyLayers {
             for (SkyZones.Zone z : zonesHere(level)) keep *= 1 - z.weight(pos.x, pos.z) * (1 - look(z).sunset());
             return ARGB.color(Math.round(ARGB.alpha(base) * keep), base & 0xFFFFFF);
         });
+        // A hurricane's eye: the sky opens up, brighter and bluer than the storm around it.
+        eye(builder, level, EnvironmentAttributes.SKY_COLOR, 0x8fb3d9, 0.75F);
+        eye(builder, level, EnvironmentAttributes.FOG_COLOR, 0xa9bccf, 0.6F);
+        eye(builder, level, EnvironmentAttributes.CLOUD_COLOR, 0xd2d6dc, 0.5F);
+        builder.addPositionalLayer(EnvironmentAttributes.SKY_LIGHT_FACTOR, (base, pos, interp) -> {
+            float e = eyeAt(level, pos);
+            return e > 0 ? base + (1 - base) * 0.6F * e : base;
+        });
         // Monsters don't burn in the sun under ash (the gameplay side of "real darkness").
         builder.addPositionalLayer(EnvironmentAttributes.MONSTERS_BURN, (base, pos, interp) -> base && ashWeight(level, pos) < 0.5F);
     }
@@ -60,6 +68,20 @@ public final class SkyLayers {
         float w = 0;
         for (SkyZones.Zone z : zonesHere(level)) if (z.kind() == SkyZones.Kind.ASH) w = Math.max(w, z.weight(pos.x, pos.z));
         return w;
+    }
+
+    private static float eyeAt(Level level, Vec3 pos) {
+        float e = 0;
+        for (SkyZones.Zone z : zonesHere(level)) if (z.kind() == SkyZones.Kind.HURRICANE) e = Math.max(e, z.inHole(pos.x, pos.z));
+        return e;
+    }
+
+    private static void eye(EnvironmentAttributeSystem.Builder builder, Level level, EnvironmentAttribute<Integer> attribute,
+                            int color, float amount) {
+        builder.addPositionalLayer(attribute, (base, pos, interp) -> {
+            float e = eyeAt(level, pos);
+            return e > 0 ? ARGB.srgbLerp(e * amount, base, 0xFF000000 | color) : base;
+        });
     }
 
     private static void color(EnvironmentAttributeSystem.Builder builder, Level level, EnvironmentAttribute<Integer> attribute,

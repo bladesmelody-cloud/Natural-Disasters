@@ -8,7 +8,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Client only: inside a blizzard the weather renders as snow, even in warm biomes. */
+/**
+ * Client only: inside a blizzard the weather renders as snow, even in warm
+ * biomes; in the middle of a hurricane's eye it stops raining.
+ */
 @Mixin(Biome.class)
 public abstract class BiomePrecipitationMixin {
     @Inject(method = "getPrecipitationAt", at = @At("HEAD"), cancellable = true)
@@ -18,6 +21,10 @@ public abstract class BiomePrecipitationMixin {
         for (SkyZones.Zone z : SkyZones.zones(true)) {
             if (z.kind() == SkyZones.Kind.BLIZZARD && z.covers(pos.getX() + 0.5, pos.getZ() + 0.5)) {
                 cir.setReturnValue(Biome.Precipitation.SNOW);
+                return;
+            }
+            if (z.kind() == SkyZones.Kind.HURRICANE && z.inHole(pos.getX() + 0.5, pos.getZ() + 0.5) > 0.5F) {
+                cir.setReturnValue(Biome.Precipitation.NONE);
                 return;
             }
         }

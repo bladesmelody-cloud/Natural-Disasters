@@ -99,6 +99,7 @@ public final class ModGameTests {
         FUNCTIONS.register("drought_dries_out", () -> ModGameTests::droughtDriesOut);
         FUNCTIONS.register("all_types_save_roundtrip", () -> ModGameTests::allTypesSaveRoundtrip);
         FUNCTIONS.register("builds_are_detected", () -> ModGameTests::buildsAreDetected);
+        FUNCTIONS.register("instruments_sense_and_warn", () -> ModGameTests::instrumentsSenseAndWarn);
         FUNCTIONS.register("volcano_vei_table", () -> ModGameTests::volcanoVeiTable);
         FUNCTIONS.register("volcano_heat_wave_and_ash", () -> ModGameTests::volcanoHeatWaveAndAsh);
         FUNCTIONS.register("ash_cloud_stops_the_clock", () -> ModGameTests::ashCloudStopsTheClock);
@@ -129,6 +130,7 @@ public final class ModGameTests {
         test(event, "ash_cloud_stops_the_clock", arena(env, 200));
         test(event, "ash_zone_lets_monsters_spawn", arena(env, 40));
         test(event, "builds_are_detected", arena(env, 20));
+        test(event, "instruments_sense_and_warn", arena(env, 20));
         test(event, "all_types_save_roundtrip", arena(env, 20));
         test(event, "acid_rain_corrodes", arena(env, 300));
         test(event, "drought_dries_out", arena(env, 550));
@@ -870,6 +872,33 @@ public final class ModGameTests {
     }
 
     /** Bare ground scores 0 for buildings; a little hut with a chest scores more. */
+    /**
+     * A seismograph senses an earthquake: redstone power, and twice the
+     * warning. A sky watcher ignores it.
+     */
+    private static void instrumentsSenseAndWarn(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        BlockPos seismo = helper.absolutePos(CENTER.above());
+        helper.setBlock(CENTER.above(), com.bladesmelody.naturaldisasters.registry.ModRegistry.SEISMOGRAPH.get());
+        Earthquake quake = Earthquake.create(helper.absolutePos(CENTER.east(10)), 6, params(2, 0.01, 1), 77L, 100);
+        DisasterManager.add(level, quake);
+        try {
+            helper.assertTrue(quake.warningTicksLeft() == 200, "warning with a seismograph in range: " + quake.warningTicksLeft());
+            com.bladesmelody.naturaldisasters.instrument.Instruments.tick(level);
+            int power = level.getBlockState(seismo).getValue(com.bladesmelody.naturaldisasters.instrument.InstrumentBlock.POWER);
+            helper.assertTrue(power >= 10, "seismograph power " + power);
+            helper.assertTrue(level.getBestNeighborSignal(seismo.north()) == power, "redstone signal " + level.getBestNeighborSignal(seismo.north()));
+            helper.assertTrue(com.bladesmelody.naturaldisasters.instrument.Instruments.closeness(
+                    com.bladesmelody.naturaldisasters.instrument.Instrument.SKY_WATCHER, quake, seismo) == 0, "sky watcher ignores quakes");
+            helper.assertTrue(com.bladesmelody.naturaldisasters.instrument.Instruments.direction(0, -10).equals("north")
+                    && com.bladesmelody.naturaldisasters.instrument.Instruments.direction(10, 10).equals("southeast"), "directions");
+        } finally {
+            DisasterManager.stop(level.getServer(), quake.id());
+        }
+        helper.succeed();
+    }
+
     private static void buildsAreDetected(GameTestHelper helper) {
         fillFloor(helper);
         ServerLevel level = helper.getLevel();

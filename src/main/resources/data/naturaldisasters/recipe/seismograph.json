@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "P": "minecraft:paper",
+    "R": "minecraft:redstone",
+    "X": "minecraft:piston",
+    "S": "minecraft:smooth_stone"
+  },
+  "pattern": [
+    "IPI",
+    "RXR",
+    "SSS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "naturaldisasters:seismograph"
+  }
+}

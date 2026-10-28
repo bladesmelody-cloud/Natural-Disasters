@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
 import com.bladesmelody.naturaldisasters.engine.DisasterType;
@@ -12,7 +13,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -247,7 +247,7 @@ public class Wildfire extends Disaster {
         }
         if (random.nextInt(4) == 0) {
             BlockPos p = BlockPos.of(front.getLong(head + random.nextInt(burning())));
-            level.playSound(null, p, SoundEvents.FIRE_AMBIENT, SoundSource.BLOCKS, 2.0F, 0.8F);
+            level.playSound(null, p, ModSounds.WILDFIRE_ROAR.get(), SoundSource.BLOCKS, 3.0F, 1.0F);
         }
     }
 

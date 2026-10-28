@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/cube_bottom_top", "textures": {"side": "naturaldisasters:block/barometer_side", "top": "naturaldisasters:block/barometer_top", "bottom": "naturaldisasters:block/instrument_bottom"}}

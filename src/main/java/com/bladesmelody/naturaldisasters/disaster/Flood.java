@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
 import com.bladesmelody.naturaldisasters.engine.DisasterType;
@@ -8,7 +9,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -109,7 +109,7 @@ public class Flood extends Disaster {
         keepWeather(level, ticksLeft + params.total(), false);
         if (ticksLeft % 60 != 0) return;
         for (ServerPlayer p : playersNear(level, params.radius * 1.5)) {
-            level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.WEATHER_RAIN_ABOVE, SoundSource.WEATHER, 1.0F, 0.6F);
+            level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.FLOOD_RUSH.get(), SoundSource.WEATHER, 1.0F, 1.0F);
         }
     }
 

@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
 import com.bladesmelody.naturaldisasters.engine.DisasterType;
@@ -9,7 +10,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -150,8 +150,8 @@ public class Tsunami extends Disaster {
         if (!aimed) aimFromSea(level);
         if (ticksLeft % 40 != 0) return;
         for (ServerPlayer p : playersNear(level, radius() * 1.5)) {
-            level.playSound(null, p.getX() - dirX * 40, p.getY(), p.getZ() - dirZ * 40, SoundEvents.GENERIC_EXPLODE,
-                    SoundSource.AMBIENT, 1.0F, 0.2F);
+            level.playSound(null, p.getX() - dirX * 40, p.getY(), p.getZ() - dirZ * 40, ModSounds.TSUNAMI_ROAR.get(),
+                    SoundSource.AMBIENT, 0.8F, 0.8F);
         }
     }
 
@@ -270,7 +270,7 @@ public class Tsunami extends Disaster {
     private void roar(ServerLevel level) {
         if (nextRow >= rows) return;
         double fx = originX + dirX * nextRow, fz = originZ + dirZ * nextRow;
-        level.playSound(null, fx, seaLevel + 2, fz, SoundEvents.WEATHER_RAIN_ABOVE, SoundSource.AMBIENT, 4.0F, 0.5F);
+        level.playSound(null, fx, seaLevel + 2, fz, ModSounds.TSUNAMI_ROAR.get(), SoundSource.AMBIENT, 4.0F, 1.0F);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.engine;
 
+import com.bladesmelody.naturaldisasters.instrument.Instruments;
 import com.bladesmelody.naturaldisasters.Config;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -87,6 +88,8 @@ public final class DisasterManager {
         DisasterData global = DisasterData.get(level.getServer().overworld());
         d.id = global.nextId++;
         global.setDirty();
+        // An instrument in range picks it up at once and gives twice the warning.
+        if (d.warningTicks > 0 && Instruments.anyInRange(level, d)) d.warningTicks *= 2;
         DisasterData data = DisasterData.get(level);
         data.active.add(d);
         data.setDirty();

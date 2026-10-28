@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.Config;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.shake.Shake;
@@ -19,7 +20,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -209,7 +209,7 @@ public class Earthquake extends Disaster {
     protected void tickWarning(ServerLevel level, int ticksLeft) {
         if (ticksLeft % 40 != 0) return;
         for (ServerPlayer p : playersNear(level, params.radius * 1.5)) {
-            level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.AMBIENT, 0.25F, 0.3F);
+            level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.EARTHQUAKE_RUMBLE.get(), SoundSource.AMBIENT, 0.3F, 0.8F);
             BlockState ground = level.getBlockState(p.blockPosition().below());
             if (!ground.isAir()) {
                 level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ground),
@@ -474,8 +474,12 @@ public class Earthquake extends Disaster {
     private void rumble(ServerLevel level, RandomSource random) {
         float volume = 0.3F + 0.05F * Math.clamp(magnitude, 1, 10);
         for (ServerPlayer p : playersNear(level, params.radius * 1.2)) {
-            level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.AMBIENT,
-                    volume, 0.35F + random.nextFloat() * 0.2F);
+            level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.EARTHQUAKE_RUMBLE.get(), SoundSource.AMBIENT,
+                    volume, 0.9F + random.nextFloat() * 0.2F);
+            if (random.nextInt(3) == 0) {
+                level.playSound(null, p.getX(), p.getY() - 2, p.getZ(), ModSounds.EARTHQUAKE_CRACK.get(), SoundSource.AMBIENT,
+                        volume, 0.9F + random.nextFloat() * 0.2F);
+            };
         }
     }
 

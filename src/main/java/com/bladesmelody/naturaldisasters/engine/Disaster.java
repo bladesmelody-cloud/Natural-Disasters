@@ -1,10 +1,10 @@
 package com.bladesmelody.naturaldisasters.engine;
 
+import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 
 /**
@@ -54,7 +54,7 @@ public abstract class Disaster {
     protected void tickWarning(ServerLevel level, int ticksLeft) {
         if (ticksLeft % 40 != 0) return;
         for (ServerPlayer p : playersNear(level, radius() * 1.5)) {
-            level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.AMBIENT_CAVE, SoundSource.AMBIENT, 0.6F, 0.5F);
+            level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.WARNING.get(), SoundSource.AMBIENT, 0.6F, 1.0F);
         }
     }
 
@@ -80,6 +80,10 @@ public abstract class Disaster {
 
     public boolean inWarning() {
         return age < warningTicks;
+    }
+
+    public int warningTicksLeft() {
+        return Math.max(0, warningTicks - age);
     }
 
     protected java.util.List<ServerPlayer> playersNear(ServerLevel level, double range) {

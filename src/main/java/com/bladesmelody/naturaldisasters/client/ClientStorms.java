@@ -69,7 +69,7 @@ public final class ClientStorms {
         RandomSource r = level.getRandom();
         // Low enough to show through the storm's fog (it ends ~96 blocks out).
         float base = (float) (Math.max(cam.y, level.getSeaLevel()) - e.getY()) + 28;
-        for (int i = 0; i < 14; i++) {
+        for (int i = 0; i < 26; i++) {
             double px = cam.x + (r.nextDouble() - 0.5) * 200, pz = cam.z + (r.nextDouble() - 0.5) * 200;
             double dx = px - e.getX(), dz = pz - e.getZ();
             double d = Math.hypot(dx, dz);
@@ -79,10 +79,10 @@ public final class ClientStorms {
             // Two spiral arms; the eyewall is solid.
             double arm = 0.5 + 0.5 * Math.cos(2 * a - d / 25.0);
             if (!eyewall && r.nextDouble() > arm * arm) continue;
-            float size = (float) (eyewall ? 10 + r.nextDouble() * 6 : 7 + r.nextDouble() * 6);
-            float shade = (float) (eyewall ? 0.2 + r.nextDouble() * 0.1 : 0.3 + r.nextDouble() * 0.15);
+            float size = (float) (eyewall ? 12 + r.nextDouble() * 8 : 9 + r.nextDouble() * 7);
+            float shade = (float) (eyewall ? 0.16 + r.nextDouble() * 0.08 : 0.22 + r.nextDouble() * 0.12);
             add(new CloudParticle(level, e, CloudParticle.Mode.BAND, a, d, (float) storm, base + (float) (r.nextDouble() * 16),
-                    size, shade, 0.8F, 200 + r.nextInt(80), cloudSprites));
+                    size, shade, 0.95F, 200 + r.nextInt(80), cloudSprites));
         }
     }
 

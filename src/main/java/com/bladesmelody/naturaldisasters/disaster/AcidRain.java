@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.sky.SkyZones;
@@ -14,7 +15,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -159,7 +159,7 @@ public class AcidRain extends Disaster {
                 continue;
             }
             if (e.hurtServer(level, level.damageSources().source(ACID), damage)) {
-                level.playSound(null, e.getX(), e.getY(), e.getZ(), SoundEvents.FIRE_EXTINGUISH, SoundSource.WEATHER, 0.3F, 1.6F);
+                level.playSound(null, e.getX(), e.getY(), e.getZ(), ModSounds.ACID_SIZZLE.get(), SoundSource.WEATHER, 0.4F, 1.0F);
             }
         }
     }

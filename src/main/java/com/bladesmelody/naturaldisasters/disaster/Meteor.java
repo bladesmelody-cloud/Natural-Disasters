@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.shake.Shake;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
@@ -16,7 +17,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -159,7 +159,7 @@ public class Meteor extends Disaster {
         if (ticksLeft % 40 != 0) return;
         RandomSource r = level.getRandom();
         for (ServerPlayer p : playersNear(level, params.areaRadius * 1.5)) {
-            level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.AMBIENT, 0.3F, 0.5F);
+            level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.WARNING.get(), SoundSource.AMBIENT, 0.4F, 1.0F);
             for (int i = 0; i < 3; i++) {
                 level.sendParticles(ParticleTypes.FIREWORK, false, true,
                         p.getX() + (r.nextDouble() - 0.5) * 60, p.getY() + 50 + r.nextDouble() * 20, p.getZ() + (r.nextDouble() - 0.5) * 60,
@@ -221,7 +221,7 @@ public class Meteor extends Disaster {
         Vec3 from = to.add(Math.cos(s.angle) * height * 0.7, height, Math.sin(s.angle) * height * 0.7);
         if (!level.isLoaded(BlockPos.containing(from))) from = to.add(0, height, 0);
         MeteorEntity.launch(level, from, to, s.flight, Math.max(1.0F, s.radius / 3.0F));
-        level.playSound(null, from.x, from.y, from.z, SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.AMBIENT, 6.0F, 0.5F);
+        level.playSound(null, from.x, from.y, from.z, ModSounds.METEOR_WHOOSH.get(), SoundSource.AMBIENT, 6.0F, 1.0F);
     }
 
     private void impact(ServerLevel level, Strike s) {
@@ -249,8 +249,11 @@ public class Meteor extends Disaster {
         Shake.near(level, at.x, at.z, radius * 8 + 16, Math.min(4F, 0.5F + radius / 6F), 20);
         level.sendParticles(radius >= 16 ? ParticleTypes.EXPLOSION_EMITTER : ParticleTypes.EXPLOSION, false, true,
                 at.x, at.y, at.z, Math.max(1, radius / 4), radius * 0.3, radius * 0.2, radius * 0.3, 0);
-        level.playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE, SoundSource.AMBIENT,
-                Math.max(4.0F, radius / 2.0F), 0.6F + level.getRandom().nextFloat() * 0.2F);
+        level.playSound(null, at.x, at.y, at.z, ModSounds.METEOR_IMPACT.get(), SoundSource.AMBIENT,
+                Math.max(4.0F, radius / 2.0F), 0.9F + level.getRandom().nextFloat() * 0.2F);
+        if (radius >= 8) {
+            level.playSound(null, at.x, at.y + 40, at.z, ModSounds.METEOR_SONIC_BOOM.get(), SoundSource.AMBIENT, Math.max(6.0F, radius / 2.0F), 1.0F);
+        }
     }
 
     // ---- Craters ----

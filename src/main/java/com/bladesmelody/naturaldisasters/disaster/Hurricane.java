@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.entity.HurricaneEntity;
 import com.bladesmelody.naturaldisasters.sky.SkyZones;
@@ -10,7 +11,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -154,7 +154,7 @@ public class Hurricane extends Disaster {
         keepWeather(level, ticksLeft + params.durationTicks + 600, false);
         if (ticksLeft % 40 != 0) return;
         for (ServerPlayer p : playersNear(level, params.radius * 1.3)) {
-            level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.ELYTRA_FLYING, SoundSource.WEATHER, 0.3F, 0.7F);
+            level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.HURRICANE_HOWL.get(), SoundSource.WEATHER, 0.3F, 0.9F);
         }
     }
 
@@ -272,8 +272,8 @@ public class Hurricane extends Disaster {
     private void howl(ServerLevel level) {
         for (ServerPlayer p : level.getPlayers(p -> Terrain.dist(p.getX(), p.getZ(), eyeX, eyeZ) < params.radius)) {
             double wind = windAt(Terrain.dist(p.getX(), p.getZ(), eyeX, eyeZ));
-            level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.ELYTRA_FLYING, SoundSource.WEATHER,
-                    (float) Math.min(1.5, wind / 120), 0.6F);
+            level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.HURRICANE_HOWL.get(), SoundSource.WEATHER,
+                    (float) Math.min(1.5, wind / 120), 0.9F + (float) Math.min(0.3, wind / 600));
         }
     }
 

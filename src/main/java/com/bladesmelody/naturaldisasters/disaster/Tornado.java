@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.Config;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
@@ -10,7 +11,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -139,7 +139,7 @@ public class Tornado extends Disaster {
         keepWeather(level, ticksLeft + params.durationTicks + 600, params.ef >= 1);
         if (ticksLeft % 40 != 0) return;
         for (ServerPlayer p : playersNear(level, params.wander * 1.5)) {
-            level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.ELYTRA_FLYING, SoundSource.WEATHER, 0.4F, 0.5F);
+            level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.TORNADO_ROAR.get(), SoundSource.WEATHER, 0.3F, 1.0F);
         }
     }
 
@@ -275,7 +275,7 @@ public class Tornado extends Disaster {
         for (ServerPlayer p : level.getPlayers(p -> Terrain.dist(p.getX(), p.getZ(), x, z) < params.coreRadius * 8)) {
             double d = Terrain.dist(p.getX(), p.getZ(), x, z);
             float volume = (float) Math.max(0.2, 1.5 - d / (params.coreRadius * 6));
-            level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.ELYTRA_FLYING, SoundSource.WEATHER, volume, 0.4F);
+            level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.TORNADO_ROAR.get(), SoundSource.WEATHER, volume, 1.0F);
         }
     }
 
