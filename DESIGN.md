@@ -711,6 +711,15 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
 - Checked the crater lake: woken, it stays in. At every magnitude the cone
   just outside the crater is at least as high as the lake surface.
 
+## Where we left off (latest)
+- Done since the freestyle night: visual pass, sounds (vanilla-made,
+  "passable for now"), instruments, land claims + safe zones, undo,
+  advancements, meteorite gear/ward/decor, full check-over, flood and
+  volcano leak fixes. 44 game tests (46 with `-PwithClaims`), all green.
+- Offered next, not chosen yet: player-count scaling of random disasters;
+  release prep (icon, original textures to replace the recoloured vanilla
+  placeholders, description, Modrinth/CurseForge page).
+
 ## Status (end of the freestyle night)
 All 12 disasters are in, each with game tests (28 total, stable over many
 runs) and checked in a real world: Earthquake, Meteor, Tornado, Hurricane,
