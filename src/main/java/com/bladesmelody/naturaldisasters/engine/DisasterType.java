@@ -1,8 +1,10 @@
 package com.bladesmelody.naturaldisasters.engine;
 
+import java.util.function.BiPredicate;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 
 /**
@@ -13,11 +15,33 @@ public final class DisasterType<D extends Disaster> {
     private final String name;
     private final Function<DisasterType<D>, D> factory;
     private final BooleanSupplier randomEnabled;
+    private double weight = 1.0;
+    private BiPredicate<ServerLevel, BlockPos> where = (level, pos) -> true;
 
     public DisasterType(String name, Function<DisasterType<D>, D> factory, BooleanSupplier randomEnabled) {
         this.name = name;
         this.factory = factory;
         this.randomEnabled = randomEnabled;
+    }
+
+    /** How likely random picks are to choose this type, relative to others (default 1). */
+    public DisasterType<D> weight(double weight) {
+        this.weight = weight;
+        return this;
+    }
+
+    /** Where this type may happen randomly (e.g. blizzards only where it's cold). Commands ignore it. */
+    public DisasterType<D> where(BiPredicate<ServerLevel, BlockPos> where) {
+        this.where = where;
+        return this;
+    }
+
+    public double weight() {
+        return weight;
+    }
+
+    public boolean canHappenAt(ServerLevel level, BlockPos pos) {
+        return where.test(level, pos);
     }
 
     public String name() {

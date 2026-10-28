@@ -3,7 +3,9 @@ package com.bladesmelody.naturaldisasters.gametest;
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
 import com.bladesmelody.naturaldisasters.disaster.Earthquake;
 import com.bladesmelody.naturaldisasters.disaster.Meteor;
+import com.bladesmelody.naturaldisasters.disaster.Tornado;
 import com.bladesmelody.naturaldisasters.entity.MeteorEntity;
+import com.bladesmelody.naturaldisasters.entity.TornadoEntity;
 import com.bladesmelody.naturaldisasters.registry.ModRegistry;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
@@ -71,6 +73,9 @@ public final class ModGameTests {
         FUNCTIONS.register("meteor_makes_crater", () -> ModGameTests::meteorMakesCrater);
         FUNCTIONS.register("meteor_save_roundtrip", () -> ModGameTests::meteorSaveRoundtrip);
         FUNCTIONS.register("meteorite_drops_and_smelts", () -> ModGameTests::meteoriteDropsAndSmelts);
+        FUNCTIONS.register("tornado_ef_table", () -> ModGameTests::tornadoEfTable);
+        FUNCTIONS.register("tornado_tears_path", () -> ModGameTests::tornadoTearsPath);
+        FUNCTIONS.register("tornado_save_roundtrip", () -> ModGameTests::tornadoSaveRoundtrip);
         FUNCTIONS.register("command_start_list_stop", () -> ModGameTests::commandStartListStop);
     }
 
@@ -92,6 +97,9 @@ public final class ModGameTests {
         test(event, "earthquake_wrecks_house", arena(env, 500));
         test(event, "earthquake_save_roundtrip", arena(env, 20));
         test(event, "command_start_list_stop", arena(env, 40));
+        test(event, "tornado_ef_table", new TestData<>(env, EMPTY, 20, 0, true));
+        test(event, "tornado_tears_path", arena(env, 200));
+        test(event, "tornado_save_roundtrip", arena(env, 20));
         test(event, "meteor_magnitude_table", new TestData<>(env, EMPTY, 20, 0, true));
         test(event, "meteor_makes_crater", arena(env, 300));
         test(event, "meteor_save_roundtrip", arena(env, 20));
@@ -394,6 +402,73 @@ public final class ModGameTests {
         var recipe = level.recipeAccess().getRecipeFor(RecipeType.SMELTING, input, level);
         helper.assertTrue(recipe.isPresent(), "no smelting recipe for meteorite chunk");
         helper.assertTrue(recipe.get().value().assemble(input).is(ModRegistry.METEORIC_IRON_INGOT.get()), "smelts to the wrong item");
+        helper.succeed();
+    }
+
+    /** EF rating and size rise with magnitude. */
+    private static void tornadoEfTable(GameTestHelper helper) {
+        helper.assertTrue(Tornado.Params.forMagnitude(1).ef() == 0, "M1 is EF0");
+        helper.assertTrue(Tornado.Params.forMagnitude(10).ef() == 5, "M10 is EF5");
+        helper.assertTrue(Tornado.Params.forMagnitude(10).coreRadius() > Tornado.Params.forMagnitude(1).coreRadius(), "bigger core");
+        helper.succeed();
+    }
+
+    /**
+     * An EF2 tornado crossing the arena west to east tears down a plank wall
+     * and glass in its path, leaves the stone floor alone, lifts a pig, and
+     * doesn't touch rows well outside its reach.
+     */
+    private static void tornadoTearsPath(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        int cx = CENTER.getX(), cz = CENTER.getZ();
+        for (int dz = -3; dz <= 3; dz++) {
+            for (int y = FLOOR_TOP + 1; y <= FLOOR_TOP + 3; y++) {
+                helper.setBlock(new BlockPos(cx, y, cz + dz), Blocks.OAK_PLANKS);
+                helper.setBlock(new BlockPos(cx + 4, y, cz + dz), Blocks.GLASS);
+            }
+        }
+        for (int dx = -14; dx <= 14; dx++) helper.setBlock(new BlockPos(cx + dx, FLOOR_TOP + 1, cz + 12), Blocks.OAK_PLANKS);
+        Pig pig = helper.spawn(EntityType.PIG, new BlockPos(cx - 4, FLOOR_TOP + 1, cz));
+        double pigStartY = pig.getY();
+        double[] pigMaxY = {pigStartY};
+        boolean[] sawFunnel = {false};
+        Tornado.Params params = new Tornado.Params(2, 3, 135, 120, 0.2, 3, 20, 40);
+        Tornado tornado = Tornado.create(helper.absolutePos(CENTER.offset(-12, 0, 0)), 5, params, 9L, 0, 0.0);
+        DisasterManager.add(level, tornado);
+        helper.onEachTick(() -> {
+            if (pig.isAlive()) pigMaxY[0] = Math.max(pigMaxY[0], pig.getY());
+            if (!level.getEntitiesOfClass(TornadoEntity.class, new AABB(helper.absolutePos(CENTER)).inflate(40)).isEmpty()) sawFunnel[0] = true;
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(tornado.isFinished(), "tornado still running");
+            helper.assertTrue(sawFunnel[0], "no funnel entity");
+            int planks = 0, glass = 0;
+            for (int dz = -3; dz <= 3; dz++) {
+                for (int y = FLOOR_TOP + 1; y <= FLOOR_TOP + 3; y++) {
+                    if (helper.getBlockState(new BlockPos(cx, y, cz + dz)).is(Blocks.OAK_PLANKS)) planks++;
+                    if (helper.getBlockState(new BlockPos(cx + 4, y, cz + dz)).is(Blocks.GLASS)) glass++;
+                }
+            }
+            helper.assertTrue(planks < 10 && glass < 5, "wall survived: " + planks + "/21 planks, " + glass + "/21 glass");
+            int floorHoles = count(helper, 1, FLOOR_TOP, s -> !s.is(Blocks.STONE));
+            helper.assertTrue(floorHoles == 0, floorHoles + " stone floor blocks torn up by an EF2");
+            int farRow = 0;
+            for (int dx = -14; dx <= 14; dx++) if (helper.getBlockState(new BlockPos(cx + dx, FLOOR_TOP + 1, cz + 12)).is(Blocks.OAK_PLANKS)) farRow++;
+            helper.assertTrue(farRow >= 27, "planks 12 blocks off the path were torn: " + farRow + "/29 left");
+            helper.assertTrue(pigMaxY[0] > pigStartY + 2, "pig was not lifted (max " + (pigMaxY[0] - pigStartY) + " up)");
+        });
+    }
+
+    /** A moving tornado saves and loads back the same. */
+    private static void tornadoSaveRoundtrip(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        Tornado tornado = Tornado.create(helper.absolutePos(CENTER), 3, new Tornado.Params(1, 3, 110, 100, 0.2, 2, 20, 10), 5L, 0, 1.0);
+        for (int i = 0; i < 10; i++) tornado.tick(level, new BlockWriter(level, 50, Long.MAX_VALUE));
+        CompoundTag first = tornado.save();
+        Disaster loaded = DisasterTypes.load(first).orElseThrow();
+        helper.assertTrue(first.equals(loaded.save()), "save differs after reload:\n" + first + "\n" + loaded.save());
         helper.succeed();
     }
 

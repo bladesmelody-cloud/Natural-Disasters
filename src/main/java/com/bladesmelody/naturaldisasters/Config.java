@@ -1,5 +1,8 @@
 package com.bladesmelody.naturaldisasters;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 /** Server config (per world, in serverconfig/naturaldisasters-server.toml). */
@@ -17,8 +20,10 @@ public final class Config {
     public static final ModConfigSpec.IntValue STRIKE_MIN_DISTANCE;
     public static final ModConfigSpec.IntValue STRIKE_MAX_DISTANCE;
 
-    public static final ModConfigSpec.BooleanValue EARTHQUAKE_RANDOM;
-    public static final ModConfigSpec.BooleanValue METEOR_RANDOM;
+    /** Disaster names, in config order. */
+    public static final List<String> DISASTERS = List.of("earthquake", "meteor", "tornado", "hurricane", "acid_rain",
+            "drought", "flood", "tsunami", "volcano", "wildfire", "blizzard", "hailstorm");
+    private static final Map<String, ModConfigSpec.BooleanValue> RANDOM_BY_TYPE = new HashMap<>();
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
@@ -47,15 +52,19 @@ public final class Config {
                 .defineInRange("strikeMaxDistance", 64, 0, 512);
         b.pop();
 
-        b.push("earthquake");
-        EARTHQUAKE_RANDOM = b.comment("Earthquakes can happen randomly.").define("random", true);
-        b.pop();
-
-        b.push("meteor");
-        METEOR_RANDOM = b.comment("Meteor showers can happen randomly.").define("random", true);
-        b.pop();
+        for (String name : DISASTERS) {
+            b.push(name);
+            RANDOM_BY_TYPE.put(name, b.comment("This disaster can happen randomly.").define("random", true));
+            b.pop();
+        }
 
         SPEC = b.build();
+    }
+
+    /** Whether the named disaster may be picked for random disasters. */
+    public static boolean randomEnabled(String name) {
+        ModConfigSpec.BooleanValue v = RANDOM_BY_TYPE.get(name);
+        return v == null || v.getAsBoolean();
     }
 
     private Config() {}

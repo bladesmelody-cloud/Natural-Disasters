@@ -84,6 +84,18 @@ public abstract class Disaster {
         return type.name() + " M" + magnitude + " (radius " + radius() + ")";
     }
 
+    /**
+     * Keeps the weather stormy for at least {@code ticks} more (rain, and
+     * thunder if asked). Weather is shared by the whole server, so storms set
+     * it rather than owning it; it clears up on its own afterwards.
+     */
+    protected void keepWeather(ServerLevel level, int ticks, boolean thunder) {
+        if (level.dimensionType().hasCeiling()) return;
+        if (!level.isRaining() || (thunder && !level.isThundering()) || age % 200 == 0) {
+            level.getServer().setWeatherParameters(0, Math.max(ticks, 200), true, thunder || level.isThundering());
+        }
+    }
+
     public DisasterType<?> type() {
         return type;
     }

@@ -91,6 +91,39 @@ mods (Ooze Gal-Ore, Golemancy).
   Warning: faint thunder and shooting-star particles. Meteorite ore needs an
   iron pickaxe; ore and chunk smelt/blast to the ingot.
 
+### Tornado (third disaster) — freestyled by Claude, all **MINE**
+Owner (going to bed): "just go freestyle on the other disasters, and we can go
+over the numbers and magnitude later. Look at weather mods in minecraft as some
+have done tornados pretty well".
+- Ideas taken from weather mods: Weather2 (Corosus) draws its funnel and
+  debris with particles for performance; tornado addons tie block breaking
+  to EF-scale wind speed vs per-material thresholds (leaves 75, planks 95,
+  logs 103, cobble 120, stone 144 mph); "Realistic Tornado Disasters" spins
+  falling-block debris around the funnel and flings it out. Their lag comes
+  from uncapped debris entities and chunk loading, so here debris is capped
+  and everything goes through the block budget.
+- EF scale from magnitude: M1–2 EF0, M3–4 EF1, M5–6 EF2, M7 EF3, M8–9 EF4,
+  M10 EF5. Core radius 3/5/7/10/14/20, peak wind 80/110/135/165/200/250 mph,
+  lifetime 30/45/60/80/100/120 s, speed 5→3 blocks/s, wanders up to
+  48 + 24·EF blocks from where it touched down.
+- Wind falls off outside the core (∝ (core/d)^1.5, felt to 1.8 cores). Each
+  tick random columns in reach are stripped top-down while the wind beats
+  each block's resistance (shared `Wind` table: plants/leaves 45, glass 60,
+  wool/hay 70, wood blocks 95, logs 105, snow/ice 110, dirt/sand/gravel 140,
+  cobble/bricks/terracotta 175, else 120 + 60 × hardness so stone ≈ 210; block
+  entities never). So EF0 strips leaves and plants, EF1–2 wreck wooden
+  buildings and trees, EF3+ scour the ground to stone, EF5 scours stone.
+- Torn blocks: up to 8 falling-block debris per second (spinning out, hurting
+  what they hit), 25 % of the rest thrown 8–30+ blocks ahead as rubble (sinks
+  if it lands in water), the rest destroyed.
+- Creatures, items and debris within reach are pulled in, spun, lifted inside
+  the core (updraft beats gravity) and flung out near the top; creative
+  fliers and spectators are left alone.
+- Storm weather (rain; thunder from EF1) for the warning and the tornado.
+  Wind roar = elytra sound pitched down. Funnel = particle cone (dark smoke,
+  cloud, dirt at the base, wall cloud on top). **Visual pass later**: custom
+  big funnel particles, real wind sound.
+
 ### Location
 - Disasters strike **near a random online player** (within some distance), so
   they are seen and unloaded chunks aren't touched.
@@ -164,7 +197,7 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
   P99 16 ms.
 
 ## Open questions
-- Rest of the build order after Meteor and Tornado.
+- Owner said to freestyle the rest; review all **MINE** numbers together.
 - Should disasters happen in the Nether / End, and how?
 - After the building-damage pass an M7 quake leaves village houses holed with
   rubble around them but still recognisable; higher magnitudes hit harder.

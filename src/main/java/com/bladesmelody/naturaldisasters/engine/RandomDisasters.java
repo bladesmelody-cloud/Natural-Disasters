@@ -51,11 +51,23 @@ public final class RandomDisasters {
         ServerPlayer player = players.get(random.nextInt(players.size()));
         ServerLevel level = player.level();
         BlockPos center = pickCenter(level, player.blockPosition(), random);
-        DisasterType<?> type = types.get(random.nextInt(types.size()));
+        List<DisasterType<?>> fitting = types.stream().filter(t -> t.canHappenAt(level, center)).toList();
+        if (fitting.isEmpty()) return Optional.empty();
+        DisasterType<?> type = pickWeighted(fitting, random);
         int magnitude = DisasterType.rollMagnitude(random);
         Disaster d = DisasterManager.start(level, type, center, magnitude, warningTicks);
         NaturalDisasters.LOGGER.info("Random {} M{} at {} near {}", type.name(), magnitude, center.toShortString(), player.getName().getString());
         return Optional.of(d);
+    }
+
+    private static DisasterType<?> pickWeighted(List<DisasterType<?>> types, RandomSource random) {
+        double total = types.stream().mapToDouble(DisasterType::weight).sum();
+        double r = random.nextDouble() * total;
+        for (DisasterType<?> t : types) {
+            r -= t.weight();
+            if (r <= 0) return t;
+        }
+        return types.getLast();
     }
 
     private static BlockPos pickCenter(ServerLevel level, BlockPos near, RandomSource random) {

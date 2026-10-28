@@ -3,25 +3,30 @@ package com.bladesmelody.naturaldisasters.engine;
 import com.bladesmelody.naturaldisasters.Config;
 import com.bladesmelody.naturaldisasters.disaster.Earthquake;
 import com.bladesmelody.naturaldisasters.disaster.Meteor;
+import com.bladesmelody.naturaldisasters.disaster.Places;
+import com.bladesmelody.naturaldisasters.disaster.Tornado;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import net.minecraft.nbt.CompoundTag;
 
 /** All disaster types, by name. */
 public final class DisasterTypes {
     private static final Map<String, DisasterType<?>> TYPES = new LinkedHashMap<>();
 
-    public static final DisasterType<Earthquake> EARTHQUAKE =
-            register(new DisasterType<>("earthquake", Earthquake::new, Config.EARTHQUAKE_RANDOM::getAsBoolean));
-    public static final DisasterType<Meteor> METEOR =
-            register(new DisasterType<>("meteor", Meteor::new, Config.METEOR_RANDOM::getAsBoolean));
+    // Weights and places are for random disasters only; /disaster start works anywhere.
+    public static final DisasterType<Earthquake> EARTHQUAKE = register("earthquake", Earthquake::new).weight(1.0);
+    public static final DisasterType<Meteor> METEOR = register("meteor", Meteor::new).weight(0.6);
+    public static final DisasterType<Tornado> TORNADO = register("tornado", Tornado::new).weight(1.0)
+            .where(Places::openSky);
 
     private DisasterTypes() {}
 
-    private static <D extends Disaster> DisasterType<D> register(DisasterType<D> type) {
-        TYPES.put(type.name(), type);
+    private static <D extends Disaster> DisasterType<D> register(String name, Function<DisasterType<D>, D> factory) {
+        DisasterType<D> type = new DisasterType<>(name, factory, () -> Config.randomEnabled(name));
+        TYPES.put(name, type);
         return type;
     }
 

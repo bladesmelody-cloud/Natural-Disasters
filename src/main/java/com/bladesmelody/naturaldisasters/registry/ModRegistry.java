@@ -2,6 +2,7 @@ package com.bladesmelody.naturaldisasters.registry;
 
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
 import com.bladesmelody.naturaldisasters.entity.MeteorEntity;
+import com.bladesmelody.naturaldisasters.entity.TornadoEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
@@ -36,6 +37,12 @@ public final class ModRegistry {
             id -> EntityType.Builder.<MeteorEntity>of(MeteorEntity::new, MobCategory.MISC)
                     .sized(1.0F, 1.0F).fireImmune().noSummon().noSave()
                     .clientTrackingRange(16).updateInterval(1)
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, id)));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<TornadoEntity>> TORNADO = ENTITY_TYPES.register("tornado",
+            id -> EntityType.Builder.<TornadoEntity>of(TornadoEntity::new, MobCategory.MISC)
+                    .sized(1.0F, 1.0F).fireImmune().noSummon().noSave()
+                    .clientTrackingRange(16).updateInterval(2)
                     .build(ResourceKey.create(Registries.ENTITY_TYPE, id)));
 
     private ModRegistry() {}
