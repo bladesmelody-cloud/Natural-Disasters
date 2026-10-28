@@ -490,6 +490,8 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
     volcano rumble = slowed thunder + deep explosions (+ warden heartbeat
     for quakes); the wind storms = the elytra wind at three pitches each.
     Wildfire lost its long basalt layers; lava bombs now pop and drip.
+- Owner on the previews: **"Passable for now"**. Revisit later (real
+  recordings, or more tuning).
 
 ## Instruments (warnings and detection)
 - Owner picks: **themed instruments**, warning by **redstone signal, chat
