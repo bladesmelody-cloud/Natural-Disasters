@@ -209,7 +209,9 @@ public class Earthquake extends Disaster {
     protected void tickWarning(ServerLevel level, int ticksLeft) {
         if (ticksLeft % 40 != 0) return;
         for (ServerPlayer p : playersNear(level, params.radius * 1.5)) {
-            level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.EARTHQUAKE_RUMBLE.get(), SoundSource.AMBIENT, 0.3F, 0.8F);
+            if (ticksLeft % 120 == 0) {
+                level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.EARTHQUAKE_RUMBLE.get(), SoundSource.AMBIENT, 0.3F, 0.8F);
+            }
             BlockState ground = level.getBlockState(p.blockPosition().below());
             if (!ground.isAir()) {
                 level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ground),
@@ -473,13 +475,17 @@ public class Earthquake extends Disaster {
 
     private void rumble(ServerLevel level, RandomSource random) {
         float volume = 0.3F + 0.05F * Math.clamp(magnitude, 1, 10);
+        // The rumble layers run 5–27 s: a new one every 6 s keeps it going without piling up.
+        boolean rumble = level.getGameTime() / 30 % 4 == 0;
         for (ServerPlayer p : playersNear(level, params.radius * 1.2)) {
-            level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.EARTHQUAKE_RUMBLE.get(), SoundSource.AMBIENT,
-                    volume, 0.9F + random.nextFloat() * 0.2F);
+            if (rumble) {
+                level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.EARTHQUAKE_RUMBLE.get(), SoundSource.AMBIENT,
+                        volume, 0.9F + random.nextFloat() * 0.2F);
+            }
             if (random.nextInt(3) == 0) {
                 level.playSound(null, p.getX(), p.getY() - 2, p.getZ(), ModSounds.EARTHQUAKE_CRACK.get(), SoundSource.AMBIENT,
                         volume, 0.9F + random.nextFloat() * 0.2F);
-            };
+            }
         }
     }
 

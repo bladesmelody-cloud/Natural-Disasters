@@ -137,7 +137,7 @@ public class Tornado extends Disaster {
     @Override
     protected void tickWarning(ServerLevel level, int ticksLeft) {
         keepWeather(level, ticksLeft + params.durationTicks + 600, params.ef >= 1);
-        if (ticksLeft % 40 != 0) return;
+        if (ticksLeft % 160 != 0) return;
         for (ServerPlayer p : playersNear(level, params.wander * 1.5)) {
             level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.TORNADO_ROAR.get(), SoundSource.WEATHER, 0.3F, 1.0F);
         }
@@ -154,7 +154,7 @@ public class Tornado extends Disaster {
         int groundY = Terrain.ground(level, (int) Math.floor(x), (int) Math.floor(z));
         updateFunnel(level, groundY);
         swirlEntities(level, groundY);
-        if (activeTicks % 20 == 0) roar(level);
+        if (activeTicks % 120 == 0) roar(level); // the roar layers last 5–20 s
 
         double reach = params.coreRadius * REACH;
         int samples = (int) Math.ceil(Math.PI * reach * reach * 0.12);

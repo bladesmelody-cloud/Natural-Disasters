@@ -38,54 +38,50 @@
     "subtitle": "subtitles.naturaldisasters.earthquake.rumble",
     "sounds": [
       {
-        "name": "minecraft:ambient/nether/basalt_deltas/long_debris1",
-        "pitch": 0.6
-      },
-      {
-        "name": "minecraft:ambient/nether/basalt_deltas/long_debris2",
-        "pitch": 0.6
-      },
-      {
-        "name": "minecraft:ambient/nether/basalt_deltas/debris1",
+        "name": "minecraft:ambient/weather/thunder1",
         "pitch": 0.5
       },
       {
-        "name": "minecraft:ambient/nether/basalt_deltas/debris2",
+        "name": "minecraft:ambient/weather/thunder2",
         "pitch": 0.5
       },
       {
-        "name": "minecraft:ambient/nether/basalt_deltas/debris3",
+        "name": "minecraft:ambient/weather/thunder3",
         "pitch": 0.5
       },
       {
         "name": "minecraft:random/explode1",
         "pitch": 0.5,
-        "volume": 0.7
+        "volume": 0.8
       },
       {
         "name": "minecraft:random/explode2",
         "pitch": 0.5,
-        "volume": 0.7
+        "volume": 0.8
       },
       {
         "name": "minecraft:random/explode3",
         "pitch": 0.5,
-        "volume": 0.7
+        "volume": 0.8
       },
       {
         "name": "minecraft:random/explode4",
         "pitch": 0.5,
-        "volume": 0.7
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:mob/warden/heartbeat_1",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:mob/warden/heartbeat_2",
+        "pitch": 0.5
       }
     ]
   },
   "earthquake.crack": {
     "subtitle": "subtitles.naturaldisasters.earthquake.crack",
     "sounds": [
-      {
-        "name": "minecraft:ambient/underwater/additions/earth_crack",
-        "pitch": 0.7
-      },
       {
         "name": "minecraft:block/deepslate/break1",
         "pitch": 0.5
@@ -191,29 +187,18 @@
         "stream": true
       },
       {
+        "name": "minecraft:item/elytra/elytra_loop",
+        "pitch": 0.55,
+        "stream": true
+      },
+      {
+        "name": "minecraft:item/elytra/elytra_loop",
+        "pitch": 0.6,
+        "stream": true
+      },
+      {
         "name": "minecraft:mob/breeze/whirl",
-        "pitch": 0.5,
-        "stream": true
-      },
-      {
-        "name": "minecraft:ambient/nether/soulsand_valley/wind1",
-        "pitch": 0.55,
-        "stream": true
-      },
-      {
-        "name": "minecraft:ambient/nether/soulsand_valley/wind2",
-        "pitch": 0.55,
-        "stream": true
-      },
-      {
-        "name": "minecraft:ambient/nether/soulsand_valley/wind3",
-        "pitch": 0.55,
-        "stream": true
-      },
-      {
-        "name": "minecraft:ambient/nether/soulsand_valley/wind4",
-        "pitch": 0.55,
-        "stream": true
+        "pitch": 0.5
       }
     ]
   },
@@ -226,23 +211,13 @@
         "stream": true
       },
       {
-        "name": "minecraft:ambient/nether/soulsand_valley/wind1",
+        "name": "minecraft:item/elytra/elytra_loop",
         "pitch": 0.8,
         "stream": true
       },
       {
-        "name": "minecraft:ambient/nether/soulsand_valley/wind2",
-        "pitch": 0.8,
-        "stream": true
-      },
-      {
-        "name": "minecraft:ambient/nether/soulsand_valley/wind3",
-        "pitch": 0.8,
-        "stream": true
-      },
-      {
-        "name": "minecraft:ambient/nether/soulsand_valley/wind4",
-        "pitch": 0.8,
+        "name": "minecraft:item/elytra/elytra_loop",
+        "pitch": 0.9,
         "stream": true
       }
     ]
@@ -252,28 +227,17 @@
     "sounds": [
       {
         "name": "minecraft:item/elytra/elytra_loop",
-        "pitch": 1.15,
-        "volume": 0.8,
+        "pitch": 1.1,
         "stream": true
       },
       {
-        "name": "minecraft:ambient/nether/soulsand_valley/wind1",
-        "pitch": 1.25,
+        "name": "minecraft:item/elytra/elytra_loop",
+        "pitch": 1.2,
         "stream": true
       },
       {
-        "name": "minecraft:ambient/nether/soulsand_valley/wind2",
-        "pitch": 1.25,
-        "stream": true
-      },
-      {
-        "name": "minecraft:ambient/nether/soulsand_valley/wind3",
-        "pitch": 1.25,
-        "stream": true
-      },
-      {
-        "name": "minecraft:ambient/nether/soulsand_valley/wind4",
-        "pitch": 1.25,
+        "name": "minecraft:item/elytra/elytra_loop",
+        "pitch": 1.3,
         "stream": true
       }
     ]
@@ -364,32 +328,36 @@
     "subtitle": "subtitles.naturaldisasters.volcano.rumble",
     "sounds": [
       {
-        "name": "minecraft:ambient/nether/basalt_deltas/long_debris1",
+        "name": "minecraft:ambient/weather/thunder1",
         "pitch": 0.5
       },
       {
-        "name": "minecraft:ambient/nether/basalt_deltas/long_debris2",
+        "name": "minecraft:ambient/weather/thunder2",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:ambient/weather/thunder3",
         "pitch": 0.5
       },
       {
         "name": "minecraft:random/explode1",
         "pitch": 0.5,
-        "volume": 0.8
+        "volume": 0.7
       },
       {
         "name": "minecraft:random/explode2",
         "pitch": 0.5,
-        "volume": 0.8
+        "volume": 0.7
       },
       {
         "name": "minecraft:random/explode3",
         "pitch": 0.5,
-        "volume": 0.8
+        "volume": 0.7
       },
       {
         "name": "minecraft:random/explode4",
         "pitch": 0.5,
-        "volume": 0.8
+        "volume": 0.7
       }
     ]
   },
@@ -442,12 +410,20 @@
     "subtitle": "subtitles.naturaldisasters.volcano.lava",
     "sounds": [
       {
-        "name": "minecraft:liquid/lava",
-        "pitch": 0.7
+        "name": "minecraft:liquid/lavapop",
+        "pitch": 0.6
       },
       {
         "name": "minecraft:liquid/lavapop",
-        "pitch": 0.6
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:block/pointed_dripstone/drip_lava1",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:block/pointed_dripstone/drip_lava2",
+        "pitch": 0.5
       }
     ]
   },
@@ -534,24 +510,8 @@
         "pitch": 0.5
       },
       {
-        "name": "minecraft:ambient/nether/basalt_deltas/twist1",
-        "pitch": 0.6,
-        "volume": 0.6
-      },
-      {
-        "name": "minecraft:ambient/nether/basalt_deltas/twist2",
-        "pitch": 0.6,
-        "volume": 0.6
-      },
-      {
-        "name": "minecraft:ambient/nether/basalt_deltas/twist3",
-        "pitch": 0.6,
-        "volume": 0.6
-      },
-      {
-        "name": "minecraft:ambient/nether/basalt_deltas/twist4",
-        "pitch": 0.6,
-        "volume": 0.6
+        "name": "minecraft:fire/fire",
+        "pitch": 0.7
       }
     ]
   },

@@ -235,7 +235,7 @@ public class Volcano extends Disaster {
         if (ticksLeft % 20 != 0) return;
         level.sendParticles(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, false, true, center.getX() + 0.5, center.getY() + 1, center.getZ() + 0.5,
                 6, 1.5, 0.2, 1.5, 0.02);
-        if (ticksLeft % 40 == 0) {
+        if (ticksLeft % 120 == 0) {
             for (ServerPlayer p : playersNear(level, params.baseRadius * 3)) {
                 level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.VOLCANO_RUMBLE.get(), SoundSource.AMBIENT, 0.4F, 1.0F);
             }
@@ -483,6 +483,8 @@ public class Volcano extends Disaster {
 
     private void boom(ServerLevel level) {
         Shake.near(level, center.getX() + 0.5, center.getZ() + 0.5, params.baseRadius * 4 + 32, 0.6F + 0.25F * params.vei, 20);
+        // Shakes every boom; the blast sound (5–15 s) every third one.
+        if (level.getGameTime() / 30 % 3 != 0) return;
         for (ServerPlayer p : playersNear(level, params.baseRadius * 4)) {
             level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.VOLCANO_BLAST.get(), SoundSource.AMBIENT, 1.0F, 0.9F + level.getRandom().nextFloat() * 0.2F);
         }

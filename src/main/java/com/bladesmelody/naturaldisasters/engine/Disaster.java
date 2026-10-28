@@ -50,9 +50,9 @@ public abstract class Disaster {
     /** Runs the disaster's effects; {@code activeTicks} counts from 0 once the warning is over. */
     protected abstract void tickActive(ServerLevel level, BlockWriter writer, int activeTicks);
 
-    /** Default warning: a distant rumble every two seconds. */
+    /** Default warning: a distant rumble every eight seconds (the sounds last 6–19 s). */
     protected void tickWarning(ServerLevel level, int ticksLeft) {
-        if (ticksLeft % 40 != 0) return;
+        if (ticksLeft % 160 != 0) return;
         for (ServerPlayer p : playersNear(level, radius() * 1.5)) {
             level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.WARNING.get(), SoundSource.AMBIENT, 0.6F, 1.0F);
         }

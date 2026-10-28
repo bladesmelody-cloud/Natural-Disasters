@@ -159,7 +159,9 @@ public class Meteor extends Disaster {
         if (ticksLeft % 40 != 0) return;
         RandomSource r = level.getRandom();
         for (ServerPlayer p : playersNear(level, params.areaRadius * 1.5)) {
-            level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.WARNING.get(), SoundSource.AMBIENT, 0.4F, 1.0F);
+            if (ticksLeft % 160 == 0) {
+                level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.WARNING.get(), SoundSource.AMBIENT, 0.4F, 1.0F);
+            }
             for (int i = 0; i < 3; i++) {
                 level.sendParticles(ParticleTypes.FIREWORK, false, true,
                         p.getX() + (r.nextDouble() - 0.5) * 60, p.getY() + 50 + r.nextDouble() * 20, p.getZ() + (r.nextDouble() - 0.5) * 60,

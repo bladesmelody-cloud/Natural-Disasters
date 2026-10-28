@@ -466,8 +466,7 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
   layered and re-pitched. Real recordings can replace them there later
   without code changes.
 - The mix (**MINE**): warning hint = distant low thunder and cave sounds;
-  quake rumble = basalt-delta debris + deep explosions, plus ground cracks
-  (earth crack, deepslate, heavy mace smash); meteor = low rocket whoosh,
+  quake = rumble plus ground cracks (deepslate, heavy mace smash); meteor = low rocket whoosh,
   deep explosion + far firework blast, a warden sonic boom for big impacts;
   tornado roar = slowed elytra wind + breeze whirl + soul-sand-valley wind;
   hurricane howl and blizzard wind = the same winds at higher pitches; hail =
@@ -475,7 +474,22 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
   blasts (explosion + sonic boom + trident thunder), bubbling lava;
   tsunami = heavy splash + water + rain; flood = rushing water; acid =
   high fizz; wildfire = low fire roar.
-- Minecraft clamps pitch to 0.5–2.0, so nothing goes deeper than half pitch.
+- Minecraft clamps pitch to 0.5–2.0, so nothing goes deeper than half pitch,
+  and volume to 1, so a quiet vanilla file can't be boosted.
+- Owner can't play-test, so I rendered **sound previews** (the events at
+  their in-game timing, volume and pitch). That showed two problems, now
+  fixed (**MINE**):
+  - Long sounds were restarted far more often than they last (the tornado
+    started a 14–20 s roar every second: ~15 copies at once, and Minecraft
+    only plays 8 long sounds at a time). Each sound now repeats at about
+    half its length: tornado and hurricane every 6 s, blizzard 5 s, quake
+    rumble 6 s (cracks still every 1.5 s), tsunami 3 s, eruption blasts
+    4.5 s, warnings 8 s.
+  - The basalt-debris, earth-crack and soul-sand-wind layers are ~20–40 dB
+    quieter than the rest and came out as silence. Replaced: quake and
+    volcano rumble = slowed thunder + deep explosions (+ warden heartbeat
+    for quakes); the wind storms = the elytra wind at three pitches each.
+    Wildfire lost its long basalt layers; lava bombs now pop and drip.
 
 ## Instruments (warnings and detection)
 - Owner picks: **themed instruments**, warning by **redstone signal, chat

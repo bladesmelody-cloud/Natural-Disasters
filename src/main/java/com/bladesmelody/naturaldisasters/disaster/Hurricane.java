@@ -152,7 +152,7 @@ public class Hurricane extends Disaster {
     @Override
     protected void tickWarning(ServerLevel level, int ticksLeft) {
         keepWeather(level, ticksLeft + params.durationTicks + 600, false);
-        if (ticksLeft % 40 != 0) return;
+        if (ticksLeft % 160 != 0) return;
         for (ServerPlayer p : playersNear(level, params.radius * 1.3)) {
             level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.HURRICANE_HOWL.get(), SoundSource.WEATHER, 0.3F, 0.9F);
         }
@@ -185,7 +185,7 @@ public class Hurricane extends Disaster {
         }
         if (activeTicks % 2 == 0) blowEntities(level);
         if (random.nextInt(Math.max(4, 40 - 3 * magnitude)) == 0) lightning(level, random);
-        if (activeTicks % 30 == 0) howl(level);
+        if (activeTicks % 120 == 0) howl(level); // the howl layers last 9–15 s
     }
 
     /** Tears up to two weak blocks off the top of a column. */

@@ -111,9 +111,9 @@ public class Blizzard extends Disaster {
         }
         if (activeTicks % 5 == 0) freezeEntities(level);
         if (activeTicks % 2 == 0) whiteout(level);
-        if (activeTicks % 40 == 0) {
+        if (activeTicks % 100 == 0) {
             for (ServerPlayer p : playersNear(level, params.radius)) {
-                level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.BLIZZARD_WIND.get(), SoundSource.WEATHER, 0.6F, 1.0F);
+                level.playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.BLIZZARD_WIND.get(), SoundSource.WEATHER, 0.8F, 1.0F);
             }
         }
     }

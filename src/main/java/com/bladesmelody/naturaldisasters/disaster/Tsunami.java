@@ -174,7 +174,7 @@ public class Tsunami extends Disaster {
             }
         }
         if (activeTicks % 5 == 0) sweep(level);
-        if (activeTicks % 20 == 0) roar(level);
+        if (activeTicks % 60 == 0) roar(level);
     }
 
     /** Water surface height of the wave at a row: full out at sea, shrinking over the distance inland. */
