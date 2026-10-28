@@ -6,6 +6,7 @@ import com.bladesmelody.naturaldisasters.engine.DisasterManager;
 import com.bladesmelody.naturaldisasters.gametest.ModGameTests;
 import com.bladesmelody.naturaldisasters.instrument.Instruments;
 import com.bladesmelody.naturaldisasters.protect.Protection;
+import com.bladesmelody.naturaldisasters.undo.Undo;
 import com.bladesmelody.naturaldisasters.registry.ModRegistry;
 import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.mojang.logging.LogUtils;
@@ -31,6 +32,13 @@ public class NaturalDisasters {
         NeoForge.EVENT_BUS.addListener(DisasterManager::onServerTick);
         NeoForge.EVENT_BUS.addListener(Instruments::onServerTick);
         NeoForge.EVENT_BUS.addListener(Protection::onEntityTick);
+        NeoForge.EVENT_BUS.addListener(Undo::onEntityJoin);
+        NeoForge.EVENT_BUS.addListener(Undo::onEntityLeave);
+        NeoForge.EVENT_BUS.addListener(Undo::onLevelSave);
+        NeoForge.EVENT_BUS.addListener(Undo::onServerStopped);
+        NeoForge.EVENT_BUS.addListener(Undo::onServerTick);
+        NeoForge.EVENT_BUS.addListener(Undo::onBlockBreak);
+        NeoForge.EVENT_BUS.addListener(Undo::onBlockPlace);
         NeoForge.EVENT_BUS.addListener(DisasterCommand::register);
     }
 }

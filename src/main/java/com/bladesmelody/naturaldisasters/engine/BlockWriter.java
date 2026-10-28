@@ -1,13 +1,18 @@
 package com.bladesmelody.naturaldisasters.engine;
 
 import com.bladesmelody.naturaldisasters.protect.Protection;
+import com.bladesmelody.naturaldisasters.undo.Undo;
+import com.bladesmelody.naturaldisasters.undo.UndoLog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A disaster's share of this tick's block budget. Every world change a disaster
@@ -23,13 +28,20 @@ public final class BlockWriter {
 
     private final ServerLevel level;
     private final long deadlineNanos;
+    private final @Nullable UndoLog undo;
     private int remaining;
     private int changed;
 
     public BlockWriter(ServerLevel level, int budget, long deadlineNanos) {
+        this(level, budget, deadlineNanos, null);
+    }
+
+    /** {@code undo}: the disaster's undo record, which every change is written to (null: not recorded). */
+    public BlockWriter(ServerLevel level, int budget, long deadlineNanos, @Nullable UndoLog undo) {
         this.level = level;
         this.remaining = budget;
         this.deadlineNanos = deadlineNanos;
+        this.undo = undo;
     }
 
     public ServerLevel level() {
@@ -79,7 +91,7 @@ public final class BlockWriter {
         BlockState current = level.getBlockState(pos);
         if (current == state) return true;
         if (current.getDestroySpeed(level, pos) < 0 || Protection.isProtected(level, pos)) return false;
-        level.setBlock(pos, state, FLAGS);
+        change(pos, current, state, FLAGS);
         remaining--;
         changed++;
         // Only a hole wakes fluids (fire and plants are "replaceable" too, but waking
@@ -99,10 +111,35 @@ public final class BlockWriter {
         BlockState current = level.getBlockState(pos);
         if (current == state) return true;
         if (current.getDestroySpeed(level, pos) < 0 || Protection.isProtected(level, pos)) return false;
-        level.setBlock(pos, state, FLAGS | Block.UPDATE_SKIP_ON_PLACE);
+        change(pos, current, state, FLAGS | Block.UPDATE_SKIP_ON_PLACE);
         remaining--;
         changed++;
         return true;
+    }
+
+    private void change(BlockPos pos, BlockState current, BlockState state, int flags) {
+        if (undo == null) {
+            level.setBlock(pos, state, flags);
+            return;
+        }
+        Undo.record(undo, level, pos, current, state);
+        Undo.beginChange(undo, pos);
+        try {
+            level.setBlock(pos, state, flags);
+        } finally {
+            Undo.endChange();
+        }
+    }
+
+    /**
+     * A disaster turns the block here into a falling block (debris) itself:
+     * records the removal, and the debris, so where it lands can be undone too.
+     */
+    public void recordFall(BlockPos pos, BlockState state, FallingBlockEntity debris) {
+        debris.addTag(Protection.DEBRIS_TAG);
+        if (undo == null) return;
+        Undo.record(undo, level, pos, state, Blocks.AIR.defaultBlockState());
+        debris.getPersistentData().putInt(Undo.DEBRIS_KEY, undo.disasterId());
     }
 
     private void wakeNeighbors(BlockPos pos) {

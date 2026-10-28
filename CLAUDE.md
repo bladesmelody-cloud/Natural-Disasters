@@ -72,6 +72,12 @@ function in `FUNCTIONS` and the test in `onRegisterTests`.
   `SafeZones` (saved, `/disaster safezone`), `OpacClaims`/`FlanClaims` (only
   touched when that mod is loaded). Claim mods are compileOnly from the
   Modrinth maven; `-PwithClaims` loads them in dev runs (`gametest/ClaimTests`).
+- `undo/`: `UndoLog` (one disaster's changes: before/after per spot,
+  block entity data, which items each broken container dropped), `Undo`
+  (last N records, files in `<world>/naturaldisasters/undo/`, player edits,
+  item tagging, debris landings), `UndoTask` (restores chunk by chunk).
+  `BlockWriter` records into the disaster's log (`DisasterManager` passes
+  it); other code that removes blocks must call `w.recordFall(...)`.
 - `registry/ModSounds` + `assets/.../sounds.json`: disaster sounds made from
   vanilla files (pitch is clamped to 0.5–2.0).
 - `shake/`: `ShakePayload` + `Shake.near(...)` (server sends camera shake);

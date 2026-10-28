@@ -21,6 +21,8 @@ public final class Config {
     public static final ModConfigSpec.IntValue STRIKE_MAX_DISTANCE;
     public static final ModConfigSpec.DoubleValue IGNORE_BUILDS_CHANCE;
     public static final ModConfigSpec.BooleanValue PROTECT_CLAIMS;
+    public static final ModConfigSpec.IntValue UNDO_RECORDS;
+    public static final ModConfigSpec.IntValue MAX_UNDO_BLOCKS;
     public static final ModConfigSpec.DoubleValue GREAT_ERUPTION_DAYS;
     public static final ModConfigSpec.BooleanValue WORLD_DARKNESS;
 
@@ -66,6 +68,13 @@ public final class Config {
         PROTECT_CLAIMS = b.comment("Disasters never change blocks in land claimed with Open Parties and Claims or Flan (creatures there are still hurt).",
                         "Safe zones made with /disaster safezone are always protected.")
                 .define("protectClaims", true);
+        b.pop();
+
+        b.push("undo");
+        UNDO_RECORDS = b.comment("How many of the most recent disasters can be undone with /disaster undo (records are saved in <world>/naturaldisasters/undo).")
+                .defineInRange("records", 10, 0, 1000);
+        MAX_UNDO_BLOCKS = b.comment("Most block changes recorded per disaster (about 20 bytes each); beyond this a disaster can only be partly undone.")
+                .defineInRange("maxBlocksPerDisaster", 2_000_000, 0, 100_000_000);
         b.pop();
 
         for (String name : DISASTERS) {

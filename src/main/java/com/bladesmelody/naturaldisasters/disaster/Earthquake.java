@@ -407,7 +407,9 @@ public class Earthquake extends Disaster {
         if (fallingThisSecond < Config.MAX_FALLING_BLOCKS_PER_SECOND.getAsInt()) {
             fallingThisSecond++;
             if (!from.equals(start)) w.set(from, Blocks.AIR.defaultBlockState());
-            FallingBlockEntity.fall(level, from.equals(start) ? from : start, state).addTag(Protection.DEBRIS_TAG);
+            BlockPos at = from.equals(start) ? from : start;
+            BlockState old = level.getBlockState(at);
+            w.recordFall(at, old, FallingBlockEntity.fall(level, at, state));
             w.spend(1);
             return;
         }

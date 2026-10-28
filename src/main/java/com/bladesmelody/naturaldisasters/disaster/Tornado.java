@@ -213,7 +213,7 @@ public class Tornado extends Disaster {
             debris.setDeltaMovement(spin.x, 0.6 + random.nextDouble() * 0.6, spin.z);
             debris.setHurtsEntities(1.0F, 10);
             debris.dropItem = false;
-            debris.addTag(Protection.DEBRIS_TAG);
+            w.recordFall(pos, state, debris);
             w.spend(1);
             return;
         }

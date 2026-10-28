@@ -8,6 +8,7 @@ import com.bladesmelody.naturaldisasters.engine.DisasterType;
 import com.bladesmelody.naturaldisasters.engine.DisasterTypes;
 import com.bladesmelody.naturaldisasters.engine.RandomDisasters;
 import com.bladesmelody.naturaldisasters.protect.SafeZones;
+import com.bladesmelody.naturaldisasters.undo.Undo;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -26,7 +27,8 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 /**
  * {@code /disaster start <type> [magnitude] [pos]}, {@code stop [id]},
  * {@code list}, {@code random on|off|now|eruption},
- * {@code safezone add <name> <radius> [pos] | remove <name> | list}. Ops only.
+ * {@code safezone add <name> <radius> [pos] | remove <name> | list},
+ * {@code undo list | <id>}. Ops only.
  */
 public final class DisasterCommand {
     private DisasterCommand() {}
@@ -66,7 +68,30 @@ public final class DisasterCommand {
                                         .suggests((c, b) -> SharedSuggestionProvider.suggest(
                                                 SafeZones.get(c.getSource().getServer()).zones().stream().map(SafeZones.Zone::name), b))
                                         .executes(DisasterCommand::removeSafeZone)))
-                        .then(Commands.literal("list").executes(DisasterCommand::listSafeZones))));
+                        .then(Commands.literal("list").executes(DisasterCommand::listSafeZones)))
+                .then(Commands.literal("undo")
+                        .then(Commands.literal("list").executes(DisasterCommand::listUndo))
+                        .then(Commands.argument("id", IntegerArgumentType.integer(1))
+                                .executes(c -> undo(c, IntegerArgumentType.getInteger(c, "id"))))));
+    }
+
+    private static int listUndo(CommandContext<CommandSourceStack> c) {
+        var server = c.getSource().getServer();
+        List<Undo.Entry> entries = Undo.get(server).entries();
+        c.getSource().sendSuccess(() -> Component.literal(entries.isEmpty() ? "No disasters to undo."
+                : "Disasters that can be undone (newest first), /disaster undo <id>:"), false);
+        for (Undo.Entry e : entries) {
+            String status = Undo.running(e.id()) ? "running" : Undo.blocks(server, e.id()) + " blocks changed";
+            c.getSource().sendSuccess(() -> Component.literal(" #" + e.id() + " " + e.type() + " M" + e.magnitude() + " at "
+                    + e.center().getX() + ", " + e.center().getZ() + " in " + e.dimension() + " (" + status + ")"), false);
+        }
+        return entries.size();
+    }
+
+    private static int undo(CommandContext<CommandSourceStack> c, int id) {
+        var failure = Undo.start(c.getSource().getServer(), id, c.getSource());
+        failure.ifPresent(msg -> c.getSource().sendFailure(Component.literal(msg)));
+        return failure.isPresent() ? 0 : 1;
     }
 
     private static int addSafeZone(CommandContext<CommandSourceStack> c, BlockPos pos) {

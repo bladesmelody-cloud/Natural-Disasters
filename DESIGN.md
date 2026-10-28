@@ -584,6 +584,40 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
   next to a claim can still spread in by vanilla fire spread (claim mods
   have their own fire protection).
 
+## Undo
+- Owner picks: restore **blocks including chest contents** (items those
+  containers dropped are removed so nothing duplicates; killed creatures
+  and lost items are not brought back); keep records for the **last 10
+  disasters**; **skip spots players changed** since (undo never overwrites
+  repairs or new builds, and reports what it skipped).
+- Built (details **MINE**):
+  - Every block change a disaster makes is recorded (the block before it was
+    first touched, with its block entity data, and what the disaster left),
+    including blocks thrown as debris and where that debris landed.
+  - Records of running disasters are saved with the world in
+    `<world>/naturaldisasters/undo/<id>.dat` (an M7 quake: ~217,000 changes,
+    750 KB). Config `[undo] records = 10`, `maxBlocksPerDisaster =
+    2,000,000` (beyond that, only partly undoable).
+  - `/disaster undo list` and `/disaster undo <id>`. A running disaster is
+    stopped first. Restores 4,096 blocks per tick, chunk by chunk (loading
+    chunks as needed): an M7 quake took 4 s, no lag. Water and lava don't
+    start flowing; leftover flowing water around restored spots drains.
+  - "Changed by players" means a player broke or placed a block there after
+    the disaster started (tracked near recorded disasters). Everything else
+    is overwritten: a first version that skipped any spot that differed
+    left 32,000 spots unrestored after an M7 quake (water and lava flowing
+    into fissures, gravel falling, grass spreading).
+  - Containers: refilled only if every item they dropped is still on the
+    ground (those are taken back); otherwise they come back empty, so undo
+    never duplicates items.
+  - Not restored: killed creatures, broken item frames/paintings, items
+    that despawned.
+
+## Advancements
+- Owner pick: **own tab, ~15**: survive each disaster type, extremes (EF5,
+  cat 5, VEI 6+, M9 quake), build each instrument, find meteorite, smelt
+  meteoric iron, try to sleep under world-wide ash, and so on.
+
 ## Status (end of the freestyle night)
 All 12 disasters are in, each with game tests (28 total, stable over many
 runs) and checked in a real world: Earthquake, Meteor, Tornado, Hurricane,
@@ -597,6 +631,6 @@ during an M6 volcano + M6 flood together, and around autosaves; typical
   judge.
 - Sounds are vanilla-made, owner **"Passable for now"**; real recordings
   later?
-- Not started (offered, not yet chosen): meteorite uses, admin tools (undo, safe zones), scaling with player count,
-  advancements, other dimensions (Nether), proper textures, release prep,
+- Not started (offered, not yet chosen): meteorite uses, scaling with
+  player count, other dimensions (Nether), proper textures, release prep,
   in-game config screen.

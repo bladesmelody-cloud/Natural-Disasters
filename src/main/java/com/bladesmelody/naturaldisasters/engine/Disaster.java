@@ -65,6 +65,7 @@ public abstract class Disaster {
 
     final void end(ServerLevel level) {
         onEnd(level);
+        com.bladesmelody.naturaldisasters.undo.Undo.finished(this);
     }
 
     /** Effect radius in blocks, for warnings and /disaster list. */

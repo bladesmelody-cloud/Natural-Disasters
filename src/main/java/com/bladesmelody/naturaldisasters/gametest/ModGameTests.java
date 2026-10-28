@@ -23,6 +23,7 @@ import com.bladesmelody.naturaldisasters.engine.DisasterManager;
 import com.bladesmelody.naturaldisasters.engine.DisasterType;
 import com.bladesmelody.naturaldisasters.engine.DisasterTypes;
 import java.util.function.Consumer;
+import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
@@ -101,6 +102,7 @@ public final class ModGameTests {
         FUNCTIONS.register("builds_are_detected", () -> ModGameTests::buildsAreDetected);
         FUNCTIONS.register("instruments_sense_and_warn", () -> ModGameTests::instrumentsSenseAndWarn);
         FUNCTIONS.register("safe_zone_stops_quake", () -> ModGameTests::safeZoneStopsQuake);
+        FUNCTIONS.register("undo_restores_without_dupes", () -> ModGameTests::undoRestoresWithoutDupes);
         FUNCTIONS.register("safe_zone_spares_and_crumbles", () -> ModGameTests::safeZoneSparesAndCrumbles);
         if (net.neoforged.fml.ModList.get().isLoaded("openpartiesandclaims")) {
             FUNCTIONS.register("opac_claim_is_protected", () -> ClaimTests::opacClaimIsProtected);
@@ -140,6 +142,7 @@ public final class ModGameTests {
         test(event, "builds_are_detected", arena(env, 20));
         test(event, "instruments_sense_and_warn", arena(env, 20));
         test(event, "safe_zone_stops_quake", arena(env, 300));
+        test(event, "undo_restores_without_dupes", arena(env, 100));
         test(event, "safe_zone_spares_and_crumbles", arena(env, 60));
         if (net.neoforged.fml.ModList.get().isLoaded("openpartiesandclaims")) test(event, "opac_claim_is_protected", arena(env, 20));
         if (net.neoforged.fml.ModList.get().isLoaded("flan")) test(event, "flan_claim_is_protected", arena(env, 20));
@@ -322,6 +325,65 @@ public final class ModGameTests {
             helper.assertTrue(cobble > 20, "only " + cobble + " stone cracked");
             int outsideGlass = countOutside(helper, FLOOR_TOP + 1, FLOOR_TOP + 1, s -> s.is(Blocks.GLASS));
             helper.assertTrue(outsideGlass == outsideColumns(), "glass outside the radius was broken");
+        });
+    }
+
+    /**
+     * A disaster's record breaks two full chests, smashes glass and pours
+     * water; then a player builds on one spot, water flows into another, and
+     * one chest's dropped items go missing. Undo restores everything but the
+     * player's spot (the water is overwritten), refills the chest whose items
+     * are all still on the ground (taking them back) and brings the other
+     * back empty.
+     */
+    private static void undoRestoresWithoutDupes(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        BlockPos chestA = CENTER.above(), chestB = CENTER.above().east(3);
+        for (BlockPos p : List.of(chestA, chestB)) {
+            helper.setBlock(p, Blocks.CHEST);
+            var chest = (net.minecraft.world.level.block.entity.ChestBlockEntity) level.getBlockEntity(helper.absolutePos(p));
+            chest.setItem(0, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND, 5));
+        }
+        List<BlockPos> glass = new java.util.ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            glass.add(CENTER.above().north(3).west(i));
+            helper.setBlock(glass.get(i), Blocks.GLASS);
+        }
+        // A disaster that stays in its warning stage: it only gets an id and an undo record.
+        Earthquake quake = Earthquake.create(helper.absolutePos(CENTER), 1, params(0, 0, 0), 5L, 1_000_000);
+        DisasterManager.add(level, quake);
+        var log = com.bladesmelody.naturaldisasters.undo.Undo.log(level, quake);
+        BlockWriter w = new BlockWriter(level, 1000, Long.MAX_VALUE, log);
+        w.set(helper.absolutePos(chestA), Blocks.AIR.defaultBlockState());
+        w.set(helper.absolutePos(chestB), Blocks.AIR.defaultBlockState());
+        for (BlockPos p : glass) w.set(helper.absolutePos(p), Blocks.AIR.defaultBlockState());
+        BlockPos wet = CENTER.above().south(3);
+        w.setQuiet(helper.absolutePos(wet), Blocks.WATER.defaultBlockState());
+        var drops = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(helper.absolutePos(CENTER)).inflate(8));
+        helper.assertTrue(drops.size() == 2, "expected 2 dropped stacks, got " + drops.size());
+        // Chest B's diamonds get "picked up".
+        drops.stream().filter(e -> e.blockPosition().closerThan(helper.absolutePos(chestB), 1.5)).forEach(net.minecraft.world.entity.Entity::discard);
+        helper.setBlock(glass.get(1), Blocks.DIRT); // built over by a player...
+        com.bladesmelody.naturaldisasters.undo.Undo.playerEdit(level, helper.absolutePos(glass.get(1)));
+        helper.setBlock(glass.get(0), Blocks.WATER); // ...but water flowing in is nature: overwritten
+        var source = level.getServer().createCommandSourceStack().withSuppressedOutput();
+        var failure = com.bladesmelody.naturaldisasters.undo.Undo.start(level.getServer(), quake.id(), source);
+        helper.assertTrue(failure.isEmpty(), "undo didn't start: " + failure.orElse(""));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(!com.bladesmelody.naturaldisasters.undo.Undo.busy(quake.id()), "undo still running");
+            helper.assertBlockPresent(Blocks.DIRT, glass.get(1));
+            helper.assertBlockPresent(Blocks.GLASS, glass.get(0));
+            for (int i = 2; i < 5; i++) helper.assertBlockPresent(Blocks.GLASS, glass.get(i));
+            helper.assertBlockPresent(Blocks.AIR, wet);
+            var a = (net.minecraft.world.level.block.entity.ChestBlockEntity) level.getBlockEntity(helper.absolutePos(chestA));
+            var b = (net.minecraft.world.level.block.entity.ChestBlockEntity) level.getBlockEntity(helper.absolutePos(chestB));
+            helper.assertTrue(a != null && a.getItem(0).getCount() == 5, "chest A not refilled");
+            helper.assertTrue(b != null && b.isEmpty(), "chest B should come back empty");
+            int left = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                    new net.minecraft.world.phys.AABB(helper.absolutePos(CENTER)).inflate(8)).size();
+            helper.assertTrue(left == 0, left + " dropped stacks still lying around (duplicates)");
+            helper.assertTrue(DisasterManager.all(level.getServer()).stream().noneMatch(r -> r.disaster() == quake), "disaster not stopped");
         });
     }
 

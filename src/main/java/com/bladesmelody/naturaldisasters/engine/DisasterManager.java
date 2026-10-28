@@ -1,6 +1,7 @@
 package com.bladesmelody.naturaldisasters.engine;
 
 import com.bladesmelody.naturaldisasters.instrument.Instruments;
+import com.bladesmelody.naturaldisasters.undo.Undo;
 import com.bladesmelody.naturaldisasters.Config;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -46,7 +47,7 @@ public final class DisasterManager {
             Running r = running.get((first + i) % n);
             long now = System.nanoTime();
             long deadline = now + Math.max(0, end - now) / (n - i);
-            r.disaster.tick(r.level, new BlockWriter(r.level, share, deadline));
+            r.disaster.tick(r.level, new BlockWriter(r.level, share, deadline, Undo.log(r.level, r.disaster)));
         }
         for (ServerLevel level : server.getAllLevels()) {
             DisasterData data = DisasterData.get(level);
@@ -93,6 +94,7 @@ public final class DisasterManager {
         DisasterData data = DisasterData.get(level);
         data.active.add(d);
         data.setDirty();
+        Undo.started(level, d);
     }
 
     public record Running(ServerLevel level, Disaster disaster) {}
