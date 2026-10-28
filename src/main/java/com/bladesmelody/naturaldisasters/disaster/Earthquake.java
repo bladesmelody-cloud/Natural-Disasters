@@ -2,6 +2,7 @@ package com.bladesmelody.naturaldisasters.disaster;
 
 import com.bladesmelody.naturaldisasters.Config;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
+import com.bladesmelody.naturaldisasters.shake.Shake;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
 import com.bladesmelody.naturaldisasters.engine.DisasterType;
 import com.bladesmelody.naturaldisasters.engine.DisasterTypes;
@@ -227,6 +228,8 @@ public class Earthquake extends Disaster {
         if (shaking) {
             if (activeTicks % 5 == 0) shakeEntities(level, random);
             if (activeTicks % 30 == 0) rumble(level, random);
+            if (activeTicks % 10 == 0) Shake.near(level, center.getX() + 0.5, center.getZ() + 0.5, params.radius * 1.3,
+                    0.4F + 0.15F * Math.clamp(magnitude, 1, 10), 15);
         }
 
         openFissures(w, activeTicks);

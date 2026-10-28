@@ -1,7 +1,10 @@
 package com.bladesmelody.naturaldisasters.registry;
 
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
+import com.bladesmelody.naturaldisasters.entity.HurricaneEntity;
 import com.bladesmelody.naturaldisasters.entity.MeteorEntity;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.SimpleParticleType;
 import com.bladesmelody.naturaldisasters.entity.TornadoEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -29,6 +32,12 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public final class ModRegistry {
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(NaturalDisasters.MODID);
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(NaturalDisasters.MODID);
+    private static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES =
+            DeferredRegister.create(Registries.PARTICLE_TYPE, NaturalDisasters.MODID);
+    /** Big soft cloud puff: tornado funnels and hurricane cloud bands. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> FUNNEL_CLOUD =
+            PARTICLE_TYPES.register("funnel_cloud", () -> new SimpleParticleType(true));
+
     private static final DeferredRegister<EntityType<?>> ENTITY_TYPES =
             DeferredRegister.create(Registries.ENTITY_TYPE, NaturalDisasters.MODID);
 
@@ -59,12 +68,19 @@ public final class ModRegistry {
                     .clientTrackingRange(16).updateInterval(2)
                     .build(ResourceKey.create(Registries.ENTITY_TYPE, id)));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<HurricaneEntity>> HURRICANE = ENTITY_TYPES.register("hurricane",
+            id -> EntityType.Builder.<HurricaneEntity>of(HurricaneEntity::new, MobCategory.MISC)
+                    .sized(1.0F, 1.0F).fireImmune().noSummon().noSave()
+                    .clientTrackingRange(32).updateInterval(10)
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, id)));
+
     private ModRegistry() {}
 
     public static void register(IEventBus modBus) {
         BLOCKS.register(modBus);
         ITEMS.register(modBus);
         ENTITY_TYPES.register(modBus);
+        PARTICLE_TYPES.register(modBus);
         modBus.addListener(ModRegistry::fillCreativeTabs);
     }
 

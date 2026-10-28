@@ -1,6 +1,7 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
+import com.bladesmelody.naturaldisasters.sky.SkyZones;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
 import com.bladesmelody.naturaldisasters.engine.DisasterType;
 import com.bladesmelody.naturaldisasters.engine.DisasterTypes;
@@ -98,6 +99,7 @@ public class Blizzard extends Disaster {
 
     @Override
     protected void tickActive(ServerLevel level, BlockWriter w, int activeTicks) {
+        SkyZones.put(id, new SkyZones.Zone(SkyZones.Kind.BLIZZARD, center.getX() + 0.5, center.getZ() + 0.5, params.radius, magnitude));
         keepWeather(level, params.durationTicks - activeTicks + 200, false);
         RandomSource random = RandomSource.create(seed ^ (activeTicks * 0x9E3779B97F4A7C15L));
         double area = Math.PI * params.radius * params.radius;
@@ -176,6 +178,11 @@ public class Blizzard extends Disaster {
         for (ServerPlayer p : playersNear(level, params.radius)) {
             level.sendParticles(p, ParticleTypes.SNOWFLAKE, true, true, p.getX(), p.getY() + 2, p.getZ(), count, 7, 3, 7, 0.08);
         }
+    }
+
+    @Override
+    protected void onEnd(ServerLevel level) {
+        SkyZones.remove(id);
     }
 
     @Override

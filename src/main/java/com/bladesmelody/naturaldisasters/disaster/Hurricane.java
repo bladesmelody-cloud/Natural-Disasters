@@ -1,6 +1,8 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
+import com.bladesmelody.naturaldisasters.entity.HurricaneEntity;
+import com.bladesmelody.naturaldisasters.sky.SkyZones;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
 import com.bladesmelody.naturaldisasters.engine.DisasterType;
 import com.bladesmelody.naturaldisasters.engine.DisasterTypes;
@@ -126,6 +128,19 @@ public class Hurricane extends Disaster {
         return active >= params.durationTicks && surge.size() == 0;
     }
 
+    /** Visual marker at the eye: clients draw the spiral cloud bands around it. */
+    private HurricaneEntity marker;
+
+    private void updateEyeMarker(ServerLevel level) {
+        int ex = (int) Math.floor(eyeX), ez = (int) Math.floor(eyeZ);
+        double y = Terrain.loaded(level, ex, ez) ? Terrain.ground(level, ex, ez) + 1 : level.getSeaLevel();
+        if (marker == null || marker.isRemoved()) {
+            if (!level.isLoaded(BlockPos.containing(eyeX, y, eyeZ))) return;
+            marker = HurricaneEntity.spawn(level, eyeX, y, eyeZ, params.eyeRadius, params.radius);
+        }
+        marker.follow(eyeX, y, eyeZ);
+    }
+
     /** Wind speed at a distance from the eye: calm inside, peak in the eyewall, easing off outward. */
     double windAt(double dist) {
         double eye = params.eyeRadius;
@@ -145,6 +160,9 @@ public class Hurricane extends Disaster {
 
     @Override
     protected void tickActive(ServerLevel level, BlockWriter w, int activeTicks) {
+        // Whole blocks: the zone is re-sent to clients whenever it changes.
+        SkyZones.put(id, new SkyZones.Zone(SkyZones.Kind.HURRICANE, Math.floor(eyeX), Math.floor(eyeZ), params.radius, magnitude,
+                (int) params.eyeRadius));
         if (seaLevel == Integer.MIN_VALUE) seaLevel = level.getSeaLevel() - 1;
         boolean blowing = activeTicks < params.durationTicks;
         if (!blowing) {
@@ -154,6 +172,7 @@ public class Hurricane extends Disaster {
         keepWeather(level, params.durationTicks - activeTicks + 600, params.category >= 1);
         eyeX += Math.cos(heading) * params.speed;
         eyeZ += Math.sin(heading) * params.speed;
+        updateEyeMarker(level);
         RandomSource random = RandomSource.create(seed ^ (activeTicks * 0x9E3779B97F4A7C15L));
 
         int samples = (int) Math.min(MAX_SAMPLES, Math.PI * params.radius * params.radius * params.density);
@@ -256,6 +275,11 @@ public class Hurricane extends Disaster {
             level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.ELYTRA_FLYING, SoundSource.WEATHER,
                     (float) Math.min(1.5, wind / 120), 0.6F);
         }
+    }
+
+    @Override
+    protected void onEnd(ServerLevel level) {
+        SkyZones.remove(id);
     }
 
     @Override

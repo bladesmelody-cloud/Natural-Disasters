@@ -1,4 +1,4 @@
-package com.bladesmelody.naturaldisasters.ash;
+package com.bladesmelody.naturaldisasters.sky;
 
 import com.bladesmelody.naturaldisasters.disaster.AshCloud;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
@@ -18,34 +18,36 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
-/** Server-side glue for ash clouds: syncing zones, ash on newly loaded chunks, no sleeping through the dark. */
-public final class AshEvents {
-    private AshEvents() {}
+/** Server-side glue for sky zones: syncing them, ash on newly loaded chunks, no sleeping through world-wide ash. */
+public final class SkyEvents {
+    private SkyEvents() {}
 
     public static void register(IEventBus modBus) {
-        modBus.addListener(AshEvents::registerPayloads);
-        NeoForge.EVENT_BUS.addListener(AshEvents::onLogin);
-        NeoForge.EVENT_BUS.addListener(AshEvents::onServerTick);
-        NeoForge.EVENT_BUS.addListener(AshEvents::onServerStopped);
-        NeoForge.EVENT_BUS.addListener(AshEvents::onChunkLoad);
-        NeoForge.EVENT_BUS.addListener(AshEvents::onSleepFinished);
+        modBus.addListener(SkyEvents::registerPayloads);
+        NeoForge.EVENT_BUS.addListener(SkyEvents::onLogin);
+        NeoForge.EVENT_BUS.addListener(SkyEvents::onServerTick);
+        NeoForge.EVENT_BUS.addListener(SkyEvents::onServerStopped);
+        NeoForge.EVENT_BUS.addListener(SkyEvents::onChunkLoad);
+        NeoForge.EVENT_BUS.addListener(SkyEvents::onSleepFinished);
     }
 
     private static void registerPayloads(RegisterPayloadHandlersEvent event) {
         // The client registers its handler in ClientSetup.
-        event.registrar("1").optional().playToClient(AshZonesPayload.TYPE, AshZonesPayload.CODEC);
+        event.registrar("1").optional()
+                .playToClient(SkyZonesPayload.TYPE, SkyZonesPayload.CODEC)
+                .playToClient(com.bladesmelody.naturaldisasters.shake.ShakePayload.TYPE, com.bladesmelody.naturaldisasters.shake.ShakePayload.CODEC);
     }
 
     private static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity() instanceof ServerPlayer p) PacketDistributor.sendToPlayer(p, new AshZonesPayload(AshZones.serverZones()));
+        if (event.getEntity() instanceof ServerPlayer p) PacketDistributor.sendToPlayer(p, new SkyZonesPayload(SkyZones.serverZones()));
     }
 
     private static void onServerTick(ServerTickEvent.Post event) {
-        if (AshZones.takeDirty()) PacketDistributor.sendToAllPlayers(new AshZonesPayload(AshZones.serverZones()));
+        if (SkyZones.takeDirty()) PacketDistributor.sendToAllPlayers(new SkyZonesPayload(SkyZones.serverZones()));
     }
 
     private static void onServerStopped(ServerStoppedEvent event) {
-        AshZones.clearServer();
+        SkyZones.clearServer();
     }
 
     private static void onChunkLoad(ChunkEvent.Load event) {
@@ -58,7 +60,7 @@ public final class AshEvents {
 
     /** Under world-wide ash there is no morning to sleep through to. */
     private static void onSleepFinished(SleepFinishedTimeEvent event) {
-        if (!AshZones.worldDark()) return;
+        if (!SkyZones.worldDark()) return;
         event.setCanceled(true);
         if (event.getLevel() instanceof ServerLevel level) {
             for (ServerPlayer p : level.players()) {

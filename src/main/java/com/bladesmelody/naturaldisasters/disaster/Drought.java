@@ -1,6 +1,7 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
+import com.bladesmelody.naturaldisasters.sky.SkyZones;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
 import com.bladesmelody.naturaldisasters.engine.DisasterType;
 import com.bladesmelody.naturaldisasters.engine.DisasterTypes;
@@ -106,6 +107,7 @@ public class Drought extends Disaster {
 
     @Override
     protected void tickActive(ServerLevel level, BlockWriter w, int activeTicks) {
+        SkyZones.put(id, new SkyZones.Zone(SkyZones.Kind.DROUGHT, center.getX() + 0.5, center.getZ() + 0.5, params.radius, magnitude));
         clearSkies(level, params.durationTicks - activeTicks);
         RandomSource random = RandomSource.create(seed ^ (activeTicks * 0x9E3779B97F4A7C15L));
         double expected = Math.PI * params.radius * params.radius * params.density * (0.5 + params.potency * 0.1);
@@ -215,6 +217,11 @@ public class Drought extends Disaster {
             p.causeFoodExhaustion(0.05F + 0.03F * params.potency);
             level.sendParticles(p, ParticleTypes.WHITE_ASH, true, true, p.getX(), p.getY() + 1, p.getZ(), 10, 6, 1, 6, 0.0);
         }
+    }
+
+    @Override
+    protected void onEnd(ServerLevel level) {
+        SkyZones.remove(id);
     }
 
     @Override

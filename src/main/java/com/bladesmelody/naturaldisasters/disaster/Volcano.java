@@ -3,6 +3,7 @@ package com.bladesmelody.naturaldisasters.disaster;
 import com.bladesmelody.naturaldisasters.Config;
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
+import com.bladesmelody.naturaldisasters.shake.Shake;
 import com.bladesmelody.naturaldisasters.engine.DisasterManager;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
 import com.bladesmelody.naturaldisasters.engine.DisasterType;
@@ -479,6 +480,7 @@ public class Volcano extends Disaster {
     }
 
     private void boom(ServerLevel level) {
+        Shake.near(level, center.getX() + 0.5, center.getZ() + 0.5, params.baseRadius * 4 + 32, 0.6F + 0.25F * params.vei, 20);
         for (ServerPlayer p : playersNear(level, params.baseRadius * 4)) {
             level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.AMBIENT, 0.8F, 0.3F);
         }

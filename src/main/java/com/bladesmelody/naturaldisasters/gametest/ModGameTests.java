@@ -935,7 +935,7 @@ public final class ModGameTests {
         DisasterManager.add(level, volcano);
         boolean[] dark = {false};
         helper.onEachTick(() -> {
-            if (com.bladesmelody.naturaldisasters.ash.AshZones.isDark(level, helper.absolutePos(CENTER.offset(16, 1, 0)))) dark[0] = true;
+            if (com.bladesmelody.naturaldisasters.sky.SkyZones.isDark(level, helper.absolutePos(CENTER.offset(16, 1, 0)))) dark[0] = true;
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(volcano.isFinished(), "volcano still running");
@@ -951,7 +951,7 @@ public final class ModGameTests {
             helper.assertTrue(scorched > 100, "grass barely scorched: " + scorched);
             int ash = count(helper, 1, 23, st -> st.is(ModRegistry.VOLCANIC_ASH.get()));
             helper.assertTrue(ash > 100, "only " + ash + " ash layers");
-            helper.assertTrue(!com.bladesmelody.naturaldisasters.ash.AshZones.isDark(level, helper.absolutePos(CENTER.offset(16, 1, 0))),
+            helper.assertTrue(!com.bladesmelody.naturaldisasters.sky.SkyZones.isDark(level, helper.absolutePos(CENTER.offset(16, 1, 0))),
                     "still dark after the cloud ended");
         });
     }
@@ -968,11 +968,11 @@ public final class ModGameTests {
         helper.runAfterDelay(30, () -> {
             at[1] = clocks.getTotalTicks(clock);
             helper.assertTrue(at[0] == at[1], "clock kept running under world-wide ash: " + at[0] + " -> " + at[1]);
-            helper.assertTrue(com.bladesmelody.naturaldisasters.ash.AshZones.worldDark(), "not world-dark");
+            helper.assertTrue(com.bladesmelody.naturaldisasters.sky.SkyZones.worldDark(), "not world-dark");
         });
         helper.runAfterDelay(100, () -> {
             helper.assertTrue(cloud.isFinished(), "cloud should be over");
-            helper.assertTrue(!com.bladesmelody.naturaldisasters.ash.AshZones.worldDark(), "still world-dark");
+            helper.assertTrue(!com.bladesmelody.naturaldisasters.sky.SkyZones.worldDark(), "still world-dark");
             long before = clocks.getTotalTicks(clock);
             helper.runAfterDelay(10, () -> {
                 helper.assertTrue(clocks.getTotalTicks(clock) > before, "clock didn't start again");
@@ -993,14 +993,31 @@ public final class ModGameTests {
         RandomSource random = RandomSource.create(5);
         int before = 0;
         for (int i = 0; i < 200; i++) if (net.minecraft.world.entity.monster.Monster.isDarkEnoughToSpawn(level, pos, random)) before++;
-        com.bladesmelody.naturaldisasters.ash.AshZones.put(-42, new com.bladesmelody.naturaldisasters.ash.AshZones.Zone(pos.getX(), pos.getZ(), 8, 3));
+        com.bladesmelody.naturaldisasters.sky.SkyZones.put(-42, new com.bladesmelody.naturaldisasters.sky.SkyZones.Zone(com.bladesmelody.naturaldisasters.sky.SkyZones.Kind.ASH, pos.getX(), pos.getZ(), 8, 3));
         int after = 0;
         try {
             for (int i = 0; i < 200; i++) if (net.minecraft.world.entity.monster.Monster.isDarkEnoughToSpawn(level, pos, random)) after++;
         } finally {
-            com.bladesmelody.naturaldisasters.ash.AshZones.remove(-42);
+            com.bladesmelody.naturaldisasters.sky.SkyZones.remove(-42);
         }
         helper.assertTrue(before == 0 && after > 10, "daylight spawn checks: " + before + " without ash, " + after + " under ash");
+        // Monsters stop burning in the sun under ash. Sampled at noon on day 2: on day 1 the "day" timeline
+        // has no earlier keyframe, so monsters never burn before the first dawn.
+        var clock = level.dimensionType().defaultClock().orElseThrow();
+        var clocks = level.getServer().clockManager();
+        long savedTime = clocks.getTotalTicks(clock);
+        net.minecraft.world.phys.Vec3 at = pos.getCenter();
+        boolean burnBefore, burnAfter;
+        try {
+            clocks.setTotalTicks(clock, 24000 + 6000);
+            burnBefore = level.environmentAttributes().getValue(net.minecraft.world.attribute.EnvironmentAttributes.MONSTERS_BURN, at);
+            com.bladesmelody.naturaldisasters.sky.SkyZones.put(-42, new com.bladesmelody.naturaldisasters.sky.SkyZones.Zone(com.bladesmelody.naturaldisasters.sky.SkyZones.Kind.ASH, pos.getX(), pos.getZ(), 8, 3));
+            burnAfter = level.environmentAttributes().getValue(net.minecraft.world.attribute.EnvironmentAttributes.MONSTERS_BURN, at);
+        } finally {
+            com.bladesmelody.naturaldisasters.sky.SkyZones.remove(-42);
+            clocks.setTotalTicks(clock, savedTime);
+        }
+        helper.assertTrue(burnBefore && !burnAfter, "monsters burn at noon: " + burnBefore + " without ash, " + burnAfter + " under ash");
         helper.succeed();
     }
 

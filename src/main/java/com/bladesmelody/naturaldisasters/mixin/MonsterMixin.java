@@ -1,6 +1,6 @@
 package com.bladesmelody.naturaldisasters.mixin;
 
-import com.bladesmelody.naturaldisasters.ash.AshZones;
+import com.bladesmelody.naturaldisasters.sky.SkyZones;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -17,7 +17,7 @@ public abstract class MonsterMixin {
     @Redirect(method = "isDarkEnoughToSpawn", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/level/ServerLevelAccessor;getMaxLocalRawBrightness(Lnet/minecraft/core/BlockPos;)I"))
     private static int naturaldisasters$ashNight(ServerLevelAccessor level, BlockPos pos) {
-        if (AshZones.isDark(level.getLevel(), pos)) return level.getMaxLocalRawBrightness(pos, NIGHT_DARKEN);
+        if (SkyZones.isDark(level.getLevel(), pos)) return level.getMaxLocalRawBrightness(pos, NIGHT_DARKEN);
         return level.getMaxLocalRawBrightness(pos);
     }
 }

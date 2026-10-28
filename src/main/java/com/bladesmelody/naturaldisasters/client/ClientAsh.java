@@ -1,8 +1,8 @@
 package com.bladesmelody.naturaldisasters.client;
 
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
-import com.bladesmelody.naturaldisasters.ash.AshZones;
-import com.bladesmelody.naturaldisasters.ash.AshZonesPayload;
+import com.bladesmelody.naturaldisasters.sky.SkyZones;
+import com.bladesmelody.naturaldisasters.sky.SkyZonesPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.particles.ParticleTypes;
@@ -11,49 +11,27 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 
-/** The look of an ash cloud: near-black fog that hides the sky, and ash drifting down. */
+/**
+ * Receives the sky zones from the server, and drifts ash down around the
+ * player under volcanic ash. Sky, fog and light colours come from
+ * {@link com.bladesmelody.naturaldisasters.sky.SkyLayers}.
+ */
 @EventBusSubscriber(modid = NaturalDisasters.MODID, value = Dist.CLIENT)
 public final class ClientAsh {
     private ClientAsh() {}
 
     @SubscribeEvent
     public static void registerPayloads(RegisterClientPayloadHandlersEvent event) {
-        event.register(AshZonesPayload.TYPE, (payload, context) -> context.enqueueWork(() -> AshZones.setClient(payload.zones())));
-    }
-
-    private static AshZones.Zone zoneHere() {
-        LocalPlayer p = Minecraft.getInstance().player;
-        if (p == null) return null;
-        return AshZones.clientZoneAt(p.level(), p.getX(), p.getZ());
-    }
-
-    @SubscribeEvent
-    public static void fogColor(ViewportEvent.ComputeFogColor event) {
-        if (zoneHere() == null) return;
-        event.setRed(event.getRed() * 0.15F + 0.06F);
-        event.setGreen(event.getGreen() * 0.15F + 0.055F);
-        event.setBlue(event.getBlue() * 0.15F + 0.05F);
-    }
-
-    @SubscribeEvent
-    public static void fog(ViewportEvent.RenderFog event) {
-        AshZones.Zone zone = zoneHere();
-        if (zone == null) return;
-        // Thicker the bigger the eruption.
-        float far = Math.max(24F, 96F - 10F * zone.vei());
-        if (event.getFarPlaneDistance() > far) {
-            event.setFarPlaneDistance(far);
-            event.setNearPlaneDistance(Math.min(event.getNearPlaneDistance(), far * 0.1F));
-        }
+        event.register(SkyZonesPayload.TYPE, (payload, context) -> context.enqueueWork(() -> SkyZones.setClient(payload.zones())));
     }
 
     @SubscribeEvent
     public static void tick(ClientTickEvent.Post event) {
         LocalPlayer p = Minecraft.getInstance().player;
-        if (p == null || zoneHere() == null || Minecraft.getInstance().isPaused()) return;
+        if (p == null || Minecraft.getInstance().isPaused()) return;
+        if (SkyZones.clientZoneAt(p.level(), SkyZones.Kind.ASH, p.getX(), p.getZ()) == null) return;
         RandomSource r = p.getRandom();
         for (int i = 0; i < 6; i++) {
             p.level().addParticle(r.nextInt(4) == 0 ? ParticleTypes.WHITE_ASH : ParticleTypes.ASH,

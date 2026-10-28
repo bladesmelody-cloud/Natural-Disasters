@@ -54,18 +54,25 @@ function in `FUNCTIONS` and the test in `onRegisterTests`.
   `create(...)` for tests. Shared: `Terrain` (columns, heights, discs), `Wind`
   (block resistance in mph), `WaterTracker` (water a disaster placed, to drain
   exactly), `Places` (climate checks for random picks).
-- `ash/`: `AshZones` (dark areas, server + client copy, synced by
-  `AshZonesPayload`), `AshEvents` (sync, ash on chunk load, no sleeping
-  through world-wide ash), `AshLayerBlock`. `disaster/AshCloud` is the
+- `sky/`: `SkyZones` (storm/ash circles a disaster publishes, server + client
+  copy, synced by `SkyZonesPayload`), `SkyLayers` (environment-attribute
+  layers: sky/fog/cloud colour, fog distance, light, stars, `MONSTERS_BURN`),
+  `SkyEvents` (payloads, sync, ash on chunk load, no sleeping through
+  world-wide ash). `ash/AshLayerBlock`. `disaster/AshCloud` is the
   long-lived event a big eruption leaves; `disaster/Builds` scores how
   built-up a spot is (random disasters avoid builds).
-- `mixin/` (`naturaldisasters.mixins.json`): `MonsterMixin` (ash counts as night
-  for spawning), `MobMixin` (no sunburn under ash). 26.1 is unobfuscated, so
-  no refmap is needed.
-- `client/ClientAsh`: ash fog/sky and particles.
-- `entity/`: `MeteorEntity`, `TornadoEntity` — visual only, particles on the
-  client, never saved. `registry/ModRegistry` (meteorite blocks/items,
-  entities), `client/ClientSetup` (renderers), `command/DisasterCommand`,
+- `shake/`: `ShakePayload` + `Shake.near(...)` (server sends camera shake);
+  `client/ClientShake` applies it; `ClientConfig` (client toggles).
+- `mixin/` (`naturaldisasters.mixins.json`): `EnvironmentAttributeSystemMixin`
+  (adds `SkyLayers`), `MonsterMixin` (ash counts as night for spawning),
+  client `BiomePrecipitationMixin` (snow in blizzard zones). 26.1 is
+  unobfuscated, so no refmap is needed.
+- `client/`: `ClientAsh` (zone payload, ash particles), `ClientStorms` +
+  `CloudParticle` (tornado funnel, hurricane bands), `MeteorRenderer`,
+  `ClientSetup` (renderers, particle sprites).
+- `entity/`: `MeteorEntity`, `TornadoEntity`, `HurricaneEntity` (eye marker) —
+  visual only, effects on the client, never saved. `registry/ModRegistry`
+  (meteorite and ash blocks/items, entities, cloud particle), `command/DisasterCommand`,
   `Config` (server config: budget, random timing, per-type toggles).
 
 ## Gotchas learned
@@ -78,3 +85,7 @@ function in `FUNCTIONS` and the test in `onRegisterTests`.
 - Game tests share one world: keep each test's effects inside its 40×40
   arena (small radii, tornado `throwDistance`/`debrisPerSecond` params), and
   use the `arena(...)` TestData (sky access, else a barrier roof).
+- On world day 1 the "day" timeline has no earlier keyframe, so
+  `MONSTERS_BURN` is false until the first dawn; tests sample at day-2 noon.
+- Don't put doubles that change every tick into a `SkyZones.Zone`: any change
+  re-sends the zone list to every player.

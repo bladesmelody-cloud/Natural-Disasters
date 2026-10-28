@@ -1,6 +1,7 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
+import com.bladesmelody.naturaldisasters.shake.Shake;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
 import com.bladesmelody.naturaldisasters.engine.DisasterType;
 import com.bladesmelody.naturaldisasters.engine.DisasterTypes;
@@ -245,6 +246,7 @@ public class Meteor extends Disaster {
             Vec3 push = (dist < 0.01 ? new Vec3(0, 1, 0) : away.normalize()).scale(1.5 * falloff);
             e.push(push.x, push.y * 0.5 + 0.4 * falloff, push.z);
         }
+        Shake.near(level, at.x, at.z, radius * 8 + 16, Math.min(4F, 0.5F + radius / 6F), 20);
         level.sendParticles(radius >= 16 ? ParticleTypes.EXPLOSION_EMITTER : ParticleTypes.EXPLOSION, false, true,
                 at.x, at.y, at.z, Math.max(1, radius / 4), radius * 0.3, radius * 0.2, radius * 0.3, 0);
         level.playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE, SoundSource.AMBIENT,

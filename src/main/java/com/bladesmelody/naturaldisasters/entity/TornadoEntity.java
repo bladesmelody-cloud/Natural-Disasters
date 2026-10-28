@@ -30,6 +30,9 @@ public class TornadoEntity extends Entity {
     private static final EntityDataAccessor<Float> RADIUS = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> HEIGHT = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.FLOAT);
 
+    /** Set by the client setup: draws the funnel each client tick (fallback: vanilla particles below). */
+    public static java.util.function.Consumer<TornadoEntity> clientEffects;
+
     private int untouched;
 
     public TornadoEntity(EntityType<? extends TornadoEntity> type, Level level) {
@@ -53,6 +56,14 @@ public class TornadoEntity extends Entity {
         untouched = 0;
     }
 
+    public float radius() {
+        return entityData.get(RADIUS);
+    }
+
+    public float funnelHeight() {
+        return entityData.get(HEIGHT);
+    }
+
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(RADIUS, 4.0F);
@@ -63,7 +74,8 @@ public class TornadoEntity extends Entity {
     public void tick() {
         super.tick();
         if (level().isClientSide()) {
-            funnel();
+            if (clientEffects != null) clientEffects.accept(this);
+            else funnel();
         } else if (++untouched > 40) {
             discard();
         }

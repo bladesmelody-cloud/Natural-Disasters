@@ -3,10 +3,12 @@
   "package": "com.bladesmelody.naturaldisasters.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "MobMixin",
+    "EnvironmentAttributeSystemMixin",
     "MonsterMixin"
   ],
-  "client": [],
+  "client": [
+    "BiomePrecipitationMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   },

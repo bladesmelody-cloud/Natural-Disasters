@@ -2,6 +2,7 @@ package com.bladesmelody.naturaldisasters.disaster;
 
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
+import com.bladesmelody.naturaldisasters.sky.SkyZones;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
 import com.bladesmelody.naturaldisasters.engine.DisasterType;
 import com.bladesmelody.naturaldisasters.engine.DisasterTypes;
@@ -102,6 +103,7 @@ public class AcidRain extends Disaster {
 
     @Override
     protected void tickActive(ServerLevel level, BlockWriter w, int activeTicks) {
+        SkyZones.put(id, new SkyZones.Zone(SkyZones.Kind.ACID_RAIN, center.getX() + 0.5, center.getZ() + 0.5, params.radius, magnitude));
         keepWeather(level, params.durationTicks - activeTicks + 200, false);
         RandomSource random = RandomSource.create(seed ^ (activeTicks * 0x9E3779B97F4A7C15L));
         double expected = Math.PI * params.radius * params.radius * params.density * (0.5 + params.potency * 0.15);
@@ -167,6 +169,11 @@ public class AcidRain extends Disaster {
         for (ServerPlayer p : playersNear(level, params.radius)) {
             level.sendParticles(p, ACID_DROP, true, true, p.getX(), p.getY() + 3, p.getZ(), count, 8, 3, 8, 0.0);
         }
+    }
+
+    @Override
+    protected void onEnd(ServerLevel level) {
+        SkyZones.remove(id);
     }
 
     @Override

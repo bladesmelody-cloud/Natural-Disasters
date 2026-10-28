@@ -420,6 +420,39 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
   averaged 8–10 ms/tick, P99 ≤ 26 ms, vs 5 ms idle; M7 on a village peaked at
   P99 16 ms.
 
+## Visual pass (owner's picks)
+- In this pass: **tornado funnel**, **ash-dark sky**, **meteor model**,
+  **storm skies** (hurricane bands/eye, blizzard snowfall look, green acid
+  rain), and **earthquake camera shake** (owner: "Yes, but also note there
+  are other weather mods, you can look at how they did weather effects if
+  you need a little inspiration").
+- Custom sounds: **later, after visuals**.
+
+### What was built — all **MINE** (judge in play-testing)
+- **Sky zones** (`sky/SkyZones`): each storm disaster publishes a circle
+  (kind, centre, radius, strength, optional clear hole) that is synced to
+  clients. Our layers on 26.1's environment attributes blend sky, fog and
+  cloud colour, fog distance, sky light, stars and sunsets toward the
+  storm's look over its area, fading over the outer 15 %:
+  - Ash: near-black sky, fog 96 − 10·VEI blocks (min 24), dark ground light,
+    no sun/sunset; monsters spawn and don't burn in daylight under it.
+  - Hurricane: slate grey, fog 96; the eye (radius = eye radius) is clear.
+  - Blizzard: whiteout, fog 96 − 6·M (min 32); snow falls instead of rain
+    inside the zone.
+  - Acid rain: sickly yellow-green, fog 128.
+  - Drought: hot washed-out tan haze, fog 192.
+- **Tornado funnel** (Weather2-style): big soft cloud puffs that spiral up
+  a cone (narrow at the ground, wide at the top), a slow dark wall cloud on
+  top, block dust thrown out at the base. Scales with the EF size.
+- **Hurricane bands**: cloud puffs around the camera (within ~100 blocks)
+  drift round the eye in two spiral arms plus a solid eyewall, ~30–45 blocks
+  above the viewer so they show through the storm fog; none in the eye.
+- **Meteor**: a spinning magma block, scaled with the meteor and drawn full
+  bright, trailing smoke and flame.
+- **Camera shake**: earthquakes (players within 1.3 × radius, 0.4 + 0.15·M
+  degrees, weaker further out), meteor impacts and volcano booms. Client
+  config `cameraShake` (on/off) and `cameraShakeStrength` (0–3×).
+
 ## Status (end of the freestyle night)
 All 12 disasters are in, each with game tests (28 total, stable over many
 runs) and checked in a real world: Earthquake, Meteor, Tornado, Hurricane,

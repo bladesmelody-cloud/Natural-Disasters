@@ -5,6 +5,7 @@
   "item.naturaldisasters.meteoric_iron_ingot": "Meteoric Iron Ingot",
   "entity.naturaldisasters.meteor": "Meteor",
   "entity.naturaldisasters.tornado": "Tornado",
+  "entity.naturaldisasters.hurricane": "Hurricane",
   "death.attack.naturaldisasters.hail": "%1$s was pelted to death by hail",
   "death.attack.naturaldisasters.acid_rain": "%1$s dissolved in acid rain",
   "death.attack.naturaldisasters.acid_rain.player": "%1$s dissolved in acid rain while fighting %2$s",

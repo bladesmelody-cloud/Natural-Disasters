@@ -1,6 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
-import com.bladesmelody.naturaldisasters.ash.AshZones;
+import com.bladesmelody.naturaldisasters.sky.SkyZones;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
 import com.bladesmelody.naturaldisasters.engine.DisasterType;
@@ -27,7 +27,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 /**
  * The ash cloud a big eruption leaves behind: for days to weeks the area (or
  * the whole Overworld from VEI 5) lies under a black sky that counts as
- * night ({@link AshZones}), and ash settles on every chunk in it — the ones
+ * night ({@link SkyZones}), and ash settles on every chunk in it — the ones
  * loaded now and any loaded later while the cloud lasts. World-wide clouds
  * stop the clock at midnight; beds can't skip it.
  *
@@ -101,7 +101,7 @@ public class AshCloud extends Disaster {
 
     @Override
     protected void tickActive(ServerLevel level, BlockWriter w, int activeTicks) {
-        AshZones.put(id, new AshZones.Zone(center.getX() + 0.5, center.getZ() + 0.5, params.worldWide() ? 0 : params.radius, magnitude));
+        SkyZones.put(id, new SkyZones.Zone(SkyZones.Kind.ASH, center.getX() + 0.5, center.getZ() + 0.5, params.worldWide() ? 0 : params.radius, magnitude));
         if (params.worldWide() && !clockStopped) stopClock(level);
         if (activeTicks == 0) enqueueAround(level, center.getX() >> 4, center.getZ() >> 4, 16);
         if (activeTicks % 100 == 0) {
@@ -189,7 +189,7 @@ public class AshCloud extends Disaster {
 
     private void fallingAsh(ServerLevel level) {
         for (ServerPlayer p : level.players()) {
-            if (!AshZones.isDark(level, p.blockPosition())) continue;
+            if (!SkyZones.isDark(level, p.blockPosition())) continue;
             level.sendParticles(p, ParticleTypes.ASH, true, true, p.getX(), p.getY() + 4, p.getZ(), 40, 12, 4, 12, 0.0);
             level.sendParticles(p, ParticleTypes.WHITE_ASH, true, true, p.getX(), p.getY() + 4, p.getZ(), 10, 12, 4, 12, 0.0);
         }
@@ -211,7 +211,7 @@ public class AshCloud extends Disaster {
 
     @Override
     protected void onEnd(ServerLevel level) {
-        AshZones.remove(id);
+        SkyZones.remove(id);
         if (clockStopped) {
             clock(level).ifPresent(c -> {
                 level.getServer().clockManager().setPaused(c, false);
