@@ -15,6 +15,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -237,8 +238,16 @@ public class Hurricane extends Disaster {
         if (!Terrain.loaded(level, column.getX(), column.getZ())) return;
         LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(level, EntitySpawnReason.EVENT);
         if (bolt == null) return;
-        bolt.snapTo(Vec3.atBottomCenterOf(column.atY(Terrain.top(level, column.getX(), column.getZ()) + 1)));
+        Vec3 at = Vec3.atBottomCenterOf(column.atY(Terrain.top(level, column.getX(), column.getZ()) + 1));
+        bolt.snapTo(at);
+        // Visual only: a real bolt lights fires, which would wake the storm surge's quiet water
+        // and leave permanent sources. The strike's harm is done here instead.
+        bolt.setVisualOnly(true);
         level.addFreshEntity(bolt);
+        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(3, 4, 3))) {
+            e.hurtServer(level, level.damageSources().lightningBolt(), 5.0F);
+            e.igniteForTicks(160);
+        }
     }
 
     private void howl(ServerLevel level) {

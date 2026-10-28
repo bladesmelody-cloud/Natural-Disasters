@@ -167,7 +167,9 @@ have done tornados pretty well".
   two weak top blocks (Wind table, 70–100 % of local wind) — roofs, leaves,
   crops, fences over a huge area rather than a tornado's total wreck.
 - Creatures under open sky are pushed around the storm (counter-clockwise,
-  slightly inward); indoors is safe. Sizes reviewed: owner **"Keep"** for
+  slightly inward); indoors is safe. Lightning bolts are visual-only with
+  their damage (5 + burning) applied directly: real bolts light block fires
+  that wake the surge's quiet water (**MINE**). Sizes reviewed: owner **"Keep"** for
   size/strength, **"Stronger push"** for the wind on creatures: push every
   2 ticks (was 5) and gusts over 100 mph lift creatures off their feet
   (10 % per push) — exact numbers **MINE**. Lightning about every 2 s at M1 down to
@@ -287,6 +289,8 @@ have done tornados pretty well".
   higher magnitude. Dense snowflake whiteout around players, wind sound.
   Snow stays after the storm (melts the vanilla way, i.e. only near light).
 - Random blizzards only in cold places, weight 0.8.
+- Numbers reviewed: owner **"Longer storms"**: 2× duration (now 160–520 s),
+  same snow depth reached more slowly.
 
 ### Hailstorm — freestyled, all **MINE**
 - Radius 48 + 16·M, lasts 40 + 10·M s, hailstone size 1–5 (M1–2 … M9–10).
@@ -297,6 +301,7 @@ have done tornados pretty well".
   from the new `naturaldisasters:hail` damage type (armour soaks it; a roof
   stops it). Snowball-crumb particles and clatter sounds near players.
 - Random hailstorms where it rains, weight 0.8.
+- Numbers reviewed: owner **"Keep"**.
 
 ### Acid Rain — freestyled, all **MINE**
 - Radius 64 + 24·M, lasts 60 + 20·M s, potency = M. Rain weather with green
@@ -310,21 +315,28 @@ have done tornados pretty well".
   `naturaldisasters:acid_rain` damage type), unless they wear a helmet, which
   loses 1 + potency/3 durability instead.
 - Random acid rain where it rains, weight 0.8.
+- Numbers reviewed: owner **"Keep"**.
 
 ### Drought — freestyled, all **MINE**
 - Radius 96 + 32·M, lasts 120 + 40·M s (2–8.7 min), potency = M. Forces clear
-  skies. Shallow water (≤ 1 + potency/3 deep, never ocean biomes, never
-  waterlogged blocks) dries from the shore inward; snow and ice vanish;
+  skies. Ponds (up to 80 × potency blocks of surface) sink a whole layer at
+  a time; bigger lakes only lose shallow (≤ 1 + potency/3 deep) shore water;
+  never ocean biomes or waterlogged blocks; snow and ice vanish;
   crops/flowers/grass die (some to dead bushes); farmland dries then turns to
   dirt; leaves drop (2 %·potency); grass → dirt, at potency 5+ dirt → coarse
   dirt, mud → packed mud. At potency 6+ dry grass can catch fire.
 - Players in the sun get hungry fast (0.3 + 0.15·potency exhaustion per
   second) with white-ash heat shimmer.
 - Random droughts in warm places (plains and hotter), weight 0.6.
+- Numbers reviewed: owner **"Longer"** ("lasts in-game days, slowly drying the
+  land"): now 1 (M1) to 5 (M10) Minecraft days, about twice the old total
+  effect spread over that time (**MINE**); hunger softened to
+  0.05 + 0.03·potency exhaustion per second in the sun so days of it don't
+  starve players (**MINE**).
 
 ### Engine fairness (found while testing all 12 together)
 - Disasters take turns being first each tick and get equal slices of the
-  time cap, and each may always make at least 16 block changes per tick, so a
+  time cap, and each may always make at least 32 block changes per tick, so a
   heavy disaster can never stall the others.
 
 ### Location

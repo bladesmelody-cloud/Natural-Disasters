@@ -97,7 +97,30 @@ public final class WaterTracker {
             if (w.level().getFluidState(pos).is(Fluids.WATER)) w.setQuiet(pos, Blocks.AIR.defaultBlockState());
         }
         ranges.remove(k);
+        cleanLeaks(w, x, z, from, to);
         return true;
+    }
+
+    /**
+     * Placed water that got woken anyway (lightning fire, a player's block next
+     * to it) flows into neighbouring columns and can form new sources there.
+     * Water in an untracked neighbour within the drained column's height range
+     * can only have come from us — real lakes and the sea sit below it — so it
+     * goes too.
+     */
+    private void cleanLeaks(BlockWriter w, int x, int z, int from, int to) {
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        int[][] sides = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        for (int[] d : sides) {
+            int nx = x + d[0], nz = z + d[1];
+            if (ranges.containsKey(key(nx, nz)) || !Terrain.loaded(w.level(), nx, nz)) continue;
+            for (int y = to; y >= from; y--) {
+                pos.set(nx, y, nz);
+                if (w.level().getFluidState(pos).is(Fluids.WATER) && w.level().getBlockState(pos).is(Blocks.WATER)) {
+                    w.setQuiet(pos, Blocks.AIR.defaultBlockState());
+                }
+            }
+        }
     }
 
     /** Drains placed water above {@code level} in one column (for a falling flood). */
@@ -112,8 +135,12 @@ public final class WaterTracker {
             pos.setY(y);
             if (w.level().getFluidState(pos).is(Fluids.WATER)) w.setQuiet(pos, Blocks.AIR.defaultBlockState());
         }
-        if (y < from) ranges.remove(k);
-        else ranges.put(k, range(from, y));
+        if (y < from) {
+            ranges.remove(k);
+            cleanLeaks(w, x, z, from, to);
+        } else {
+            ranges.put(k, range(from, y));
+        }
     }
 
     /** Stops tracking a column; whatever water is left there stays for good (puddles). */

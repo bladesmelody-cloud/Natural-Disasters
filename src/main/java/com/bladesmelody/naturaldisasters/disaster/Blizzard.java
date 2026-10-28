@@ -32,7 +32,8 @@ public class Blizzard extends Disaster {
 
         public static Params forMagnitude(int magnitude) {
             int m = Math.clamp(magnitude, 1, 10);
-            return new Params(48 + 24 * m, (60 + 20 * m) * 20, LAYERS[m - 1], 2 + 0.3 * m);
+            // Owner: "Longer storms" (2x the first proposal); snow builds up to the same depth, just slower.
+            return new Params(48 + 24 * m, (60 + 20 * m) * 40, LAYERS[m - 1], 2 + 0.3 * m);
         }
 
         CompoundTag save() {

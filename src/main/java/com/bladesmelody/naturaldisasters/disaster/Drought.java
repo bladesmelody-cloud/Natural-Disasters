@@ -4,6 +4,8 @@ import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
 import com.bladesmelody.naturaldisasters.engine.DisasterType;
 import com.bladesmelody.naturaldisasters.engine.DisasterTypes;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -30,7 +32,11 @@ public class Drought extends Disaster {
     public record Params(int radius, int durationTicks, int potency, double density) {
         public static Params forMagnitude(int magnitude) {
             int m = Math.clamp(magnitude, 1, 10);
-            return new Params(96 + 32 * m, (120 + 40 * m) * 20, m, 0.0006);
+            // Owner: "Longer" — lasts 1 (M1) to 5 (M10) Minecraft days and dries the land slowly:
+            // about twice the total effect the short version had, spread over the days.
+            int duration = (int) Math.round((1 + 4 * (m - 1) / 9.0) * 24000);
+            double density = 2 * 0.0006 * (120 + 40 * m) * 20 / duration;
+            return new Params(96 + 32 * m, duration, m, density);
         }
 
         /** Water at most this deep (counting down from the surface) evaporates. */
@@ -142,12 +148,44 @@ public class Drought extends Disaster {
         }
     }
 
-    /** Shallow water dries up from the shore inward; oceans and deep lakes don't. */
+    /**
+     * Ponds dry up: a small body of water (up to 80 × potency blocks across its
+     * surface) loses its whole top layer at once, so the pond sinks step by
+     * step; doing it cell by cell doesn't work, because once anything wakes a
+     * pond the infinite-water rule refills each dried spot. Bigger lakes only
+     * lose shallow shore water, and the sea is never touched.
+     */
     private void evaporate(BlockWriter w, BlockPos top) {
         ServerLevel level = w.level();
         // Plain water only (not waterlogged blocks), never the sea.
-        if (!level.getBlockState(top).is(Blocks.WATER) || !level.getFluidState(top).isSource()
-                || level.getBiome(top).is(BiomeTags.IS_OCEAN)) return;
+        if (!level.getBlockState(top).is(Blocks.WATER) || level.getBiome(top).is(BiomeTags.IS_OCEAN)) return;
+        int limit = 80 * params.potency;
+        LongOpenHashSet surface = new LongOpenHashSet();
+        LongArrayList frontier = new LongArrayList();
+        surface.add(top.asLong());
+        frontier.add(top.asLong());
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        while (!frontier.isEmpty() && surface.size() <= limit) {
+            BlockPos at = BlockPos.of(frontier.removeLong(frontier.size() - 1));
+            for (Direction d : Direction.Plane.HORIZONTAL) {
+                p.setWithOffset(at, d);
+                if (surface.contains(p.asLong()) || !Terrain.loaded(level, p.getX(), p.getZ())) continue;
+                if (!level.getBlockState(p).is(Blocks.WATER) || !level.getBlockState(p.above()).getFluidState().isEmpty()) continue;
+                surface.add(p.asLong());
+                frontier.add(p.asLong());
+            }
+        }
+        if (surface.size() <= limit) {
+            // Quiet: waking what's left would let it flow back up.
+            for (long packed : surface) w.setQuiet(BlockPos.of(packed), Blocks.AIR.defaultBlockState());
+            return;
+        }
+        shoreEvaporate(w, top);
+    }
+
+    /** A big lake: only shallow water at its shore dries. */
+    private void shoreEvaporate(BlockWriter w, BlockPos top) {
+        ServerLevel level = w.level();
         int depth = 0;
         BlockPos.MutableBlockPos p = top.mutable();
         while (level.getFluidState(p).is(Fluids.WATER) && depth <= params.maxDepth()) {
@@ -155,15 +193,12 @@ public class Drought extends Disaster {
             p.move(Direction.DOWN);
         }
         if (depth > params.maxDepth()) return;
-        boolean shore = false;
         for (Direction d : Direction.Plane.HORIZONTAL) {
             if (!level.getFluidState(top.relative(d)).is(Fluids.WATER)) {
-                shore = true;
-                break;
+                w.setQuiet(top, Blocks.AIR.defaultBlockState());
+                return;
             }
         }
-        // Quiet: waking the pond would let it flow back into the dried spot.
-        if (shore) w.setQuiet(top, Blocks.AIR.defaultBlockState());
     }
 
     private void startFire(BlockWriter w, BlockPos pos) {
@@ -176,7 +211,8 @@ public class Drought extends Disaster {
     private void heat(ServerLevel level) {
         for (ServerPlayer p : playersNear(level, params.radius)) {
             if (!level.canSeeSky(p.blockPosition().above()) || !level.isBrightOutside()) continue;
-            p.causeFoodExhaustion(0.3F + 0.15F * params.potency);
+            // Mild per second, since it lasts for days (M5: about one hunger point per 20 s in the sun).
+            p.causeFoodExhaustion(0.05F + 0.03F * params.potency);
             level.sendParticles(p, ParticleTypes.WHITE_ASH, true, true, p.getX(), p.getY() + 1, p.getZ(), 10, 6, 1, 6, 0.0);
         }
     }

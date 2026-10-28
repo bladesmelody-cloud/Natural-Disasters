@@ -36,7 +36,7 @@ public final class BlockWriter {
     }
 
     /** Changes every disaster may make each tick even when the time cap is used up, so none stalls. */
-    public static final int GUARANTEED = 16;
+    public static final int GUARANTEED = 32;
 
     /** Whether there is budget (block count and time) left this tick. */
     public boolean hasBudget() {

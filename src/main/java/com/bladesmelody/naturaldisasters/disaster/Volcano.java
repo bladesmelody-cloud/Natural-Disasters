@@ -543,7 +543,9 @@ public class Volcano extends Disaster {
     private static void scorchColumn(BlockWriter w, int x, int z) {
         ServerLevel level = w.level();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, Terrain.surface(level, x, z), z);
-        for (int i = 0; i < 24 && w.hasBudget(); i++, pos.move(0, -1, 0)) {
+        // A column is always finished once started (at most 24 blocks): stopping half-way would
+        // leave it counted as done with unburnt trunks under the burnt-off leaves.
+        for (int i = 0; i < 24; i++, pos.move(0, -1, 0)) {
             BlockState s = level.getBlockState(pos);
             if (s.isAir()) continue;
             if (s.is(BlockTags.LOGS)) {

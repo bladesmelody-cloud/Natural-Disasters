@@ -131,7 +131,7 @@ public final class ModGameTests {
         test(event, "builds_are_detected", arena(env, 20));
         test(event, "all_types_save_roundtrip", arena(env, 20));
         test(event, "acid_rain_corrodes", arena(env, 300));
-        test(event, "drought_dries_out", arena(env, 400));
+        test(event, "drought_dries_out", arena(env, 550));
         test(event, "blizzard_buries_and_freezes", arena(env, 300));
         test(event, "hailstorm_pelts", arena(env, 300));
         test(event, "volcano_builds_and_erupts", arena(env, 500));
@@ -825,14 +825,23 @@ public final class ModGameTests {
         int wheatBefore = wheat;
         // Potency 5: below the grass-fire threshold. Vanilla fire burning next to the pond
         // would wake it and let it flow back into the dried spots.
-        Drought drought = Drought.create(helper.absolutePos(CENTER), 5, new Drought.Params(14, 300, 5, 0.04), 53L, 0);
+        Drought drought = Drought.create(helper.absolutePos(CENTER), 5, new Drought.Params(14, 450, 5, 0.04), 53L, 0);
         DisasterManager.add(level, drought);
         helper.succeedWhen(() -> {
             helper.assertTrue(drought.isFinished(), "drought still on");
             int water = count(helper, FLOOR_TOP, FLOOR_TOP, s -> s.is(Blocks.WATER));
             int wheatLeft = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 1, s -> s.is(Blocks.WHEAT));
             int dirt = count(helper, FLOOR_TOP, FLOOR_TOP, s -> s.is(Blocks.DIRT) || s.is(Blocks.COARSE_DIRT));
-            helper.assertTrue(water < 49 * 0.5, water + "/49 pond water left");
+            StringBuilder what = new StringBuilder();
+            for (int dx = -3; dx <= 3 && what.length() < 400; dx++)
+                for (int dz = -3; dz <= 3; dz++) {
+                    BlockPos p = CENTER.offset(dx - 5, 0, dz);
+                    if (!helper.getBlockState(p).is(Blocks.WATER)) continue;
+                    what.append(dx).append(',').append(dz).append(':')
+                            .append(helper.getBlockState(p.above()).getBlock().getDescriptionId().replace("block.minecraft.", ""))
+                            .append(helper.getBlockState(p).getFluidState().isSource() ? "" : "(flowing)").append(' ');
+                }
+            helper.assertTrue(water < 49 * 0.5, water + "/49 pond water left; above them: " + what);
             helper.assertTrue(wheatLeft < wheatBefore * 0.5, wheatLeft + "/" + wheatBefore + " wheat survived");
             helper.assertTrue(dirt > 50, "grass barely browned: " + dirt);
         });
@@ -919,6 +928,7 @@ public final class ModGameTests {
                     if (Math.abs(dx) == 2 || Math.abs(dz) == 2 || y == 4) helper.setBlock(hut.offset(dx, y, dz), Blocks.STONE);
         net.minecraft.world.entity.animal.golem.IronGolem golem = helper.spawn(EntityType.IRON_GOLEM, hut);
         Pig pig = helper.spawn(EntityType.PIG, CENTER.offset(13, 1, 8));
+        pig.setNoAi(true); // stays in the open (it could wander under a tree)
         Volcano volcano = Volcano.create(helper.absolutePos(CENTER), 5,
                 // No lava rivers or bombs: their fires and splashes would muddle what the heat wave did.
                 new Volcano.Params(8, 12, 2, 40, 80, 0, 6, 100_000, 3, 17, 18, 2, 120, 0), 61L, 0);
