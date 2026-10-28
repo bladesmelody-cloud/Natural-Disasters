@@ -72,6 +72,16 @@ mods (Ooze Gal-Ore, Golemancy).
   a shared scheduler applies a capped, configurable number per tick, with
   batched network updates, so huge effects spread over seconds instead of
   freezing the server.
+- Default budget: **adaptive, ~2000 block changes/tick max**, automatically cut
+  back when server tick time goes over ~40 ms (numbers **MINE**, configurable).
+
+### Commands (v1)
+- `/disaster start <type> [magnitude] [player|position]`, `/disaster stop`,
+  `/disaster list` (active ones), `/disaster random on|off`. Ops only.
+
+### Persistence
+- **Resume after restart**: active disasters (including their queued block
+  changes) and the random timer are saved with the world.
 
 ### Triggering
 - **Random + commands**: disasters happen naturally at random (configurable
