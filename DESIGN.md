@@ -103,9 +103,11 @@ have done tornados pretty well".
   from uncapped debris entities and chunk loading, so here debris is capped
   and everything goes through the block budget.
 - EF scale from magnitude: M1–2 EF0, M3–4 EF1, M5–6 EF2, M7 EF3, M8–9 EF4,
-  M10 EF5. Core radius 3/5/7/10/14/20, peak wind 80/110/135/165/200/250 mph,
-  lifetime 30/45/60/80/100/120 s, speed 5→3 blocks/s, wanders up to
-  48 + 24·EF blocks from where it touched down.
+  M10 EF5. Peak wind 80/110/135/165/200/250 mph, speed 5→3 blocks/s, wanders
+  up to 48 + 24·EF blocks from where it touched down.
+- Sizes reviewed: owner chose **"Bigger"** cores and **"Longer-lived"**: core
+  radius 5/9/12/18/25/35 (was 3/5/7/10/14/20), lifetime 60/90/120/160/200/240 s
+  (was 30…120 s). Exact numbers **MINE**.
 - Wind falls off outside the core (∝ (core/d)^1.5, felt to 1.8 cores). Each
   tick random columns in reach are stripped top-down while the wind beats
   each block's resistance (shared `Wind` table: plants/leaves 45, glass 60,
@@ -136,6 +138,7 @@ have done tornados pretty well".
   new sources. Grass under the flood turns to dirt at once for the same reason
   (its random tick would wake the water).
 - Random floods only where it rains (not deserts or snow), weight 0.8.
+- Numbers reviewed: owner **"Keep"**.
 
 ### Tsunami — freestyled, all **MINE**
 - Comes from the side with the most open water near the strike (16
@@ -149,6 +152,8 @@ have done tornados pretty well".
   splash particles; 10 rows behind the front it drains, leaving sand on 30 % of
   the land it covered and puddles in 8 % of spots.
 
+- Numbers reviewed (tsunami): owner **"Keep"**.
+
 ### Hurricane — freestyled, all **MINE**
 - Saffir-Simpson from magnitude: M1–2 tropical storm (60 mph), M3–4 cat 1
   (85), M5 cat 2 (100), M6 cat 3 (120), M7–8 cat 4 (145), M9–10 cat 5 (170).
@@ -159,7 +164,10 @@ have done tornados pretty well".
   two weak top blocks (Wind table, 70–100 % of local wind) — roofs, leaves,
   crops, fences over a huge area rather than a tornado's total wreck.
 - Creatures under open sky are pushed around the storm (counter-clockwise,
-  slightly inward); indoors is safe. Lightning about every 2 s at M1 down to
+  slightly inward); indoors is safe. Sizes reviewed: owner **"Keep"** for
+  size/strength, **"Stronger push"** for the wind on creatures: push every
+  2 ticks (was 5) and gusts over 100 mph lift creatures off their feet
+  (10 % per push) — exact numbers **MINE**. Lightning about every 2 s at M1 down to
   every 0.5 s at M10. Thunderstorm weather (rain only for tropical storms).
 - Storm surge 1–5 blocks: low land within 6 blocks of open water floods
   (quiet tracked water), drained once the storm passes. Open water itself
@@ -182,6 +190,15 @@ have done tornados pretty well".
   lake stay. Lava is placed quietly so it stays where it's put.
 - Random volcanoes anywhere with a sky, weight 0.3 (rarest).
 
+- **Rework requested** (owner, numbers review): "Eruption has stages. Use VEI
+  scaling. VEI 3+ has minor earth quake nearby, followed by a wave of intense
+  heat and ash that massively burns all life and covers a large area around
+  the volcano in ash as well as lava streams. perpetual night in the entire
+  area for 1000's of blocks for days to weeks. Everything past 3 gets worse by
+  10x the amount. And should be very rare. Anything 5+ will make perpetual
+  night for the entire world for weeks (all minecraft days)". After an
+  eruption: **dormant landmark** (owner's pick). Details being settled.
+
 ### Wildfire — freestyled, all **MINE**
 - 1 + M/2 ignition points within a third of radius 32–256; burns for
   60 + 20·M s with one wind direction. Each burning spot waits 1 s, then can
@@ -189,6 +206,10 @@ have done tornados pretty well".
   then burns out: logs gone or left as charred (stripped dark oak) trunks,
   leaves/planks/wool/hay/crops/plants gone, grass → coarse dirt.
 - Spreads half as fast where it's raining.
+- Numbers reviewed: owner **"Smaller area"**: radius now 16–128 (half of
+  the first 32–256).
+- Owner: **"Grass burns, but slowly"**: grass blocks, grass, ferns, bushes and
+  flowers carry fire at a third of the chance of woods and wooden builds.
 - Own spread (works with fire tick off, stays inside the radius, capped at
   1500 + 500·M burning spots); vanilla fire may add to it. Smoke and crackle.
 - Random wildfires in forests, taigas, savannas, jungles or hot places,
@@ -249,6 +270,14 @@ have done tornados pretty well".
 ### Location
 - Disasters strike **near a random online player** (within some distance), so
   they are seen and unloaded chunks aren't touched.
+- Owner: "natural disasters to have a propensity to avoid builds/buildings
+  when spawning near a player. Its still possible but very rare."
+  Implementation (**MINE**): up to 16 candidate spots (8 at the normal 16–64
+  distance, 8 out to 128); each gets a build score within 48 blocks (POIs such
+  as beds/workstations/bells, block entities near the surface, sampled
+  planks/glass/wool/bricks/doors/torches/paths/farmland); the lowest score
+  wins. Config `ignoreBuildsChance` (default 5 %) skips the check. Big
+  disasters can still reach builds at their edges.
 
 ### Identity & stack
 - Mod ID `naturaldisasters`, display name **Natural Disasters**.
@@ -302,8 +331,9 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
   8 falling-block entities per second per quake, the rest move instantly.
   Heave moves the top 12 blocks of each column. Fissures open during the first
   60 % of the shaking. Knockback = 0.02 × magnitude every 5 ticks.
-- Random disasters skip players in dimensions with a ceiling (the Nether) for
-  now; `/disaster start` there still works but treats the roof as surface.
+- **Overworld only** for random disasters (owner: "Overworld only for now");
+  `/disaster start` still works in any dimension (Nether treats the roof as
+  surface). Nether-specific disasters maybe later.
 - Building damage (owner chose **"More building damage"** after the first
   screenshots): from M5 an extra shaking pass hits the top 8 blocks; wood
   (planks, stairs, slabs, fences, trapdoors), wool, terracotta, bricks, mud
@@ -328,16 +358,12 @@ during an M6 volcano + M6 flood together, and around autosaves; typical
 
 ## Open questions
 - Review every **MINE** number together (owner: "we can go over the numbers
-  and magnitude later").
-- Wildfire is very strong on grassland (grass counts as fuel, so open plains
-  burn to coarse dirt quickly) — keep, or only forests?
+  and magnitude later"), **one disaster at a time** (owner's choice), Keep /
+  Bigger / Smaller per table.
 - Blizzard in a warm biome shows rain, not snow (vanilla weather follows the
   biome); our snowflake particles are thin. Visual pass.
 - Hurricane has no visual of its own beyond the storm (eye/clouds). Visual pass.
 - Tornado funnel uses vanilla smoke particles (small); custom big funnel
   particles in the visual pass.
-- Owner said to freestyle the rest; review all **MINE** numbers together.
-- Should disasters happen in the Nether / End, and how?
-- After the building-damage pass an M7 quake leaves village houses holed with
-  rubble around them but still recognisable; higher magnitudes hit harder.
-  Owner to judge from play-testing.
+- Earthquake strength: owner **"Fine, judge after play-testing"** — revisit
+  once they've felt quakes in their own world.

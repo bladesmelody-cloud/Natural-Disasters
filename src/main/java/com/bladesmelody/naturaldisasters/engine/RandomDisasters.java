@@ -2,6 +2,7 @@ package com.bladesmelody.naturaldisasters.engine;
 
 import com.bladesmelody.naturaldisasters.Config;
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
+import com.bladesmelody.naturaldisasters.disaster.Builds;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -10,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 /**
@@ -42,9 +44,9 @@ public final class RandomDisasters {
     /** Starts a random disaster near a random online player now. */
     public static Optional<Disaster> trigger(MinecraftServer server, int warningTicks) {
         RandomSource random = server.overworld().getRandom();
-        // Not under a ceiling (Nether): the "surface" there is the bedrock roof.
+        // Overworld only for now (owner's choice); commands still work in any dimension.
         List<ServerPlayer> players = server.getPlayerList().getPlayers().stream()
-                .filter(p -> !p.isSpectator() && !p.level().dimensionType().hasCeiling()).toList();
+                .filter(p -> !p.isSpectator() && p.level().dimension() == Level.OVERWORLD).toList();
         List<DisasterType<?>> types = DisasterTypes.all().stream().filter(DisasterType::randomEnabled).toList();
         if (players.isEmpty() || types.isEmpty()) return Optional.empty();
 
@@ -70,17 +72,38 @@ public final class RandomDisasters {
         return types.getLast();
     }
 
+    /** How far around a candidate spot to look for buildings. */
+    private static final int BUILD_CHECK_RADIUS = 48;
+
+    /**
+     * Picks where to strike near a player: several candidate spots (some a bit
+     * farther out), preferring the one with the fewest signs of buildings, so
+     * bases and villages are rarely hit. With a small chance (config) the
+     * first spot is used regardless.
+     */
     private static BlockPos pickCenter(ServerLevel level, BlockPos near, RandomSource random) {
         int min = Config.STRIKE_MIN_DISTANCE.getAsInt();
         int max = Math.max(min, Config.STRIKE_MAX_DISTANCE.getAsInt());
-        for (int attempt = 0; attempt < 8; attempt++) {
+        boolean ignoreBuilds = random.nextDouble() < Config.IGNORE_BUILDS_CHANCE.getAsDouble();
+        BlockPos best = null;
+        int bestScore = Integer.MAX_VALUE;
+        for (int attempt = 0; attempt < 16; attempt++) {
+            // First half within the normal range, second half up to twice as far.
+            int far = attempt < 8 ? max : max * 2;
+            int close = attempt < 8 ? min : max;
             double angle = random.nextDouble() * Math.PI * 2;
-            double dist = Mth.lerp(random.nextDouble(), min, max);
+            double dist = Mth.lerp(random.nextDouble(), close, far);
             BlockPos p = near.offset((int) (Math.cos(angle) * dist), 0, (int) (Math.sin(angle) * dist));
-            if (BlockWriter.isLoaded(level, p.atY(level.getMinY()))) {
-                return p.atY(level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, p.getX(), p.getZ()));
+            if (!BlockWriter.isLoaded(level, p.atY(level.getMinY()))) continue;
+            p = p.atY(level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, p.getX(), p.getZ()));
+            if (ignoreBuilds) return p;
+            int score = Builds.score(level, p, BUILD_CHECK_RADIUS);
+            if (score < bestScore) {
+                best = p;
+                bestScore = score;
+                if (score == 0) break;
             }
         }
-        return near;
+        return best != null ? best : near;
     }
 }

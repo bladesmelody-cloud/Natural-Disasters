@@ -163,7 +163,7 @@ public class Hurricane extends Disaster {
             strip(w, random, column, wind);
             if (params.surge > 0 && i % 4 == 0) surgeAt(w, column);
         }
-        if (activeTicks % 5 == 0) blowEntities(level);
+        if (activeTicks % 2 == 0) blowEntities(level);
         if (random.nextInt(Math.max(4, 40 - 3 * magnitude)) == 0) lightning(level, random);
         if (activeTicks % 30 == 0) howl(level);
     }
@@ -222,9 +222,12 @@ public class Hurricane extends Disaster {
             double dx = e.getX() - eyeX, dz = e.getZ() - eyeZ;
             double dist = Math.sqrt(dx * dx + dz * dz);
             if (dist > r || dist < 0.5) continue;
-            double force = windAt(dist) / 170.0 * 0.12;
+            double wind = windAt(dist);
+            double force = wind / 170.0 * 0.12;
             Vec3 spin = new Vec3(-dz / dist, 0, dx / dist).scale(force).add(new Vec3(-dx / dist, 0, -dz / dist).scale(force * 0.3));
-            e.setDeltaMovement(e.getDeltaMovement().add(spin));
+            // Strong gusts knock creatures off their feet now and then.
+            double lift = wind > 100 && e.onGround() && level.getRandom().nextInt(10) == 0 ? 0.25 + wind / 170.0 * 0.2 : 0;
+            e.setDeltaMovement(e.getDeltaMovement().add(spin.x, lift, spin.z));
             e.hurtMarked = true;
         }
     }

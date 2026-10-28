@@ -97,6 +97,7 @@ public final class ModGameTests {
         FUNCTIONS.register("acid_rain_corrodes", () -> ModGameTests::acidRainCorrodes);
         FUNCTIONS.register("drought_dries_out", () -> ModGameTests::droughtDriesOut);
         FUNCTIONS.register("all_types_save_roundtrip", () -> ModGameTests::allTypesSaveRoundtrip);
+        FUNCTIONS.register("builds_are_detected", () -> ModGameTests::buildsAreDetected);
         FUNCTIONS.register("command_start_list_stop", () -> ModGameTests::commandStartListStop);
     }
 
@@ -118,6 +119,7 @@ public final class ModGameTests {
         test(event, "earthquake_wrecks_house", arena(env, 650));
         test(event, "earthquake_save_roundtrip", arena(env, 20));
         test(event, "command_start_list_stop", arena(env, 40));
+        test(event, "builds_are_detected", arena(env, 20));
         test(event, "all_types_save_roundtrip", arena(env, 20));
         test(event, "acid_rain_corrodes", arena(env, 300));
         test(event, "drought_dries_out", arena(env, 400));
@@ -675,8 +677,9 @@ public final class ModGameTests {
         fill(helper, FLOOR_TOP, FLOOR_TOP, Blocks.GRASS_BLOCK.defaultBlockState());
         ServerLevel level = helper.getLevel();
         int logs = 0, leaves = 0;
-        for (int dx = -12; dx <= 12; dx += 4) {
-            for (int dz = -12; dz <= 12; dz += 4) {
+        // Canopies touch (trees 3 apart), so the fire can cross the forest without the slow grass.
+        for (int dx = -12; dx <= 12; dx += 3) {
+            for (int dz = -12; dz <= 12; dz += 3) {
                 if (dx * dx + dz * dz > 150) continue;
                 BlockPos base = CENTER.offset(dx, 1, dz);
                 for (int y = 0; y < 4; y++, logs++) helper.setBlock(base.above(y), Blocks.OAK_LOG);
@@ -845,6 +848,23 @@ public final class ModGameTests {
             }
         }
         helper.assertTrue(DisasterTypes.all().size() == 12, "expected 12 disaster types, have " + DisasterTypes.all().size());
+        helper.succeed();
+    }
+
+    /** Bare ground scores 0 for buildings; a little hut with a chest scores more. */
+    private static void buildsAreDetected(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        BlockPos at = helper.absolutePos(CENTER);
+        int empty = com.bladesmelody.naturaldisasters.disaster.Builds.score(level, at, 12);
+        helper.assertTrue(empty == 0, "bare stone scored " + empty);
+        for (int dx = -3; dx <= 3; dx++)
+            for (int dz = -3; dz <= 3; dz++)
+                for (int y = 1; y <= 3; y++)
+                    if (Math.abs(dx) == 3 || Math.abs(dz) == 3 || y == 3) helper.setBlock(CENTER.offset(dx, y, dz), Blocks.OAK_PLANKS);
+        helper.setBlock(CENTER.offset(0, 1, 0), Blocks.CHEST);
+        int hut = com.bladesmelody.naturaldisasters.disaster.Builds.score(level, at, 12);
+        helper.assertTrue(hut > empty + 3, "hut only scored " + hut);
         helper.succeed();
     }
 

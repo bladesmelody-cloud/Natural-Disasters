@@ -19,6 +19,7 @@ public final class Config {
     public static final ModConfigSpec.IntValue WARNING_SECONDS;
     public static final ModConfigSpec.IntValue STRIKE_MIN_DISTANCE;
     public static final ModConfigSpec.IntValue STRIKE_MAX_DISTANCE;
+    public static final ModConfigSpec.DoubleValue IGNORE_BUILDS_CHANCE;
 
     /** Disaster names, in config order. */
     public static final List<String> DISASTERS = List.of("earthquake", "meteor", "tornado", "hurricane", "acid_rain",
@@ -50,6 +51,8 @@ public final class Config {
                 .defineInRange("strikeMinDistance", 16, 0, 512);
         STRIKE_MAX_DISTANCE = b.comment("...and at most this many.")
                 .defineInRange("strikeMaxDistance", 64, 0, 512);
+        IGNORE_BUILDS_CHANCE = b.comment("Random disasters prefer spots away from buildings; this is the chance they ignore that and strike anyway.")
+                .defineInRange("ignoreBuildsChance", 0.05, 0.0, 1.0);
         b.pop();
 
         for (String name : DISASTERS) {

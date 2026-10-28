@@ -29,7 +29,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public class Wildfire extends Disaster {
     /** Everything that sets a wildfire's size; saved with it. */
     public record Params(int radius, int durationTicks, int ignitions, double spread, int perTick, int maxFront) {
-        private static final int[] RADIUS = {32, 40, 48, 64, 80, 96, 128, 160, 192, 256};
+        private static final int[] RADIUS = {16, 20, 24, 32, 40, 48, 64, 80, 96, 128};
 
         public static Params forMagnitude(int magnitude) {
             int m = Math.clamp(magnitude, 1, 10);
@@ -184,6 +184,8 @@ public class Wildfire extends Disaster {
                     if (!Terrain.loaded(level, fuel.getX(), fuel.getZ())) continue;
                     BlockState s = level.getBlockState(fuel);
                     if (!burns(level, fuel, s)) continue;
+                    // Open grassland carries fire at a third of the speed of woods and builds.
+                    if (grassy(s) && random.nextInt(3) != 0) continue;
                     if (s.canBeReplaced() && s.getFluidState().isEmpty()) {
                         light(w, fuel, tick);
                     } else {
@@ -194,6 +196,11 @@ public class Wildfire extends Disaster {
                 }
             }
         }
+    }
+
+    private static boolean grassy(BlockState s) {
+        return s.is(Blocks.GRASS_BLOCK) || s.is(Blocks.SHORT_GRASS) || s.is(Blocks.TALL_GRASS) || s.is(Blocks.FERN)
+                || s.is(Blocks.LARGE_FERN) || s.is(Blocks.BUSH) || s.is(BlockTags.FLOWERS);
     }
 
     private static boolean burns(ServerLevel level, BlockPos pos, BlockState s) {

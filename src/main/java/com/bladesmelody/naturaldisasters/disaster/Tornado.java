@@ -43,9 +43,9 @@ public class Tornado extends Disaster {
         }
 
         private static final int[] EF = {0, 0, 1, 1, 2, 2, 3, 4, 4, 5};
-        private static final int[] CORE = {3, 5, 7, 10, 14, 20};
+        private static final int[] CORE = {5, 9, 12, 18, 25, 35};
         private static final double[] WIND = {80, 110, 135, 165, 200, 250};
-        private static final int[] SECONDS = {30, 45, 60, 80, 100, 120};
+        private static final int[] SECONDS = {60, 90, 120, 160, 200, 240};
         private static final double[] SPEED = {0.25, 0.25, 0.22, 0.2, 0.18, 0.15};
         private static final int[] BITE = {2, 3, 4, 5, 6, 8};
 
