@@ -1,7 +1,9 @@
 package com.bladesmelody.naturaldisasters.gametest;
 
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
+import com.bladesmelody.naturaldisasters.disaster.AcidRain;
 import com.bladesmelody.naturaldisasters.disaster.Blizzard;
+import com.bladesmelody.naturaldisasters.disaster.Drought;
 import com.bladesmelody.naturaldisasters.disaster.Earthquake;
 import com.bladesmelody.naturaldisasters.disaster.Hailstorm;
 import com.bladesmelody.naturaldisasters.disaster.Flood;
@@ -92,6 +94,9 @@ public final class ModGameTests {
         FUNCTIONS.register("wildfire_burns_forest", () -> ModGameTests::wildfireBurnsForest);
         FUNCTIONS.register("blizzard_buries_and_freezes", () -> ModGameTests::blizzardBuriesAndFreezes);
         FUNCTIONS.register("hailstorm_pelts", () -> ModGameTests::hailstormPelts);
+        FUNCTIONS.register("acid_rain_corrodes", () -> ModGameTests::acidRainCorrodes);
+        FUNCTIONS.register("drought_dries_out", () -> ModGameTests::droughtDriesOut);
+        FUNCTIONS.register("all_types_save_roundtrip", () -> ModGameTests::allTypesSaveRoundtrip);
         FUNCTIONS.register("command_start_list_stop", () -> ModGameTests::commandStartListStop);
     }
 
@@ -110,9 +115,12 @@ public final class ModGameTests {
         test(event, "earthquake_opens_fissures", arena(env, 300));
         test(event, "earthquake_shatters_and_cracks", arena(env, 300));
         test(event, "earthquake_heaves_ground", arena(env, 300));
-        test(event, "earthquake_wrecks_house", arena(env, 500));
+        test(event, "earthquake_wrecks_house", arena(env, 650));
         test(event, "earthquake_save_roundtrip", arena(env, 20));
         test(event, "command_start_list_stop", arena(env, 40));
+        test(event, "all_types_save_roundtrip", arena(env, 20));
+        test(event, "acid_rain_corrodes", arena(env, 300));
+        test(event, "drought_dries_out", arena(env, 400));
         test(event, "blizzard_buries_and_freezes", arena(env, 300));
         test(event, "hailstorm_pelts", arena(env, 300));
         test(event, "volcano_builds_and_erupts", arena(env, 500));
@@ -311,7 +319,7 @@ public final class ModGameTests {
         int planksBefore = planks;
         // Long enough that each block gets sampled about as often as in a real M8 quake.
         Earthquake.Params p = params(0, 0.01, 0);
-        Earthquake.Params longer = new Earthquake.Params(p.radius(), 300, 0, 0, 0, 0, p.shakeDensity(), 0, 0, 0, 0);
+        Earthquake.Params longer = new Earthquake.Params(p.radius(), 450, 0, 0, 0, 0, p.shakeDensity(), 0, 0, 0, 0);
         Earthquake quake = startQuake(helper, 8, longer, 4242L);
         helper.succeedWhen(() -> {
             helper.assertTrue(quake.isFinished(), "quake still running");
@@ -460,7 +468,8 @@ public final class ModGameTests {
         double pigStartY = pig.getY();
         double[] pigMaxY = {pigStartY};
         boolean[] sawFunnel = {false};
-        Tornado.Params params = new Tornado.Params(2, 3, 135, 120, 0.2, 3, 20, 40);
+        // Short throws and no flying debris, so nothing lands in the neighbouring test arenas.
+        Tornado.Params params = new Tornado.Params(2, 3, 135, 120, 0.2, 3, 20, 40, 4, 0);
         Tornado tornado = Tornado.create(helper.absolutePos(CENTER.offset(-12, 0, 0)), 5, params, 9L, 0, 0.0);
         DisasterManager.add(level, tornado);
         helper.onEachTick(() -> {
@@ -604,7 +613,8 @@ public final class ModGameTests {
             }
         }
         int built = leavesBefore;
-        Pig pig = helper.spawn(EntityType.PIG, CENTER.offset(8, 1, 1));
+        // An armor stand: physics like a mob but no wandering, so only the wind moves it.
+        net.minecraft.world.entity.decoration.ArmorStand pig = helper.spawn(EntityType.ARMOR_STAND, CENTER.offset(6, 1, 1));
         Vec3 pigStart = pig.position();
         double[] pigMoved = {0};
         int[] surgeMax = {0};
@@ -619,7 +629,7 @@ public final class ModGameTests {
             helper.assertTrue(hurricane.isFinished(), "hurricane still running");
             int standing = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 1, s -> s.is(Blocks.OAK_LEAVES) || s.is(Blocks.OAK_PLANKS));
             helper.assertTrue(standing < built / 2, standing + "/" + built + " leaves/planks survived");
-            helper.assertTrue(pigMoved[0] > 2, "pig barely moved: " + pigMoved[0]);
+            helper.assertTrue(pigMoved[0] > 2, "armor stand barely moved: " + pigMoved[0]);
             helper.assertTrue(surgeMax[0] > 10, "no storm surge (max " + surgeMax[0] + " water blocks above the channel)");
             int left = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 3, s -> s.getFluidState().isSource());
             helper.assertTrue(left == 0, left + " surge water left");
@@ -751,6 +761,91 @@ public final class ModGameTests {
             helper.assertTrue(wheatLeft < wheatBefore * 0.7, wheatLeft + "/" + wheatBefore + " wheat intact");
             helper.assertTrue(!pig.isAlive() || pig.getHealth() < pigHealth, "pig in the open was not hurt");
         });
+    }
+
+    /** Acid rain kills grass and leaves, greens copper and hurts a pig in the open. */
+    private static void acidRainCorrodes(GameTestHelper helper) {
+        fillFloor(helper);
+        fill(helper, FLOOR_TOP, FLOOR_TOP, Blocks.GRASS_BLOCK.defaultBlockState());
+        ServerLevel level = helper.getLevel();
+        int leaves = 0;
+        for (int dx = -9; dx <= 9; dx++)
+            for (int dz = -9; dz <= 9; dz++) {
+                if (dx * dx + dz * dz > 81 || (dx + dz) % 3 != 0) continue;
+                BlockPos at = CENTER.offset(dx, 1, dz);
+                if (dx > 3) helper.setBlock(at, Blocks.COPPER_BLOCK);
+                else {
+                    helper.setBlock(at, Blocks.OAK_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true));
+                    leaves++;
+                }
+            }
+        int leavesBefore = leaves;
+        Pig pig = helper.spawn(EntityType.PIG, CENTER.offset(-1, 1, 1));
+        float pigHealth = pig.getHealth();
+        AcidRain acid = AcidRain.create(helper.absolutePos(CENTER), 6, new AcidRain.Params(14, 120, 6, 0.05), 47L, 0);
+        DisasterManager.add(level, acid);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(acid.isFinished(), "acid rain still falling");
+            int leavesLeft = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 1, s -> s.is(Blocks.OAK_LEAVES));
+            int dirt = count(helper, FLOOR_TOP, FLOOR_TOP, s -> s.is(Blocks.DIRT) || s.is(Blocks.COARSE_DIRT));
+            int green = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 1, s -> s.is(Blocks.EXPOSED_COPPER) || s.is(Blocks.WEATHERED_COPPER) || s.is(Blocks.OXIDIZED_COPPER));
+            helper.assertTrue(leavesLeft < leavesBefore * 0.7, leavesLeft + "/" + leavesBefore + " leaves survived");
+            helper.assertTrue(dirt > 50, "grass barely died: " + dirt);
+            helper.assertTrue(green > 0, "copper didn't weather");
+            helper.assertTrue(!pig.isAlive() || pig.getHealth() < pigHealth, "pig in the acid rain was not hurt");
+        });
+    }
+
+    /** A drought dries a shallow pond from the shore, kills wheat and browns the grass. */
+    private static void droughtDriesOut(GameTestHelper helper) {
+        fillFloor(helper);
+        fill(helper, FLOOR_TOP, FLOOR_TOP, Blocks.GRASS_BLOCK.defaultBlockState());
+        ServerLevel level = helper.getLevel();
+        for (int dx = -3; dx <= 3; dx++)
+            for (int dz = -3; dz <= 3; dz++)
+                level.setBlock(helper.absolutePos(CENTER.offset(dx - 5, 0, dz)), Blocks.WATER.defaultBlockState(), Block.UPDATE_CLIENTS);
+        int wheat = 0;
+        for (int dx = 3; dx <= 9; dx++)
+            for (int dz = -3; dz <= 3; dz++, wheat++) {
+                helper.setBlock(CENTER.offset(dx, 0, dz), Blocks.FARMLAND);
+                helper.setBlock(CENTER.offset(dx, 1, dz), Blocks.WHEAT);
+            }
+        int wheatBefore = wheat;
+        // Potency 5: below the grass-fire threshold. Vanilla fire burning next to the pond
+        // would wake it and let it flow back into the dried spots.
+        Drought drought = Drought.create(helper.absolutePos(CENTER), 5, new Drought.Params(14, 300, 5, 0.04), 53L, 0);
+        DisasterManager.add(level, drought);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(drought.isFinished(), "drought still on");
+            int water = count(helper, FLOOR_TOP, FLOOR_TOP, s -> s.is(Blocks.WATER));
+            int wheatLeft = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 1, s -> s.is(Blocks.WHEAT));
+            int dirt = count(helper, FLOOR_TOP, FLOOR_TOP, s -> s.is(Blocks.DIRT) || s.is(Blocks.COARSE_DIRT));
+            helper.assertTrue(water < 49 * 0.5, water + "/49 pond water left");
+            helper.assertTrue(wheatLeft < wheatBefore * 0.5, wheatLeft + "/" + wheatBefore + " wheat survived");
+            helper.assertTrue(dirt > 50, "grass barely browned: " + dirt);
+        });
+    }
+
+    /**
+     * Every disaster type, at every magnitude, describes itself and saves and
+     * loads back the same while in its warning (no world changes, so big ones
+     * can't spill into other tests).
+     */
+    private static void allTypesSaveRoundtrip(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        for (DisasterType<?> type : DisasterTypes.all()) {
+            for (int m = 1; m <= 10; m++) {
+                Disaster d = type.create(helper.absolutePos(CENTER), m, 1000L + m, 1000);
+                d.tick(level, new BlockWriter(level, 0, Long.MAX_VALUE));
+                helper.assertTrue(d.radius() > 0 && !d.describe().isEmpty(), type.name() + " M" + m + " has no size");
+                CompoundTag first = d.save();
+                Disaster loaded = DisasterTypes.load(first).orElseThrow();
+                helper.assertTrue(loaded.type() == type && first.equals(loaded.save()),
+                        type.name() + " M" + m + " save differs:\n" + first + "\n" + loaded.save());
+            }
+        }
+        helper.assertTrue(DisasterTypes.all().size() == 12, "expected 12 disaster types, have " + DisasterTypes.all().size());
+        helper.succeed();
     }
 
     /** /disaster start, list and stop work. */

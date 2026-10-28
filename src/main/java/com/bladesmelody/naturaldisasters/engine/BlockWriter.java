@@ -35,9 +35,13 @@ public final class BlockWriter {
         return level;
     }
 
+    /** Changes every disaster may make each tick even when the time cap is used up, so none stalls. */
+    public static final int GUARANTEED = 16;
+
     /** Whether there is budget (block count and time) left this tick. */
     public boolean hasBudget() {
         if (remaining <= 0) return false;
+        if (changed < GUARANTEED) return true;
         if ((changed & 31) == 0 && System.nanoTime() > deadlineNanos) {
             remaining = 0;
             return false;

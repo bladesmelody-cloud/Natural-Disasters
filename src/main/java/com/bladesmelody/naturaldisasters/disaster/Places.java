@@ -35,6 +35,11 @@ public final class Places {
         return openSky(level, pos) && (b.getBaseTemperature() >= 1.0F || !b.hasPrecipitation() && b.getBaseTemperature() > 0.5F);
     }
 
+    /** Warm places (plains and hotter), where a drought makes sense. */
+    public static boolean warm(ServerLevel level, BlockPos pos) {
+        return openSky(level, pos) && biome(level, pos).getBaseTemperature() >= 0.5F;
+    }
+
     /** Within reach of an ocean: samples biomes in a ring around the spot. */
     public static boolean nearOcean(ServerLevel level, BlockPos pos) {
         if (!openSky(level, pos)) return false;

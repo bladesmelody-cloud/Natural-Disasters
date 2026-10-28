@@ -35,9 +35,16 @@ public final class DisasterManager {
 
         int total = adaptBudget(server);
         int share = Math.max(16, total / running.size());
-        long deadline = System.nanoTime() + Config.MAX_WORK_MS_PER_TICK.getAsInt() * 1_000_000L;
+        long end = System.nanoTime() + Config.MAX_WORK_MS_PER_TICK.getAsInt() * 1_000_000L;
 
-        for (Running r : running) {
+        // Start at a different disaster each tick and give each a fair slice of the
+        // time left, so none is starved when the time cap is hit.
+        int n = running.size();
+        int first = (int) (server.getTickCount() % n);
+        for (int i = 0; i < n; i++) {
+            Running r = running.get((first + i) % n);
+            long now = System.nanoTime();
+            long deadline = now + Math.max(0, end - now) / (n - i);
             r.disaster.tick(r.level, new BlockWriter(r.level, share, deadline));
         }
         for (ServerLevel level : server.getAllLevels()) {

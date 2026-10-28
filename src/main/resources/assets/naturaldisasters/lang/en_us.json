@@ -6,5 +6,7 @@
   "entity.naturaldisasters.meteor": "Meteor",
   "entity.naturaldisasters.tornado": "Tornado",
   "death.attack.naturaldisasters.hail": "%1$s was pelted to death by hail",
+  "death.attack.naturaldisasters.acid_rain": "%1$s dissolved in acid rain",
+  "death.attack.naturaldisasters.acid_rain.player": "%1$s dissolved in acid rain while fighting %2$s",
   "death.attack.naturaldisasters.hail.player": "%1$s was pelted to death by hail while fighting %2$s"
 }

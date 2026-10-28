@@ -34,7 +34,14 @@ import net.minecraft.world.phys.Vec3;
 public class Tornado extends Disaster {
     /** Everything that sets a tornado's size; saved with it. */
     public record Params(int ef, int coreRadius, double maxWind, int durationTicks, double speed, int bite,
-                         int height, int wander) {
+                         int height, int wander, int throwDistance, int debrisPerSecond) {
+        /** Debris rate taken from the server config. */
+        public static final int CONFIG_DEBRIS = -1;
+
+        public Params(int ef, int coreRadius, double maxWind, int durationTicks, double speed, int bite, int height, int wander) {
+            this(ef, coreRadius, maxWind, durationTicks, speed, bite, height, wander, 30, CONFIG_DEBRIS);
+        }
+
         private static final int[] EF = {0, 0, 1, 1, 2, 2, 3, 4, 4, 5};
         private static final int[] CORE = {3, 5, 7, 10, 14, 20};
         private static final double[] WIND = {80, 110, 135, 165, 200, 250};
@@ -57,6 +64,8 @@ public class Tornado extends Disaster {
             t.putInt("bite", bite);
             t.putInt("height", height);
             t.putInt("wander", wander);
+            t.putInt("throw", throwDistance);
+            t.putInt("debris", debrisPerSecond);
             return t;
         }
 
@@ -64,7 +73,8 @@ public class Tornado extends Disaster {
             Params d = forMagnitude(magnitude);
             return new Params(t.getIntOr("ef", d.ef), t.getIntOr("core", d.coreRadius), t.getDoubleOr("wind", d.maxWind),
                     t.getIntOr("duration", d.durationTicks), t.getDoubleOr("speed", d.speed), t.getIntOr("bite", d.bite),
-                    t.getIntOr("height", d.height), t.getIntOr("wander", d.wander));
+                    t.getIntOr("height", d.height), t.getIntOr("wander", d.wander), t.getIntOr("throw", d.throwDistance),
+                    t.getIntOr("debris", d.debrisPerSecond));
         }
     }
 
@@ -193,7 +203,8 @@ public class Tornado extends Disaster {
     private void fling(BlockWriter w, RandomSource random, BlockPos pos, BlockState state, double wind) {
         ServerLevel level = w.level();
         boolean solid = !state.getCollisionShape(level, pos).isEmpty();
-        if (solid && fallingThisSecond < Config.MAX_FALLING_BLOCKS_PER_SECOND.getAsInt()) {
+        int debrisCap = params.debrisPerSecond == Params.CONFIG_DEBRIS ? Config.MAX_FALLING_BLOCKS_PER_SECOND.getAsInt() : params.debrisPerSecond;
+        if (solid && fallingThisSecond < debrisCap) {
             fallingThisSecond++;
             FallingBlockEntity debris = FallingBlockEntity.fall(level, pos, state);
             Vec3 spin = tangent(pos.getX() + 0.5, pos.getZ() + 0.5).scale(0.6);
@@ -206,7 +217,7 @@ public class Tornado extends Disaster {
         if (!w.set(pos, Blocks.AIR.defaultBlockState())) return;
         if (solid && random.nextFloat() < 0.25F) {
             double a = heading + (random.nextDouble() - 0.5) * 1.5;
-            double d = 8 + random.nextDouble() * 22 * wind / 100;
+            double d = params.throwDistance * (0.25 + random.nextDouble() * 0.75) * wind / 100;
             int lx = (int) Math.floor(pos.getX() + Math.cos(a) * d), lz = (int) Math.floor(pos.getZ() + Math.sin(a) * d);
             if (Terrain.loaded(level, lx, lz)) {
                 BlockPos land = new BlockPos(lx, Terrain.ground(level, lx, lz) + 1, lz);

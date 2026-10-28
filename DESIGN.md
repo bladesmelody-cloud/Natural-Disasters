@@ -215,6 +215,35 @@ have done tornados pretty well".
   stops it). Snowball-crumb particles and clatter sounds near players.
 - Random hailstorms where it rains, weight 0.8.
 
+### Acid Rain — freestyled, all **MINE**
+- Radius 64 + 24·M, lasts 60 + 20·M s, potency = M. Rain weather with green
+  droplet particles near players. On random exposed tops: leaves wither
+  (10 % + 4 %·potency per hit), flowers/crops/grass/saplings die (dead bush
+  where it can stand, else gone), grass/mycelium/moss → dirt or coarse dirt,
+  farmland/podzol → coarse dirt, copper weathers one stage per hit, mossy
+  cobble loses its moss, stone bricks crack; at potency 6+ bare stone pits to
+  cobble and cobble crumbles to gravel.
+- Creatures under the sky take 0.5 + 0.25·potency damage per second (new
+  `naturaldisasters:acid_rain` damage type), unless they wear a helmet, which
+  loses 1 + potency/3 durability instead.
+- Random acid rain where it rains, weight 0.8.
+
+### Drought — freestyled, all **MINE**
+- Radius 96 + 32·M, lasts 120 + 40·M s (2–8.7 min), potency = M. Forces clear
+  skies. Shallow water (≤ 1 + potency/3 deep, never ocean biomes, never
+  waterlogged blocks) dries from the shore inward; snow and ice vanish;
+  crops/flowers/grass die (some to dead bushes); farmland dries then turns to
+  dirt; leaves drop (2 %·potency); grass → dirt, at potency 5+ dirt → coarse
+  dirt, mud → packed mud. At potency 6+ dry grass can catch fire.
+- Players in the sun get hungry fast (0.3 + 0.15·potency exhaustion per
+  second) with white-ash heat shimmer.
+- Random droughts in warm places (plains and hotter), weight 0.6.
+
+### Engine fairness (found while testing all 12 together)
+- Disasters take turns being first each tick and get equal slices of the
+  time cap, and each may always make at least 16 block changes per tick, so a
+  heavy disaster can never stall the others.
+
 ### Location
 - Disasters strike **near a random online player** (within some distance), so
   they are seen and unloaded chunks aren't touched.
