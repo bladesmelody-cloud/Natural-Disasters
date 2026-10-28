@@ -1,5 +1,8 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.core.Direction;
 import com.bladesmelody.naturaldisasters.protect.Protection;
 import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.Config;
@@ -176,6 +179,13 @@ public class Volcano extends Disaster {
     private final LongArrayList lava = new LongArrayList();
     private final List<Bomb> bombs = new ArrayList<>();
     private int coolCursor;
+    /** Active tick when the last river cooled (NONE = not yet). */
+    private int cooledAt = NONE;
+    /** Checking around the cooled rivers for stray flowing lava: progress through the river list, and whether this pass found any. */
+    private int strayCursor;
+    private boolean strayFound, strayClear;
+    /** River cells checked per tick, and the longest the volcano waits for stray lava. */
+    private static final int STRAY_CELLS_PER_TICK = 64, RECEDE_CAP_TICKS = 2400;
     private boolean quakeStarted;
     /** Heat wave: current radius, or NONE before it starts. */
     private double heat = NONE;
@@ -228,7 +238,8 @@ public class Volcano extends Disaster {
         int active = age - warningTicks;
         if (active > (params.buildTicks + params.eruptTicks) * 4 + 2000) return true;
         boolean heatOver = params.vei < 3 || heatDone && heatQueue.isEmpty() && heatChunk == NO_CHUNK;
-        return eruptStart != NONE && active >= eruptStart + params.eruptTicks && coolCursor >= lava.size() && bombs.isEmpty() && heatOver;
+        return eruptStart != NONE && active >= eruptStart + params.eruptTicks && coolCursor >= lava.size() && bombs.isEmpty() && heatOver
+                && cooledAt != NONE && (strayClear || active >= cooledAt + RECEDE_CAP_TICKS);
     }
 
     @Override
@@ -295,6 +306,10 @@ public class Volcano extends Disaster {
         if (heat != NONE) heatWave(level, w, activeTicks);
         if (erupting >= params.eruptTicks) {
             while (coolCursor < lava.size() && w.hasBudget()) cool(w, lava.getLong(coolCursor++));
+            if (coolCursor >= lava.size()) {
+                if (cooledAt == NONE) cooledAt = activeTicks;
+                if (!strayClear) checkStrayLava(level);
+            }
         }
     }
 
@@ -426,13 +441,57 @@ public class Volcano extends Disaster {
         }
     }
 
-    /** A cooled river block: basalt with the odd magma block. */
+    /**
+     * A cooled river block: basalt with the odd magma block. If the river lava
+     * was woken (a fire beside it burning out updates it), it has flowed off the
+     * river; that lava gets a tick so it recedes now that its source is gone,
+     * instead of staying as flowing lava for good.
+     */
     private void cool(BlockWriter w, long packed) {
         BlockPos pos = BlockPos.of(packed);
         if (!w.level().getFluidState(pos).isEmpty()) {
             RandomSource r = RandomSource.create(seed ^ packed);
-            w.setQuiet(pos, (r.nextInt(5) == 0 ? Blocks.MAGMA_BLOCK : Blocks.BASALT).defaultBlockState());
+            if (w.setQuiet(pos, (r.nextInt(5) == 0 ? Blocks.MAGMA_BLOCK : Blocks.BASALT).defaultBlockState())) nudgeFlowing(w.level(), pos);
         }
+    }
+
+    private static void nudgeFlowing(ServerLevel level, BlockPos pos) {
+        for (Direction d : Direction.values()) {
+            BlockPos n = pos.relative(d);
+            if (!level.isLoaded(n)) continue;
+            FluidState fluid = level.getFluidState(n);
+            if (fluid.is(FluidTags.LAVA) && !fluid.isSource()) level.scheduleTick(n, fluid.getType(), fluid.getType().getTickDelay(level));
+        }
+    }
+
+    /**
+     * After the rivers cooled: woken lava that flowed off them recedes slowly
+     * (and spreads on a little first). Checks a slice of the river cells each
+     * tick, giving any flowing lava near them a tick; the volcano is done
+     * once a whole pass finds none.
+     */
+    private void checkStrayLava(ServerLevel level) {
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        for (int n = 0; n < STRAY_CELLS_PER_TICK && strayCursor < lava.size(); n++, strayCursor++) {
+            BlockPos c = BlockPos.of(lava.getLong(strayCursor));
+            for (int dx = -3; dx <= 3; dx++)
+                for (int dz = -3; dz <= 3; dz++)
+                    for (int dy = -3; dy <= 1; dy++) {
+                        p.set(c.getX() + dx, c.getY() + dy, c.getZ() + dz);
+                        if (!level.isLoaded(p)) continue;
+                        FluidState fluid = level.getFluidState(p);
+                        if (fluid.is(FluidTags.LAVA) && !fluid.isSource()) {
+                            strayFound = true;
+                            if (!level.getFluidTicks().hasScheduledTick(p, fluid.getType())) {
+                                level.scheduleTick(p.immutable(), fluid.getType(), fluid.getType().getTickDelay(level));
+                            }
+                        }
+                    }
+        }
+        if (strayCursor < lava.size()) return;
+        if (!strayFound) strayClear = true;
+        strayCursor = 0;
+        strayFound = false;
     }
 
     // ---- Bombs and ash ----
@@ -628,6 +687,8 @@ public class Volcano extends Disaster {
         }
         tag.put("bombs", bl);
         tag.putInt("cool", coolCursor);
+        tag.putInt("cooledAt", cooledAt);
+        tag.putBoolean("strayClear", strayClear);
         tag.putBoolean("quake", quakeStarted);
         tag.putDouble("heat", heat);
         tag.putBoolean("heatDone", heatDone);
@@ -662,6 +723,8 @@ public class Volcano extends Disaster {
             if (v.length >= 3) bombs.add(new Bomb(v[0], v[1], v[2]));
         }
         coolCursor = tag.getIntOr("cool", 0);
+        cooledAt = tag.getIntOr("cooledAt", NONE);
+        strayClear = tag.getBooleanOr("strayClear", false);
         quakeStarted = tag.getBooleanOr("quake", false);
         heat = tag.getDoubleOr("heat", NONE);
         heatDone = tag.getBooleanOr("heatDone", false);

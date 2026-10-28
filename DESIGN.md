@@ -695,6 +695,22 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
     edge) are touched, so real lakes stay.
   - Result: the woken flood leaves 0 water, under full load too.
 
+## Volcano lava fix (owner picked it)
+- Symptom: now and then the volcano test found lava outside the crater
+  that never cooled.
+- Cause: the volcano lights fires right beside its lava rivers (by design);
+  a fire burning out updates the block next to it and wakes the quiet river
+  lava, which flows off the river. When the river cell later cools to basalt
+  (quietly), the flowing lava it fed isn't told, so it stays for good. A
+  test that wakes the rivers on purpose left 361 lava blocks.
+- Fix (**MINE**): cooling a river cell gives flowing lava next to it a tick
+  so it recedes; after the last river cools, the volcano keeps checking
+  around its rivers (a slice per tick) and only ends once a whole pass finds
+  no flowing lava (at most 2 minutes). Stray lava takes ~20 s to recede and
+  even spreads a little first, so a fixed wait wasn't enough. Now 0 left.
+- Checked the crater lake: woken, it stays in. At every magnitude the cone
+  just outside the crater is at least as high as the lake surface.
+
 ## Status (end of the freestyle night)
 All 12 disasters are in, each with game tests (28 total, stable over many
 runs) and checked in a real world: Earthquake, Meteor, Tornado, Hurricane,

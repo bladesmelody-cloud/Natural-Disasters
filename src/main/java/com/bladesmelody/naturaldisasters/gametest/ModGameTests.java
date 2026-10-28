@@ -94,6 +94,7 @@ public final class ModGameTests {
         FUNCTIONS.register("quiet_water_stays_put", () -> ModGameTests::quietWaterStaysPut);
         FUNCTIONS.register("hurricane_wind_and_surge", () -> ModGameTests::hurricaneWindAndSurge);
         FUNCTIONS.register("volcano_builds_and_erupts", () -> ModGameTests::volcanoBuildsAndErupts);
+        FUNCTIONS.register("woken_lava_cools", () -> ModGameTests::wokenLavaCools);
         FUNCTIONS.register("wildfire_burns_forest", () -> ModGameTests::wildfireBurnsForest);
         FUNCTIONS.register("blizzard_buries_and_freezes", () -> ModGameTests::blizzardBuriesAndFreezes);
         FUNCTIONS.register("hailstorm_pelts", () -> ModGameTests::hailstormPelts);
@@ -166,6 +167,7 @@ public final class ModGameTests {
         test(event, "blizzard_buries_and_freezes", arena(env, 300));
         test(event, "hailstorm_pelts", arena(env, 300));
         test(event, "volcano_builds_and_erupts", arena(env, 500));
+        test(event, "woken_lava_cools", arena(env, 1500));
         test(event, "wildfire_burns_forest", arena(env, 400));
         test(event, "hurricane_wind_and_surge", arena(env, 300));
         test(event, "quiet_water_stays_put", arena(env, 100));
@@ -988,6 +990,59 @@ public final class ModGameTests {
                     for (int y = 1; y < 24; y++) if (helper.getBlockState(new BlockPos(x, y, z)).is(Blocks.LAVA)) lavaOutside++;
                 }
             helper.assertTrue(lavaOutside == 0, lavaOutside + " lava blocks outside the crater didn't cool");
+        });
+    }
+
+    /**
+     * The volcano above, but its lava (rivers and crater lake) gets woken
+     * mid-eruption, as a fire burning out next to it does, so it flows off the
+     * rivers. Once the rivers cool, no lava may be left outside the crater
+     * (the cone's rim holds the woken lake in).
+     */
+    private static void wokenLavaCools(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        Volcano volcano = Volcano.create(helper.absolutePos(CENTER), 3, new Volcano.Params(8, 12, 2, 60, 120, 2, 14, 10), 17L, 0);
+        DisasterManager.add(level, volcano);
+        int[] woken = {0};
+        helper.onEachTick(() -> {
+            if (woken[0] > 0 || count(helper, FLOOR_TOP + 1, FLOOR_TOP + 8, s -> s.is(Blocks.LAVA)) < 40) return;
+            for (int x = 0; x < SIZE; x++)
+                for (int z = 0; z < SIZE; z++) {
+                    for (int y = FLOOR_TOP + 1; y < 30; y++) {
+                        BlockPos p = helper.absolutePos(new BlockPos(x, y, z));
+                        if (level.getFluidState(p).isSource()) {
+                            level.scheduleTick(p, level.getFluidState(p).getType(), 1);
+                            woken[0]++;
+                        }
+                    }
+                }
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(volcano.isFinished(), "volcano still running");
+            helper.assertTrue(woken[0] > 0, "never woke any lava");
+            int lavaOutside = 0;
+            for (int x = 0; x < SIZE; x++)
+                for (int z = 0; z < SIZE; z++) {
+                    int dx = x - CENTER.getX(), dz = z - CENTER.getZ();
+                    if (dx * dx + dz * dz <= 9) continue;
+                    for (int y = 1; y < 24; y++) if (helper.getBlockState(new BlockPos(x, y, z)).is(Blocks.LAVA)) lavaOutside++;
+                }
+            StringBuilder where = new StringBuilder();
+            int sources = 0;
+            for (int x = 0; x < SIZE; x++)
+                for (int z = 0; z < SIZE; z++)
+                    for (int y = 1; y < 24; y++) {
+                        var f = helper.getBlockState(new BlockPos(x, y, z)).getFluidState();
+                        int dx = x - CENTER.getX(), dz = z - CENTER.getZ();
+                        if (!f.isEmpty() && dx * dx + dz * dz > 9 && where.length() < 300) where.append(dx).append(',').append(y).append(',').append(dz).append(' ');
+                        if (f.isSource() && dx * dx + dz * dz > 9) {
+                            sources++;
+                            if (where.length() < 200) where.append(dx).append(',').append(y).append(',').append(dz).append(' ');
+                        }
+                    }
+            helper.assertTrue(lavaOutside == 0, lavaOutside + " lava blocks outside the crater after " + woken[0]
+                    + " river cells were woken (" + sources + " sources) at " + where);
         });
     }
 
