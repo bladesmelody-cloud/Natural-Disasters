@@ -60,6 +60,13 @@ public abstract class Disaster {
 
     public abstract boolean isDone();
 
+    /** Called once when the disaster is removed (finished or stopped), to undo lasting side effects. */
+    protected void onEnd(ServerLevel level) {}
+
+    final void end(ServerLevel level) {
+        onEnd(level);
+    }
+
     /** Effect radius in blocks, for warnings and /disaster list. */
     public abstract int radius();
 

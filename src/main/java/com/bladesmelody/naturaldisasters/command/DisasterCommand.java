@@ -24,7 +24,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 /**
  * {@code /disaster start <type> [magnitude] [pos]}, {@code stop [id]},
- * {@code list}, {@code random on|off|now}. Ops only.
+ * {@code list}, {@code random on|off|now|eruption}. Ops only.
  */
 public final class DisasterCommand {
     private DisasterCommand() {}
@@ -50,7 +50,8 @@ public final class DisasterCommand {
                         .executes(DisasterCommand::randomStatus)
                         .then(Commands.literal("on").executes(c -> setRandom(c, true)))
                         .then(Commands.literal("off").executes(c -> setRandom(c, false)))
-                        .then(Commands.literal("now").executes(DisasterCommand::randomNow))));
+                        .then(Commands.literal("now").executes(DisasterCommand::randomNow))
+                        .then(Commands.literal("eruption").executes(DisasterCommand::greatEruptionNow))));
     }
 
     private static int start(CommandContext<CommandSourceStack> c, int magnitude, BlockPos pos) throws CommandSyntaxException {
@@ -62,7 +63,7 @@ public final class DisasterCommand {
             return 0;
         }
         ServerLevel level = source.getLevel();
-        if (magnitude <= 0) magnitude = DisasterType.rollMagnitude(level.getRandom());
+        if (magnitude <= 0) magnitude = type.randomMagnitude(level.getRandom());
         BlockPos center = pos != null ? pos : BlockPos.containing(source.getPosition());
         if (pos == null && BlockWriter.isLoaded(level, center.atY(level.getMinY()))) {
             center = center.atY(level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, center.getX(), center.getZ()));
@@ -112,6 +113,19 @@ public final class DisasterCommand {
         Config.RANDOM_ENABLED.save();
         c.getSource().sendSuccess(() -> Component.literal("Random disasters " + (on ? "on" : "off") + "."), true);
         return 1;
+    }
+
+    private static int greatEruptionNow(CommandContext<CommandSourceStack> c) {
+        return RandomDisasters.triggerGreatEruption(c.getSource().getServer(), Config.WARNING_SECONDS.getAsInt() * 20)
+                .map(d -> {
+                    c.getSource().sendSuccess(() -> Component.literal("Great eruption #" + d.id() + " " + d.describe()
+                            + " at " + d.center().toShortString() + " (warning first)"), true);
+                    return d.id();
+                })
+                .orElseGet(() -> {
+                    c.getSource().sendFailure(Component.literal("No player in the Overworld."));
+                    return 0;
+                });
     }
 
     private static int randomNow(CommandContext<CommandSourceStack> c) {

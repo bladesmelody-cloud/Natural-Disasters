@@ -8,5 +8,10 @@
   "death.attack.naturaldisasters.hail": "%1$s was pelted to death by hail",
   "death.attack.naturaldisasters.acid_rain": "%1$s dissolved in acid rain",
   "death.attack.naturaldisasters.acid_rain.player": "%1$s dissolved in acid rain while fighting %2$s",
-  "death.attack.naturaldisasters.hail.player": "%1$s was pelted to death by hail while fighting %2$s"
+  "death.attack.naturaldisasters.hail.player": "%1$s was pelted to death by hail while fighting %2$s",
+  "block.naturaldisasters.volcanic_ash": "Volcanic Ash",
+  "block.naturaldisasters.volcanic_ash_block": "Block of Volcanic Ash",
+  "death.attack.naturaldisasters.pyroclastic": "%1$s was engulfed by a pyroclastic flow",
+  "death.attack.naturaldisasters.pyroclastic.player": "%1$s was engulfed by a pyroclastic flow while fighting %2$s",
+  "message.naturaldisasters.ash_blots_sun": "The ash cloud blots out the sun. There is no morning."
 }

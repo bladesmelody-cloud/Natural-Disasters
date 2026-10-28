@@ -13,6 +13,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.util.ColorRGBA;
+import net.minecraft.world.level.block.ColoredFallingBlock;
+import net.minecraft.world.level.block.SnowLayerBlock;
+import com.bladesmelody.naturaldisasters.ash.AshLayerBlock;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
@@ -30,6 +35,15 @@ public final class ModRegistry {
     public static final DeferredBlock<Block> METEORITE_ORE = BLOCKS.registerSimpleBlock("meteorite_ore",
             p -> p.mapColor(MapColor.COLOR_BLACK).strength(5.0F, 9.0F).requiresCorrectToolForDrops().sound(SoundType.ANCIENT_DEBRIS));
     public static final DeferredItem<BlockItem> METEORITE_ORE_ITEM = ITEMS.registerSimpleBlockItem(METEORITE_ORE);
+    public static final DeferredBlock<AshLayerBlock> VOLCANIC_ASH = BLOCKS.registerBlock("volcanic_ash", AshLayerBlock::new,
+            p -> p.mapColor(MapColor.COLOR_GRAY).replaceable().forceSolidOff().strength(0.1F).requiresCorrectToolForDrops()
+                    .sound(SoundType.SAND).isViewBlocking((state, level, pos) -> state.getValue(SnowLayerBlock.LAYERS) >= 8)
+                    .pushReaction(PushReaction.DESTROY));
+    public static final DeferredItem<BlockItem> VOLCANIC_ASH_ITEM = ITEMS.registerSimpleBlockItem(VOLCANIC_ASH);
+    public static final DeferredBlock<ColoredFallingBlock> VOLCANIC_ASH_BLOCK = BLOCKS.registerBlock("volcanic_ash_block",
+            p -> new ColoredFallingBlock(new ColorRGBA(0xFF6B6662), p),
+            p -> p.mapColor(MapColor.COLOR_GRAY).strength(0.5F).sound(SoundType.SAND));
+    public static final DeferredItem<BlockItem> VOLCANIC_ASH_BLOCK_ITEM = ITEMS.registerSimpleBlockItem(VOLCANIC_ASH_BLOCK);
     public static final DeferredItem<Item> METEORITE_CHUNK = ITEMS.registerSimpleItem("meteorite_chunk");
     public static final DeferredItem<Item> METEORIC_IRON_INGOT = ITEMS.registerSimpleItem("meteoric_iron_ingot");
 
@@ -55,7 +69,11 @@ public final class ModRegistry {
     }
 
     private static void fillCreativeTabs(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == CreativeModeTabs.NATURAL_BLOCKS) event.accept(METEORITE_ORE_ITEM);
+        if (event.getTabKey() == CreativeModeTabs.NATURAL_BLOCKS) {
+            event.accept(METEORITE_ORE_ITEM);
+            event.accept(VOLCANIC_ASH_ITEM);
+            event.accept(VOLCANIC_ASH_BLOCK_ITEM);
+        }
         if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(METEORITE_CHUNK);
             event.accept(METEORIC_IRON_INGOT);

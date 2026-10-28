@@ -50,7 +50,7 @@ public final class Builds {
     private static int sampledBlocks(ServerLevel level, BlockPos center, int radius) {
         RandomSource r = RandomSource.create(center.asLong());
         int n = 0;
-        for (int i = 0; i < 48; i++) {
+        for (int i = 0; i < 96; i++) {
             BlockPos c = Terrain.randomColumn(r, center.getX() + 0.5, center.getZ() + 0.5, radius);
             if (!Terrain.loaded(level, c.getX(), c.getZ())) continue;
             int top = Terrain.surface(level, c.getX(), c.getZ());

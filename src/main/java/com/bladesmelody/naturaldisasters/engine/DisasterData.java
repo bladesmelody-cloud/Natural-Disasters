@@ -24,6 +24,8 @@ public final class DisasterData extends SavedData {
     /** Ticks (with players online) until the next random disaster; -1 = not scheduled yet. */
     long ticksUntilRandom = -1;
     int nextId = 1;
+    /** Server-uptime ticks until the next great eruption; -1 = not scheduled yet. */
+    long ticksUntilGreat = -1;
 
     public static DisasterData get(ServerLevel level) {
         return level.getDataStorage().computeIfAbsent(TYPE);
@@ -33,6 +35,7 @@ public final class DisasterData extends SavedData {
         DisasterData data = new DisasterData();
         data.ticksUntilRandom = tag.getLongOr("ticksUntilRandom", -1L);
         data.nextId = tag.getIntOr("nextId", 1);
+        data.ticksUntilGreat = tag.getLongOr("ticksUntilGreat", -1L);
         ListTag list = tag.getListOrEmpty("active");
         for (int i = 0; i < list.size(); i++) {
             CompoundTag entry = list.getCompoundOrEmpty(i);
@@ -46,6 +49,7 @@ public final class DisasterData extends SavedData {
         CompoundTag tag = new CompoundTag();
         tag.putLong("ticksUntilRandom", ticksUntilRandom);
         tag.putInt("nextId", nextId);
+        tag.putLong("ticksUntilGreat", ticksUntilGreat);
         ListTag list = new ListTag();
         for (Disaster d : active) list.add(d.save());
         tag.put("active", list);

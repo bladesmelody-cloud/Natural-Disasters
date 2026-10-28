@@ -54,6 +54,15 @@ function in `FUNCTIONS` and the test in `onRegisterTests`.
   `create(...)` for tests. Shared: `Terrain` (columns, heights, discs), `Wind`
   (block resistance in mph), `WaterTracker` (water a disaster placed, to drain
   exactly), `Places` (climate checks for random picks).
+- `ash/`: `AshZones` (dark areas, server + client copy, synced by
+  `AshZonesPayload`), `AshEvents` (sync, ash on chunk load, no sleeping
+  through world-wide ash), `AshLayerBlock`. `disaster/AshCloud` is the
+  long-lived event a big eruption leaves; `disaster/Builds` scores how
+  built-up a spot is (random disasters avoid builds).
+- `mixin/` (`naturaldisasters.mixins.json`): `MonsterMixin` (ash counts as night
+  for spawning), `MobMixin` (no sunburn under ash). 26.1 is unobfuscated, so
+  no refmap is needed.
+- `client/ClientAsh`: ash fog/sky and particles.
 - `entity/`: `MeteorEntity`, `TornadoEntity` — visual only, particles on the
   client, never saved. `registry/ModRegistry` (meteorite blocks/items,
   entities), `client/ClientSetup` (renderers), `command/DisasterCommand`,
@@ -63,6 +72,9 @@ function in `FUNCTIONS` and the test in `onRegisterTests`.
 - Water/lava a disaster places must be set *and removed* with `setQuiet`, and
   nothing next to it may wake fluids (strip/smash with `setQuiet` too):
   woken quiet water flows and forms permanent new sources.
+- Work queues that are filled while being processed (heat wave, ash cloud)
+  must track the chunk in progress explicitly; a per-chunk column cursor
+  otherwise ends up applied to a different chunk.
 - Game tests share one world: keep each test's effects inside its 40×40
   arena (small radii, tornado `throwDistance`/`debrisPerSecond` params), and
   use the `arena(...)` TestData (sky access, else a barrier roof).

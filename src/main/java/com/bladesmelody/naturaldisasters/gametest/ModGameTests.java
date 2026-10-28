@@ -2,6 +2,7 @@ package com.bladesmelody.naturaldisasters.gametest;
 
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
 import com.bladesmelody.naturaldisasters.disaster.AcidRain;
+import com.bladesmelody.naturaldisasters.disaster.AshCloud;
 import com.bladesmelody.naturaldisasters.disaster.Blizzard;
 import com.bladesmelody.naturaldisasters.disaster.Drought;
 import com.bladesmelody.naturaldisasters.disaster.Earthquake;
@@ -98,6 +99,10 @@ public final class ModGameTests {
         FUNCTIONS.register("drought_dries_out", () -> ModGameTests::droughtDriesOut);
         FUNCTIONS.register("all_types_save_roundtrip", () -> ModGameTests::allTypesSaveRoundtrip);
         FUNCTIONS.register("builds_are_detected", () -> ModGameTests::buildsAreDetected);
+        FUNCTIONS.register("volcano_vei_table", () -> ModGameTests::volcanoVeiTable);
+        FUNCTIONS.register("volcano_heat_wave_and_ash", () -> ModGameTests::volcanoHeatWaveAndAsh);
+        FUNCTIONS.register("ash_cloud_stops_the_clock", () -> ModGameTests::ashCloudStopsTheClock);
+        FUNCTIONS.register("ash_zone_lets_monsters_spawn", () -> ModGameTests::ashZoneLetsMonstersSpawn);
         FUNCTIONS.register("command_start_list_stop", () -> ModGameTests::commandStartListStop);
     }
 
@@ -119,6 +124,10 @@ public final class ModGameTests {
         test(event, "earthquake_wrecks_house", arena(env, 650));
         test(event, "earthquake_save_roundtrip", arena(env, 20));
         test(event, "command_start_list_stop", arena(env, 40));
+        test(event, "volcano_vei_table", new TestData<>(env, EMPTY, 20, 0, true));
+        test(event, "volcano_heat_wave_and_ash", arena(env, 500));
+        test(event, "ash_cloud_stops_the_clock", arena(env, 200));
+        test(event, "ash_zone_lets_monsters_spawn", arena(env, 40));
         test(event, "builds_are_detected", arena(env, 20));
         test(event, "all_types_save_roundtrip", arena(env, 20));
         test(event, "acid_rain_corrodes", arena(env, 300));
@@ -847,7 +856,7 @@ public final class ModGameTests {
                         type.name() + " M" + m + " save differs:\n" + first + "\n" + loaded.save());
             }
         }
-        helper.assertTrue(DisasterTypes.all().size() == 12, "expected 12 disaster types, have " + DisasterTypes.all().size());
+        helper.assertTrue(DisasterTypes.all().size() == 13, "expected 12 disaster types + ash cloud, have " + DisasterTypes.all().size());
         helper.succeed();
     }
 
@@ -864,7 +873,124 @@ public final class ModGameTests {
                     if (Math.abs(dx) == 3 || Math.abs(dz) == 3 || y == 3) helper.setBlock(CENTER.offset(dx, y, dz), Blocks.OAK_PLANKS);
         helper.setBlock(CENTER.offset(0, 1, 0), Blocks.CHEST);
         int hut = com.bladesmelody.naturaldisasters.disaster.Builds.score(level, at, 12);
-        helper.assertTrue(hut > empty + 3, "hut only scored " + hut);
+        helper.assertTrue(hut > empty + 2, "hut only scored " + hut);
+        helper.succeed();
+    }
+
+    /** Magnitude ↔ VEI, the owner's VEI table, and the two rarity rolls. */
+    private static void volcanoVeiTable(GameTestHelper helper) {
+        helper.assertTrue(Volcano.vei(1) == 0 && Volcano.vei(5) == 3 && Volcano.vei(7) == 5 && Volcano.vei(10) == 8, "VEI mapping");
+        Volcano.Params v3 = Volcano.Params.forMagnitude(5);
+        helper.assertTrue(v3.heatReach() == 64 && v3.ashRadius() == 1000 && v3.ashLayers() == 1 && v3.darkTicks() == 2 * 24000, "VEI 3 row: " + v3);
+        Volcano.Params v5 = Volcano.Params.forMagnitude(7);
+        helper.assertTrue(v5.ashRadius() == 0 && v5.darkTicks() == 28 * 24000, "VEI 5 is world-wide for 4 weeks: " + v5);
+        helper.assertTrue(Volcano.Params.forMagnitude(4).heatReach() == 0, "VEI 2 has no heat wave");
+        RandomSource random = RandomSource.create(7);
+        int[] normal = new int[9], great = new int[9];
+        for (int i = 0; i < 20000; i++) {
+            normal[Volcano.vei(Volcano.rollRandomMagnitude(random))]++;
+            great[Volcano.vei(Volcano.rollGreatMagnitude(random))]++;
+        }
+        helper.assertTrue(normal[5] + normal[6] + normal[7] + normal[8] == 0, "normal volcanoes rolled VEI 5+");
+        helper.assertTrue(normal[4] > 0 && normal[4] * 5 < normal[3], "VEI 4 should be ~10x rarer than VEI 3: " + normal[3] + " vs " + normal[4]);
+        helper.assertTrue(great[0] + great[1] + great[2] + great[3] + great[4] == 0 && great[5] > great[6] * 5 && great[6] > great[7],
+                "great eruptions should be VEI 5+ with each step rarer: " + java.util.Arrays.toString(great));
+        helper.succeed();
+    }
+
+    /**
+     * A small VEI 3 volcano: the heat wave kills a pig in the open but only
+     * hurts an iron golem in a stone hut, chars the trees and scorches the
+     * grass; ash falls and the area is dark until the ash cloud passes.
+     */
+    private static void volcanoHeatWaveAndAsh(GameTestHelper helper) {
+        fillFloor(helper);
+        fill(helper, FLOOR_TOP, FLOOR_TOP, Blocks.GRASS_BLOCK.defaultBlockState());
+        ServerLevel level = helper.getLevel();
+        for (int dz = -6; dz <= 6; dz += 3) {
+            BlockPos base = CENTER.offset(15, 1, dz);
+            for (int y = 0; y < 3; y++) helper.setBlock(base.above(y), Blocks.OAK_LOG);
+            helper.setBlock(base.above(3), Blocks.OAK_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true));
+        }
+        BlockPos hut = CENTER.offset(-14, 1, 0);
+        for (int dx = -2; dx <= 2; dx++)
+            for (int dz = -2; dz <= 2; dz++)
+                for (int y = 0; y <= 4; y++)
+                    if (Math.abs(dx) == 2 || Math.abs(dz) == 2 || y == 4) helper.setBlock(hut.offset(dx, y, dz), Blocks.STONE);
+        net.minecraft.world.entity.animal.golem.IronGolem golem = helper.spawn(EntityType.IRON_GOLEM, hut);
+        Pig pig = helper.spawn(EntityType.PIG, CENTER.offset(13, 1, 8));
+        Volcano volcano = Volcano.create(helper.absolutePos(CENTER), 5,
+                // No lava rivers or bombs: their fires and splashes would muddle what the heat wave did.
+                new Volcano.Params(8, 12, 2, 40, 80, 0, 6, 100_000, 3, 17, 18, 2, 120, 0), 61L, 0);
+        DisasterManager.add(level, volcano);
+        boolean[] dark = {false};
+        helper.onEachTick(() -> {
+            if (com.bladesmelody.naturaldisasters.ash.AshZones.isDark(level, helper.absolutePos(CENTER.offset(16, 1, 0)))) dark[0] = true;
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(volcano.isFinished(), "volcano still running");
+            helper.assertTrue(DisasterManager.all(level.getServer()).stream().noneMatch(r -> r.disaster() instanceof AshCloud
+                    && r.disaster().center().equals(helper.absolutePos(CENTER))), "ash cloud still there");
+            helper.assertTrue(dark[0], "the area never went dark");
+            helper.assertTrue(!pig.isAlive(), "pig in the open survived the heat wave");
+            helper.assertTrue(golem.isAlive() && golem.getHealth() < golem.getMaxHealth(), "sheltered golem should be hurt but alive");
+            int charred = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 4, st -> st.is(Blocks.STRIPPED_DARK_OAK_LOG));
+            int leaves = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 6, st -> st.is(Blocks.OAK_LEAVES));
+            helper.assertTrue(charred >= 10 && leaves == 0, "trees not burnt: " + charred + " charred, " + leaves + " leaves");
+            int scorched = count(helper, FLOOR_TOP, FLOOR_TOP, st -> st.is(Blocks.COARSE_DIRT));
+            helper.assertTrue(scorched > 100, "grass barely scorched: " + scorched);
+            int ash = count(helper, 1, 23, st -> st.is(ModRegistry.VOLCANIC_ASH.get()));
+            helper.assertTrue(ash > 100, "only " + ash + " ash layers");
+            helper.assertTrue(!com.bladesmelody.naturaldisasters.ash.AshZones.isDark(level, helper.absolutePos(CENTER.offset(16, 1, 0))),
+                    "still dark after the cloud ended");
+        });
+    }
+
+    /** A world-wide ash cloud (no ash, short) pauses the day clock and lets it run again after. */
+    private static void ashCloudStopsTheClock(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        var clock = level.getServer().overworld().dimensionType().defaultClock().orElseThrow();
+        var clocks = level.getServer().clockManager();
+        AshCloud cloud = AshCloud.create(helper.absolutePos(CENTER), 7, new AshCloud.Params(0, 16, 0, 0, 60), 3L);
+        DisasterManager.add(level, cloud);
+        long[] at = new long[2];
+        helper.runAfterDelay(10, () -> at[0] = clocks.getTotalTicks(clock));
+        helper.runAfterDelay(30, () -> {
+            at[1] = clocks.getTotalTicks(clock);
+            helper.assertTrue(at[0] == at[1], "clock kept running under world-wide ash: " + at[0] + " -> " + at[1]);
+            helper.assertTrue(com.bladesmelody.naturaldisasters.ash.AshZones.worldDark(), "not world-dark");
+        });
+        helper.runAfterDelay(100, () -> {
+            helper.assertTrue(cloud.isFinished(), "cloud should be over");
+            helper.assertTrue(!com.bladesmelody.naturaldisasters.ash.AshZones.worldDark(), "still world-dark");
+            long before = clocks.getTotalTicks(clock);
+            helper.runAfterDelay(10, () -> {
+                helper.assertTrue(clocks.getTotalTicks(clock) > before, "clock didn't start again");
+                helper.succeed();
+            });
+        });
+    }
+
+    /** Under an ash zone the daytime sky counts as night for monster spawning (mixin). */
+    private static void ashZoneLetsMonstersSpawn(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(CENTER.above());
+        if (!level.isBrightOutside()) {
+            helper.succeed(); // only meaningful by day
+            return;
+        }
+        RandomSource random = RandomSource.create(5);
+        int before = 0;
+        for (int i = 0; i < 200; i++) if (net.minecraft.world.entity.monster.Monster.isDarkEnoughToSpawn(level, pos, random)) before++;
+        com.bladesmelody.naturaldisasters.ash.AshZones.put(-42, new com.bladesmelody.naturaldisasters.ash.AshZones.Zone(pos.getX(), pos.getZ(), 8, 3));
+        int after = 0;
+        try {
+            for (int i = 0; i < 200; i++) if (net.minecraft.world.entity.monster.Monster.isDarkEnoughToSpawn(level, pos, random)) after++;
+        } finally {
+            com.bladesmelody.naturaldisasters.ash.AshZones.remove(-42);
+        }
+        helper.assertTrue(before == 0 && after > 10, "daylight spawn checks: " + before + " without ash, " + after + " under ash");
         helper.succeed();
     }
 

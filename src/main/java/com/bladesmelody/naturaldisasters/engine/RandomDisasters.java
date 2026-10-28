@@ -3,6 +3,7 @@ package com.bladesmelody.naturaldisasters.engine;
 import com.bladesmelody.naturaldisasters.Config;
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
 import com.bladesmelody.naturaldisasters.disaster.Builds;
+import com.bladesmelody.naturaldisasters.disaster.Volcano;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -16,24 +17,64 @@ import net.minecraft.world.level.levelgen.Heightmap;
 
 /**
  * Starts disasters on their own: on average every {@code intervalDays} in-game
- * days (counting only while players are online), near a random player, with a
- * warning first.
+ * days of server uptime, near a random player, with a warning first.
  */
 public final class RandomDisasters {
     private RandomDisasters() {}
 
     static void tick(MinecraftServer server) {
         if (!Config.RANDOM_ENABLED.getAsBoolean()) return;
-        if (server.getPlayerList().getPlayers().isEmpty()) return;
+        tickGreatEruption(server);
+        // Counts server uptime, players online or not (owner); when it runs out with
+        // nobody around it waits for a player, since disasters strike near one.
         DisasterData data = DisasterData.get(server.overworld());
         if (data.ticksUntilRandom < 0) data.ticksUntilRandom = rollInterval(server.overworld().getRandom());
-        if (--data.ticksUntilRandom > 0) {
+        if (data.ticksUntilRandom > 0) {
+            data.ticksUntilRandom--;
             if (data.ticksUntilRandom % 200 == 0) data.setDirty();
             return;
         }
-        data.ticksUntilRandom = rollInterval(server.overworld().getRandom());
-        data.setDirty();
-        trigger(server, Config.WARNING_SECONDS.getAsInt() * 20);
+        if (trigger(server, Config.WARNING_SECONDS.getAsInt() * 20).isPresent()) {
+            data.ticksUntilRandom = rollInterval(server.overworld().getRandom());
+            data.setDirty();
+        }
+    }
+
+    /**
+     * The great-eruption timer counts server uptime (owner: "should be server
+     * up time, not only player online"). When it runs out it waits for a
+     * player in the Overworld, since the eruption strikes near one.
+     */
+    private static void tickGreatEruption(MinecraftServer server) {
+        double days = Config.GREAT_ERUPTION_DAYS.getAsDouble();
+        if (days <= 0) return;
+        DisasterData data = DisasterData.get(server.overworld());
+        if (data.ticksUntilGreat < 0) {
+            data.ticksUntilGreat = Math.max(1, (long) (days * 24000 * (0.5 + server.overworld().getRandom().nextDouble())));
+            data.setDirty();
+        }
+        if (data.ticksUntilGreat > 0) {
+            data.ticksUntilGreat--;
+            if (data.ticksUntilGreat % 1200 == 0) data.setDirty();
+            return;
+        }
+        if (triggerGreatEruption(server, Config.WARNING_SECONDS.getAsInt() * 20 * 3).isPresent()) {
+            data.ticksUntilGreat = -1;
+            data.setDirty();
+        }
+    }
+
+    /** Starts a VEI 5+ volcano near a random Overworld player now. */
+    public static Optional<Disaster> triggerGreatEruption(MinecraftServer server, int warningTicks) {
+        RandomSource random = server.overworld().getRandom();
+        List<ServerPlayer> players = server.overworld().players().stream().filter(p -> !p.isSpectator()).toList();
+        if (players.isEmpty()) return Optional.empty();
+        ServerPlayer player = players.get(random.nextInt(players.size()));
+        BlockPos center = pickCenter(server.overworld(), player.blockPosition(), random);
+        int magnitude = Volcano.rollGreatMagnitude(random);
+        Disaster d = DisasterManager.start(server.overworld(), DisasterTypes.VOLCANO, center, magnitude, warningTicks);
+        NaturalDisasters.LOGGER.info("Great eruption: VEI {} at {} near {}", Volcano.vei(magnitude), center.toShortString(), player.getName().getString());
+        return Optional.of(d);
     }
 
     private static long rollInterval(RandomSource random) {
@@ -56,7 +97,7 @@ public final class RandomDisasters {
         List<DisasterType<?>> fitting = types.stream().filter(t -> t.canHappenAt(level, center)).toList();
         if (fitting.isEmpty()) return Optional.empty();
         DisasterType<?> type = pickWeighted(fitting, random);
-        int magnitude = DisasterType.rollMagnitude(random);
+        int magnitude = type.randomMagnitude(random);
         Disaster d = DisasterManager.start(level, type, center, magnitude, warningTicks);
         NaturalDisasters.LOGGER.info("Random {} M{} at {} near {}", type.name(), magnitude, center.toShortString(), player.getName().getString());
         return Optional.of(d);

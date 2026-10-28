@@ -20,6 +20,8 @@ public final class Config {
     public static final ModConfigSpec.IntValue STRIKE_MIN_DISTANCE;
     public static final ModConfigSpec.IntValue STRIKE_MAX_DISTANCE;
     public static final ModConfigSpec.DoubleValue IGNORE_BUILDS_CHANCE;
+    public static final ModConfigSpec.DoubleValue GREAT_ERUPTION_DAYS;
+    public static final ModConfigSpec.BooleanValue WORLD_DARKNESS;
 
     /** Disaster names, in config order. */
     public static final List<String> DISASTERS = List.of("earthquake", "meteor", "tornado", "hurricane", "acid_rain",
@@ -43,7 +45,7 @@ public final class Config {
         b.push("random");
         RANDOM_ENABLED = b.comment("Disasters happen on their own (also toggled by /disaster random on|off).")
                 .define("enabled", true);
-        RANDOM_INTERVAL_DAYS = b.comment("Average in-game days between random disasters (only counts while players are online).")
+        RANDOM_INTERVAL_DAYS = b.comment("Average in-game days of server uptime between random disasters (if nobody is online when it's due, it waits for a player).")
                 .defineInRange("intervalDays", 7.0, 0.01, 1000.0);
         WARNING_SECONDS = b.comment("Seconds of rumbling and hints before a random disaster hits.")
                 .defineInRange("warningSeconds", 20, 0, 600);
@@ -53,6 +55,10 @@ public final class Config {
                 .defineInRange("strikeMaxDistance", 64, 0, 512);
         IGNORE_BUILDS_CHANCE = b.comment("Random disasters prefer spots away from buildings; this is the chance they ignore that and strike anyway.")
                 .defineInRange("ignoreBuildsChance", 0.05, 0.0, 1.0);
+        GREAT_ERUPTION_DAYS = b.comment("Average Minecraft days of server uptime between great eruptions (VEI 5+, world-wide darkness). 0 = never.")
+                .defineInRange("greatEruptionDays", 800.0, 0.0, 100_000.0);
+        WORLD_DARKNESS = b.comment("VEI 5+ eruptions darken the whole Overworld (clock stopped at midnight). If false they darken a 10,000-block radius instead.")
+                .define("worldDarkness", true);
         b.pop();
 
         for (String name : DISASTERS) {

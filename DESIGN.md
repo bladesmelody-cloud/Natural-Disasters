@@ -27,6 +27,9 @@ mods (Ooze Gal-Ore, Golemancy).
 
 ### Random timing
 - **Rare**: about once a week in-game (configurable).
+- Owner: "all disasters can count while players are offline" — the random
+  timer (and the great-eruption timer) count **server uptime**; if a disaster
+  comes due with nobody online it waits for the next player.
 - Warning: **sound + subtle hint**: rumbling/wind sound and small particles
   ~20 s before it hits (~20 s is **MINE**); no chat text.
 
@@ -197,7 +200,64 @@ have done tornados pretty well".
   area for 1000's of blocks for days to weeks. Everything past 3 gets worse by
   10x the amount. And should be very rare. Anything 5+ will make perpetual
   night for the entire world for weeks (all minecraft days)". After an
-  eruption: **dormant landmark** (owner's pick). Details being settled.
+  eruption: **dormant landmark** (owner's pick).
+- Settled with the owner:
+  - Magnitude → VEI: M1–2 VEI0, M3 VEI1, M4 VEI2, M5 VEI3, M6 VEI4, M7 VEI5,
+    M8 VEI6, M9 VEI7, M10 VEI8.
+  - The 10× applies to **ash area, darkness duration, ash depth and heat-wave
+    reach**, using this table (proposed by Claude, owner: "Use this table"):
+
+    | VEI | Heat wave | Ash + darkness | Ash depth | Darkness |
+    |---|---|---|---|---|
+    | 0–2 | – | – | – | – (cone + lava only, as before) |
+    | 3 | 64 blocks | radius 1,000 | 1 layer | 2 days |
+    | 4 | 200 | radius 3,200 | 3 layers | 20 days |
+    | 5 | 640 | whole world | 6 layers near, fading to 1 | 4 weeks |
+    | 6 | 2,000 | whole world | 1 block near | 6 weeks |
+    | 7 | 6,400 | whole world | 2 blocks near | 8 weeks |
+    | 8 | all loaded | whole world | 3 blocks near | 12 weeks |
+
+    (days = Minecraft days.)
+  - Stages for VEI 3+: rumble + **minor earthquake** nearby → eruption with
+    the **heat-and-ash wave** → **ash fall + lava streams** → **ash darkness**.
+  - Heat wave: **kills creatures in the open** (sheltered ones take heavy fire
+    damage) and **burns vegetation** (charred trunks, leaves/plants/crops gone,
+    grass → coarse dirt). Wooden builds are *not* ignited, water/snow not
+    touched (owner didn't pick those).
+  - Local darkness: **"Ash sky + real darkness"** — black ash sky and fog for
+    players in the area, and the area counts as night for light levels (mobs
+    spawn, crops stall).
+  - World-wide darkness (VEI5+): **beds don't skip it**.
+  - Rarity: "VEI5+ about once per 1–2 real years of play", each step past 3
+    rarer. The two clash (with 10× steps a VEI5 would take 3,000+ hours), so
+    owner chose a **separate great-eruption timer**: normal random volcanoes
+    roll VEI 0–4 (VEI4 10× rarer than VEI3); a saved timer triggers one VEI5+
+    about every **800 Minecraft days** (owner's pick; randomized 400–1,200;
+    config `greatEruptionDays`), VEI6/7/8 each 10× rarer again. Owner: "should
+    be server up time, not only player online" — the timer counts uptime and,
+    if due with nobody online, waits for a player.
+- Implementation (**MINE** where not above): VEI 3+ starts with an earthquake
+  (M3 for VEI3, M4 for VEI4, M5 for VEI5+) at the vent as the cone rises.
+  When it erupts, the heat wave rolls out at 1.5 blocks/s per… (1.5 + 0.5 per
+  VEI above 3 blocks/tick) to its reach (stops past every player's loaded
+  area); creatures under the open sky in its front die (new
+  `naturaldisasters:pyroclastic` damage), sheltered ones take 8 damage and
+  burn 10 s; vegetation in reach: leaves/plants/crops gone, trunks → charred
+  (stripped dark oak), grass/podzol/mycelium/moss → coarse dirt; buildings,
+  water and snow untouched. A rolling smoke cloud marks the front.
+- The eruption leaves an **ash cloud** (its own long-lived event, listed in
+  `/disaster list`, saved across restarts): ash settles on every chunk in its
+  area — loaded ones now and any loaded later while it lasts — as the new
+  **Volcanic Ash** layer block (never melts; shovel drops one per layer) and
+  **Block of Volcanic Ash** (falls like sand); full depth out to the heat
+  reach (max 2,000), thinning to 1 layer at the edge (world-wide: at 10× the
+  reach, 1 layer beyond). Under the cloud monsters spawn as at night and
+  don't burn in the sun (mixins), and players see near-black fog (thicker for
+  bigger VEI) with ash drifting down. World-wide clouds stop the Overworld
+  clock at midnight and restart it at morning when they end; sleeping
+  doesn't skip it (message: "The ash cloud blots out the sun. There is no
+  morning."). Config `worldDarkness=false` turns VEI 5+ into a 10,000-block
+  dark area instead. `/disaster random eruption` triggers a great eruption.
 
 ### Wildfire — freestyled, all **MINE**
 - 1 + M/2 ignition points within a third of radius 32–256; burns for

@@ -2,6 +2,7 @@ package com.bladesmelody.naturaldisasters.engine;
 
 import com.bladesmelody.naturaldisasters.Config;
 import com.bladesmelody.naturaldisasters.disaster.AcidRain;
+import com.bladesmelody.naturaldisasters.disaster.AshCloud;
 import com.bladesmelody.naturaldisasters.disaster.Blizzard;
 import com.bladesmelody.naturaldisasters.disaster.Drought;
 import com.bladesmelody.naturaldisasters.disaster.Earthquake;
@@ -31,7 +32,10 @@ public final class DisasterTypes {
     public static final DisasterType<Tornado> TORNADO = register("tornado", Tornado::new).weight(1.0)
             .where(Places::openSky);
     public static final DisasterType<Hurricane> HURRICANE = register("hurricane", Hurricane::new).weight(0.6).where(Places::nearOcean);
-    public static final DisasterType<Volcano> VOLCANO = register("volcano", Volcano::new).weight(0.3).where(Places::openSky);
+    public static final DisasterType<Volcano> VOLCANO = register("volcano", Volcano::new).weight(0.3).where(Places::openSky)
+            .roll(Volcano::rollRandomMagnitude);
+    /** Left behind by big eruptions (or started by command); never picked at random. */
+    public static final DisasterType<AshCloud> ASH_CLOUD = register("ash_cloud", AshCloud::new).weight(0).where((l, p) -> false);
     public static final DisasterType<Wildfire> WILDFIRE = register("wildfire", Wildfire::new).weight(0.8)
             .where((level, pos) -> Places.forest(level, pos) || Places.hot(level, pos));
     public static final DisasterType<Blizzard> BLIZZARD = register("blizzard", Blizzard::new).weight(0.8).where(Places::cold);

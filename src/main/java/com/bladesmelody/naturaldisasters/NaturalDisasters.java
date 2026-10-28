@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters;
 
+import com.bladesmelody.naturaldisasters.ash.AshEvents;
 import com.bladesmelody.naturaldisasters.command.DisasterCommand;
 import com.bladesmelody.naturaldisasters.engine.DisasterManager;
 import com.bladesmelody.naturaldisasters.gametest.ModGameTests;
@@ -20,6 +21,7 @@ public class NaturalDisasters {
     public NaturalDisasters(IEventBus modBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
         ModRegistry.register(modBus);
+        AshEvents.register(modBus);
         ModGameTests.register(modBus);
         NeoForge.EVENT_BUS.addListener(DisasterManager::onServerTick);
         NeoForge.EVENT_BUS.addListener(DisasterCommand::register);

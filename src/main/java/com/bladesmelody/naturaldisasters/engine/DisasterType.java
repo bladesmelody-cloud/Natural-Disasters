@@ -3,6 +3,7 @@ package com.bladesmelody.naturaldisasters.engine;
 import java.util.function.BiPredicate;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
+import java.util.function.ToIntFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -17,6 +18,7 @@ public final class DisasterType<D extends Disaster> {
     private final BooleanSupplier randomEnabled;
     private double weight = 1.0;
     private BiPredicate<ServerLevel, BlockPos> where = (level, pos) -> true;
+    private ToIntFunction<RandomSource> roll = DisasterType::rollMagnitude;
 
     public DisasterType(String name, Function<DisasterType<D>, D> factory, BooleanSupplier randomEnabled) {
         this.name = name;
@@ -34,6 +36,17 @@ public final class DisasterType<D extends Disaster> {
     public DisasterType<D> where(BiPredicate<ServerLevel, BlockPos> where) {
         this.where = where;
         return this;
+    }
+
+    /** Replaces how random disasters of this type pick their magnitude. */
+    public DisasterType<D> roll(ToIntFunction<RandomSource> roll) {
+        this.roll = roll;
+        return this;
+    }
+
+    /** A magnitude for a random disaster of this type. */
+    public int randomMagnitude(RandomSource random) {
+        return roll.applyAsInt(random);
     }
 
     public double weight() {

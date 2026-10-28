@@ -50,7 +50,11 @@ public final class DisasterManager {
         for (ServerLevel level : server.getAllLevels()) {
             DisasterData data = DisasterData.get(level);
             if (data.active.isEmpty()) continue;
-            data.active.removeIf(Disaster::isFinished);
+            data.active.removeIf(d -> {
+                if (!d.isFinished()) return false;
+                d.end(level);
+                return true;
+            });
             data.setDirty();
         }
     }
@@ -107,6 +111,7 @@ public final class DisasterManager {
                 Disaster d = it.next();
                 if (id < 0 || d.id == id) {
                     d.stop();
+                    d.end(level);
                     it.remove();
                     count++;
                 }
