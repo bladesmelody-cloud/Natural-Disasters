@@ -124,6 +124,31 @@ have done tornados pretty well".
   cloud, dirt at the base, wall cloud on top). **Visual pass later**: custom
   big funnel particles, real wind sound.
 
+### Flood — freestyled, all **MINE**
+- Water rises over the lowest ground near the middle (lowest of 48 sampled
+  columns) by 2–18 blocks (M1–M10) across radius 24–224, sloping down over
+  the outer quarter so there's no wall of water. Rises over 20 s + 8 s/block,
+  holds 30 s + 2 s/block, drains over 30 s + 5 s/block. Rain throughout.
+- Water drowns plants and fills ground floors; draining leaves 25 % of the
+  soaked grass/dirt as mud. Only water the flood placed is drained
+  (`WaterTracker`, one y-range per column), and that water is placed and
+  removed *quietly* (no flowing): flowing flood water would make permanent
+  new sources. Grass under the flood turns to dirt at once for the same reason
+  (its random tick would wake the water).
+- Random floods only where it rains (not deserts or snow), weight 0.8.
+
+### Tsunami — freestyled, all **MINE**
+- Comes from the side with the most open water near the strike (16
+  directions sampled); random tsunamis only near an ocean, weight 0.5.
+- Wave height 3–22 blocks above sea level (M1–M10), front 49–214 wide, runs
+  24 blocks of sea then 48–200 blocks inland, losing height linearly inland;
+  speed 10–19 blocks/s (but never faster than the block budget).
+- At the front it smashes blocks weaker than its force (Wind table, force =
+  70 + 8 × height mph: M5 wrecks wooden buildings, M10 strips cobble), fills
+  with quiet water, sweeps creatures along with some drowning damage and
+  splash particles; 10 rows behind the front it drains, leaving sand on 30 % of
+  the land it covered and puddles in 8 % of spots.
+
 ### Location
 - Disasters strike **near a random online player** (within some distance), so
   they are seen and unloaded chunks aren't touched.

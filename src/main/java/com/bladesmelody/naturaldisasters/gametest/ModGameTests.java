@@ -2,7 +2,9 @@ package com.bladesmelody.naturaldisasters.gametest;
 
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
 import com.bladesmelody.naturaldisasters.disaster.Earthquake;
+import com.bladesmelody.naturaldisasters.disaster.Flood;
 import com.bladesmelody.naturaldisasters.disaster.Meteor;
+import com.bladesmelody.naturaldisasters.disaster.Tsunami;
 import com.bladesmelody.naturaldisasters.disaster.Tornado;
 import com.bladesmelody.naturaldisasters.entity.MeteorEntity;
 import com.bladesmelody.naturaldisasters.entity.TornadoEntity;
@@ -76,6 +78,9 @@ public final class ModGameTests {
         FUNCTIONS.register("tornado_ef_table", () -> ModGameTests::tornadoEfTable);
         FUNCTIONS.register("tornado_tears_path", () -> ModGameTests::tornadoTearsPath);
         FUNCTIONS.register("tornado_save_roundtrip", () -> ModGameTests::tornadoSaveRoundtrip);
+        FUNCTIONS.register("flood_rises_and_drains", () -> ModGameTests::floodRisesAndDrains);
+        FUNCTIONS.register("tsunami_wave_smashes_and_drains", () -> ModGameTests::tsunamiWave);
+        FUNCTIONS.register("quiet_water_stays_put", () -> ModGameTests::quietWaterStaysPut);
         FUNCTIONS.register("command_start_list_stop", () -> ModGameTests::commandStartListStop);
     }
 
@@ -97,6 +102,9 @@ public final class ModGameTests {
         test(event, "earthquake_wrecks_house", arena(env, 500));
         test(event, "earthquake_save_roundtrip", arena(env, 20));
         test(event, "command_start_list_stop", arena(env, 40));
+        test(event, "quiet_water_stays_put", arena(env, 100));
+        test(event, "flood_rises_and_drains", arena(env, 400));
+        test(event, "tsunami_wave_smashes_and_drains", arena(env, 400));
         test(event, "tornado_ef_table", new TestData<>(env, EMPTY, 20, 0, true));
         test(event, "tornado_tears_path", arena(env, 200));
         test(event, "tornado_save_roundtrip", arena(env, 20));
@@ -112,6 +120,9 @@ public final class ModGameTests {
     }
 
     private static void test(RegisterGameTestsEvent event, String name, TestData<Holder<TestEnvironmentDefinition<?>>> data) {
+        // -Dnaturaldisasters.tests=flood,tsunami runs only tests whose names contain one of these.
+        String only = System.getProperty("naturaldisasters.tests", "");
+        if (!only.isEmpty() && java.util.Arrays.stream(only.split(",")).noneMatch(name::contains)) return;
         event.registerTest(id(name), new FunctionGameTestInstance(
                 ResourceKey.create(Registries.TEST_FUNCTION, id(name)), data));
     }
@@ -470,6 +481,90 @@ public final class ModGameTests {
         Disaster loaded = DisasterTypes.load(first).orElseThrow();
         helper.assertTrue(first.equals(loaded.save()), "save differs after reload:\n" + first + "\n" + loaded.save());
         helper.succeed();
+    }
+
+    /**
+     * A flood in a dug-out basin rises over the floor, keeps a dry island and
+     * the wall-free edge, then drains completely, leaving some mud.
+     */
+    private static void floodRisesAndDrains(GameTestHelper helper) {
+        fillFloor(helper);
+        fill(helper, FLOOR_TOP, FLOOR_TOP, Blocks.GRASS_BLOCK.defaultBlockState());
+        // A basin 2 deep in the middle with a pillar sticking out of it.
+        for (int dx = -8; dx <= 8; dx++) {
+            for (int dz = -8; dz <= 8; dz++) {
+                for (int y = FLOOR_TOP - 1; y <= FLOOR_TOP; y++) helper.setBlock(CENTER.offset(dx, y - FLOOR_TOP, dz), Blocks.AIR);
+                helper.setBlock(CENTER.offset(dx, -2, dz), Blocks.GRASS_BLOCK);
+            }
+        }
+        for (int y = -2; y <= 4; y++) helper.setBlock(CENTER.offset(0, y, 0), Blocks.STONE);
+        ServerLevel level = helper.getLevel();
+        Flood flood = Flood.create(helper.absolutePos(CENTER), 3, new Flood.Params(14, 3, 60, 40, 60), 3L, 0);
+        DisasterManager.add(level, flood);
+        int[] maxWater = {0};
+        helper.onEachTick(() -> maxWater[0] = Math.max(maxWater[0],
+                count(helper, FLOOR_TOP - 2, FLOOR_TOP + 4, s -> s.getFluidState().is(net.minecraft.world.level.material.Fluids.WATER))));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(flood.isFinished(), "flood still running (max water " + maxWater[0] + ")");
+            helper.assertTrue(maxWater[0] > 300, "flood never got deep: max " + maxWater[0] + " water blocks");
+            int left = count(helper, 1, FLOOR_TOP + 6, s -> s.getFluidState().isSource());
+            int sources = count(helper, 1, FLOOR_TOP + 6, s -> s.getFluidState().isSource());
+            int high = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 6, s -> !s.getFluidState().isEmpty());
+            StringBuilder where = new StringBuilder();
+            for (int x = 0; x < SIZE && where.length() < 300; x++)
+                for (int z = 0; z < SIZE; z++)
+                    for (int y = 1; y <= FLOOR_TOP + 6; y++)
+                        if (helper.getBlockState(new BlockPos(x, y, z)).getFluidState().isSource()) where.append(x).append(',').append(y).append(',').append(z).append(' ');
+            helper.assertTrue(left == 0, left + " water sources left after the flood drained (" + sources + " sources, "
+                    + high + " above floor, base " + (flood.base() - helper.absolutePos(BlockPos.ZERO).getY()) + ") sources at " + where);
+            helper.assertBlockPresent(Blocks.STONE, CENTER.offset(0, 4, 0));
+            int flowing = count(helper, 1, FLOOR_TOP + 6, s -> !s.getFluidState().isEmpty());
+            helper.assertTrue(flowing == 0, flowing + " flowing water left (should dry up)");
+            int mud = count(helper, 1, FLOOR_TOP, s -> s.is(Blocks.MUD));
+            helper.assertTrue(mud > 0, "no mud left behind");
+        });
+    }
+
+    /**
+     * A tsunami runs east across the arena: it reaches over the floor, knocks
+     * down a plank wall, and drains away again (a few puddles allowed).
+     */
+    private static void tsunamiWave(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        BlockPos center = CENTER.offset(6, 0, 0);
+        for (int dz = -3; dz <= 3; dz++) {
+            for (int y = 1; y <= 3; y++) helper.setBlock(center.offset(0, y, dz), Blocks.OAK_PLANKS);
+        }
+        Tsunami tsunami = Tsunami.create(helper.absolutePos(center), 5, new Tsunami.Params(6, 5, 8, 0.5), 21L, 0.0,
+                helper.absolutePos(CENTER).getY());
+        DisasterManager.add(level, tsunami);
+        int[] maxWater = {0};
+        helper.onEachTick(() -> maxWater[0] = Math.max(maxWater[0],
+                count(helper, FLOOR_TOP + 1, FLOOR_TOP + 6, s -> s.getFluidState().is(net.minecraft.world.level.material.Fluids.WATER))));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(tsunami.isFinished(), "tsunami still running (max water " + maxWater[0] + ")");
+            helper.assertTrue(maxWater[0] > 100, "the wave never came over the floor: max " + maxWater[0]);
+            int planks = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 3, s -> s.is(Blocks.OAK_PLANKS));
+            helper.assertTrue(planks < 8, planks + "/21 planks survived the wave");
+            int left = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 8, s -> !s.getFluidState().isEmpty());
+            helper.assertTrue(left < 40, left + " water blocks left after the wave");
+        });
+    }
+
+    /** Water placed and removed quietly never starts flowing (floods and tsunamis rely on it). */
+    private static void quietWaterStaysPut(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        BlockWriter w = new BlockWriter(level, 100, Long.MAX_VALUE);
+        w.setQuiet(helper.absolutePos(CENTER.above()), Blocks.WATER.defaultBlockState());
+        w.setQuiet(helper.absolutePos(CENTER.above().east()), Blocks.WATER.defaultBlockState());
+        helper.runAfterDelay(20, () -> w.setQuiet(helper.absolutePos(CENTER.above().east()), Blocks.AIR.defaultBlockState()));
+        helper.runAfterDelay(60, () -> {
+            int n = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 1, s -> !s.getFluidState().isEmpty());
+            helper.assertTrue(n == 1, "quiet water spread: " + n);
+            helper.succeed();
+        });
     }
 
     /** /disaster start, list and stop work. */

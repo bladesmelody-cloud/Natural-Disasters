@@ -8,9 +8,7 @@ import com.bladesmelody.naturaldisasters.entity.MeteorEntity;
 import com.bladesmelody.naturaldisasters.registry.ModRegistry;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -114,9 +112,6 @@ public class Meteor extends Disaster {
             return c;
         }
     }
-
-    /** Column offsets within a radius, nearest first; shared between craters of the same size. */
-    private static final Map<Integer, int[][]> DISCS = new HashMap<>();
 
     private Params params;
     private int impacted;
@@ -259,16 +254,7 @@ public class Meteor extends Disaster {
     // ---- Craters ----
 
     static int[][] disc(int radius) {
-        return DISCS.computeIfAbsent(radius, r -> {
-            List<int[]> list = new ArrayList<>();
-            for (int dx = -r; dx <= r; dx++) {
-                for (int dz = -r; dz <= r; dz++) {
-                    if (dx * dx + dz * dz <= r * r) list.add(new int[] {dx, dz});
-                }
-            }
-            list.sort(Comparator.comparingInt(o -> o[0] * o[0] + o[1] * o[1]));
-            return list.toArray(new int[0][]);
-        });
+        return Terrain.disc(radius);
     }
 
     /** How deep the bowl is at a distance from the centre: half the radius in the middle, 0 at the rim. */

@@ -2,6 +2,8 @@ package com.bladesmelody.naturaldisasters.engine;
 
 import com.bladesmelody.naturaldisasters.Config;
 import com.bladesmelody.naturaldisasters.disaster.Earthquake;
+import com.bladesmelody.naturaldisasters.disaster.Flood;
+import com.bladesmelody.naturaldisasters.disaster.Tsunami;
 import com.bladesmelody.naturaldisasters.disaster.Meteor;
 import com.bladesmelody.naturaldisasters.disaster.Places;
 import com.bladesmelody.naturaldisasters.disaster.Tornado;
@@ -21,6 +23,8 @@ public final class DisasterTypes {
     public static final DisasterType<Meteor> METEOR = register("meteor", Meteor::new).weight(0.6);
     public static final DisasterType<Tornado> TORNADO = register("tornado", Tornado::new).weight(1.0)
             .where(Places::openSky);
+    public static final DisasterType<Flood> FLOOD = register("flood", Flood::new).weight(0.8).where(Places::wet);
+    public static final DisasterType<Tsunami> TSUNAMI = register("tsunami", Tsunami::new).weight(0.5).where(Places::nearOcean);
 
     private DisasterTypes() {}
 

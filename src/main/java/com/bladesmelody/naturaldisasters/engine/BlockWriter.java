@@ -86,6 +86,22 @@ public final class BlockWriter {
         return true;
     }
 
+    /**
+     * Sets a block without any side effects at all: no onPlace logic (so
+     * placed water doesn't start flowing) and no waking of neighbours. Used for
+     * water a disaster places and later drains exactly.
+     */
+    public boolean setQuiet(BlockPos pos, BlockState state) {
+        if (!isLoaded(level, pos)) return false;
+        BlockState current = level.getBlockState(pos);
+        if (current == state) return true;
+        if (current.getDestroySpeed(level, pos) < 0) return false;
+        level.setBlock(pos, state, FLAGS | Block.UPDATE_SKIP_ON_PLACE);
+        remaining--;
+        changed++;
+        return true;
+    }
+
     private void wakeNeighbors(BlockPos pos) {
         BlockPos.MutableBlockPos n = new BlockPos.MutableBlockPos();
         for (Direction d : Direction.values()) {

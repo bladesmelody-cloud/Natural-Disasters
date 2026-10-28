@@ -18,7 +18,8 @@ Claude-only proposals **MINE**.
 ./gradlew runGameTestServer  # all game tests; exits non-zero on failure
 ./gradlew runClient / runServer
 ```
-Game tests live in `src/main/java/.../gametest/ModGameTests.java`: register the
+`./gradlew runGameTestServer -Ptests=flood,tsunami` runs only tests whose names
+contain one of those words. Game tests live in `src/main/java/.../gametest/ModGameTests.java`: register the
 function in `FUNCTIONS` and the test in `onRegisterTests`.
 
 ## Cloud container setup (not committed)

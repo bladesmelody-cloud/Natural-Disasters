@@ -42,6 +42,22 @@ public final class Terrain {
         return state.isAir() || (state.canBeReplaced() && state.getFluidState().isEmpty());
     }
 
+    private static final java.util.Map<Integer, int[][]> DISCS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Column offsets {dx, dz} within a radius, nearest first; cached per radius. */
+    public static int[][] disc(int radius) {
+        return DISCS.computeIfAbsent(radius, r -> {
+            java.util.List<int[]> list = new java.util.ArrayList<>();
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dz = -r; dz <= r; dz++) {
+                    if (dx * dx + dz * dz <= r * r) list.add(new int[] {dx, dz});
+                }
+            }
+            list.sort(java.util.Comparator.comparingInt(o -> o[0] * o[0] + o[1] * o[1]));
+            return list.toArray(new int[0][]);
+        });
+    }
+
     /** Horizontal distance between two points. */
     public static double dist(double x1, double z1, double x2, double z2) {
         double dx = x1 - x2, dz = z1 - z2;

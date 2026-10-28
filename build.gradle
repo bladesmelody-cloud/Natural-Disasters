@@ -33,6 +33,8 @@ neoForge {
         gameTestServer {
             type = 'gameTestServer'
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            // ./gradlew runGameTestServer -Ptests=flood,tsunami runs only matching tests.
+            if (project.hasProperty('tests')) systemProperty 'naturaldisasters.tests', project.property('tests').toString()
         }
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
