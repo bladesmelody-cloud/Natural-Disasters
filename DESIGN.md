@@ -149,6 +149,22 @@ have done tornados pretty well".
   splash particles; 10 rows behind the front it drains, leaving sand on 30 % of
   the land it covered and puddles in 8 % of spots.
 
+### Hurricane — freestyled, all **MINE**
+- Saffir-Simpson from magnitude: M1–2 tropical storm (60 mph), M3–4 cat 1
+  (85), M5 cat 2 (100), M6 cat 3 (120), M7–8 cat 4 (145), M9–10 cat 5 (170).
+  Radius 128 + 32·M (M10: 448), lasts 90 + 25·M s, calm eye of radius 12 + 2·M
+  drifting 1.3–2 blocks/s so it passes over the strike point halfway through.
+- Wind: calm in the eye, full in the eyewall (up to 2.5 eye radii), easing
+  off ∝ (eyewall/d)^0.6. Sparse random columns over the whole storm lose up to
+  two weak top blocks (Wind table, 70–100 % of local wind) — roofs, leaves,
+  crops, fences over a huge area rather than a tornado's total wreck.
+- Creatures under open sky are pushed around the storm (counter-clockwise,
+  slightly inward); indoors is safe. Lightning about every 2 s at M1 down to
+  every 0.5 s at M10. Thunderstorm weather (rain only for tropical storms).
+- Storm surge 1–5 blocks: low land within 6 blocks of open water and the
+  water itself rise (quiet tracked water), drained once the storm passes.
+- Random hurricanes only near an ocean, weight 0.6.
+
 ### Location
 - Disasters strike **near a random online player** (within some distance), so
   they are seen and unloaded chunks aren't touched.

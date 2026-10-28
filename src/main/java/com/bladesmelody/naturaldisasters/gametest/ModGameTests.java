@@ -3,6 +3,7 @@ package com.bladesmelody.naturaldisasters.gametest;
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
 import com.bladesmelody.naturaldisasters.disaster.Earthquake;
 import com.bladesmelody.naturaldisasters.disaster.Flood;
+import com.bladesmelody.naturaldisasters.disaster.Hurricane;
 import com.bladesmelody.naturaldisasters.disaster.Meteor;
 import com.bladesmelody.naturaldisasters.disaster.Tsunami;
 import com.bladesmelody.naturaldisasters.disaster.Tornado;
@@ -36,6 +37,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
@@ -81,6 +83,7 @@ public final class ModGameTests {
         FUNCTIONS.register("flood_rises_and_drains", () -> ModGameTests::floodRisesAndDrains);
         FUNCTIONS.register("tsunami_wave_smashes_and_drains", () -> ModGameTests::tsunamiWave);
         FUNCTIONS.register("quiet_water_stays_put", () -> ModGameTests::quietWaterStaysPut);
+        FUNCTIONS.register("hurricane_wind_and_surge", () -> ModGameTests::hurricaneWindAndSurge);
         FUNCTIONS.register("command_start_list_stop", () -> ModGameTests::commandStartListStop);
     }
 
@@ -102,6 +105,7 @@ public final class ModGameTests {
         test(event, "earthquake_wrecks_house", arena(env, 500));
         test(event, "earthquake_save_roundtrip", arena(env, 20));
         test(event, "command_start_list_stop", arena(env, 40));
+        test(event, "hurricane_wind_and_surge", arena(env, 300));
         test(event, "quiet_water_stays_put", arena(env, 100));
         test(event, "flood_rises_and_drains", arena(env, 400));
         test(event, "tsunami_wave_smashes_and_drains", arena(env, 400));
@@ -564,6 +568,49 @@ public final class ModGameTests {
             int n = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 1, s -> !s.getFluidState().isEmpty());
             helper.assertTrue(n == 1, "quiet water spread: " + n);
             helper.succeed();
+        });
+    }
+
+    /**
+     * A small category-4 hurricane parked over the arena: its wind strips
+     * leaves and planks off the top, pushes a pig in the open, the surge
+     * floods the low land next to a water channel, and it all drains after.
+     */
+    private static void hurricaneWindAndSurge(GameTestHelper helper) {
+        fillFloor(helper);
+        fill(helper, FLOOR_TOP, FLOOR_TOP, Blocks.GRASS_BLOCK.defaultBlockState());
+        ServerLevel level = helper.getLevel();
+        for (int x = 0; x <= 4; x++) {
+            for (int z = 0; z < SIZE; z++) level.setBlock(helper.absolutePos(new BlockPos(x, FLOOR_TOP, z)), Blocks.WATER.defaultBlockState(), Block.UPDATE_CLIENTS);
+        }
+        int leavesBefore = 0;
+        for (int dx = -10; dx <= 10; dx += 2) {
+            for (int dz = -10; dz <= 10; dz += 2) {
+                if (dx * dx + dz * dz < 16 || dx * dx + dz * dz > 120) continue;
+                helper.setBlock(CENTER.offset(dx, 1, dz), (dx + dz) % 4 == 0 ? Blocks.OAK_LEAVES : Blocks.OAK_PLANKS);
+                leavesBefore++;
+            }
+        }
+        int built = leavesBefore;
+        Pig pig = helper.spawn(EntityType.PIG, CENTER.offset(8, 1, 1));
+        Vec3 pigStart = pig.position();
+        double[] pigMoved = {0};
+        int[] surgeMax = {0};
+        Hurricane hurricane = Hurricane.create(helper.absolutePos(CENTER), 7,
+                new Hurricane.Params(4, 16, 3, 145, 100, 0.0, 2, 0.05), 13L, 0.0, helper.absolutePos(CENTER).getY());
+        DisasterManager.add(level, hurricane);
+        helper.onEachTick(() -> {
+            if (pig.isAlive()) pigMoved[0] = Math.max(pigMoved[0], Math.hypot(pig.getX() - pigStart.x, pig.getZ() - pigStart.z));
+            surgeMax[0] = Math.max(surgeMax[0], count(helper, FLOOR_TOP + 1, FLOOR_TOP + 2, s -> s.getFluidState().isSource()));
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(hurricane.isFinished(), "hurricane still running");
+            int standing = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 1, s -> s.is(Blocks.OAK_LEAVES) || s.is(Blocks.OAK_PLANKS));
+            helper.assertTrue(standing < built / 2, standing + "/" + built + " leaves/planks survived");
+            helper.assertTrue(pigMoved[0] > 2, "pig barely moved: " + pigMoved[0]);
+            helper.assertTrue(surgeMax[0] > 10, "no storm surge (max " + surgeMax[0] + " water blocks above the channel)");
+            int left = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 3, s -> s.getFluidState().isSource());
+            helper.assertTrue(left == 0, left + " surge water left");
         });
     }
 
