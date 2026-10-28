@@ -46,6 +46,8 @@ public class NaturalDisasters {
         NeoForge.EVENT_BUS.addListener(Undo::onBlockPlace);
         NeoForge.EVENT_BUS.addListener(ModTriggers::onDeath);
         NeoForge.EVENT_BUS.addListener(DisasterResistance::onDamage);
+        NeoForge.EVENT_BUS.addListener(com.bladesmelody.naturaldisasters.disaster.WaterTracker::onCreateFluidSource);
+        NeoForge.EVENT_BUS.addListener(com.bladesmelody.naturaldisasters.disaster.WaterTracker::onServerStopped);
         NeoForge.EVENT_BUS.addListener(DisasterCommand::register);
     }
 }

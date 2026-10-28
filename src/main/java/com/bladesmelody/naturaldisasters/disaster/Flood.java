@@ -101,7 +101,7 @@ public class Flood extends Disaster {
         if (inWarning()) return false;
         int active = age - warningTicks;
         if (active >= params.total() * 3) return true;
-        return active >= params.total() && water.size() == 0;
+        return active >= params.total() && water.settled();
     }
 
     @Override
@@ -145,6 +145,7 @@ public class Flood extends Disaster {
                 if (top < local) water.fill(w, x, z, top + 1, local);
             }
         }
+        if (receding) water.settle(w);
     }
 
     /** The flood slopes down over the outer quarter so it ends without a wall. */
@@ -174,6 +175,11 @@ public class Flood extends Disaster {
                 && RandomSource.create(seed ^ pos.asLong()).nextFloat() < 0.25F) {
             w.set(pos, Blocks.MUD.defaultBlockState());
         }
+    }
+
+    @Override
+    protected void onEnd(ServerLevel level) {
+        water.release();
     }
 
     @Override

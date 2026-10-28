@@ -89,6 +89,7 @@ public final class ModGameTests {
         FUNCTIONS.register("tornado_tears_path", () -> ModGameTests::tornadoTearsPath);
         FUNCTIONS.register("tornado_save_roundtrip", () -> ModGameTests::tornadoSaveRoundtrip);
         FUNCTIONS.register("flood_rises_and_drains", () -> ModGameTests::floodRisesAndDrains);
+        FUNCTIONS.register("woken_flood_leaves_no_water", () -> ModGameTests::wokenFloodLeavesNoWater);
         FUNCTIONS.register("tsunami_wave_smashes_and_drains", () -> ModGameTests::tsunamiWave);
         FUNCTIONS.register("quiet_water_stays_put", () -> ModGameTests::quietWaterStaysPut);
         FUNCTIONS.register("hurricane_wind_and_surge", () -> ModGameTests::hurricaneWindAndSurge);
@@ -169,6 +170,7 @@ public final class ModGameTests {
         test(event, "hurricane_wind_and_surge", arena(env, 300));
         test(event, "quiet_water_stays_put", arena(env, 100));
         test(event, "flood_rises_and_drains", arena(env, 400));
+        test(event, "woken_flood_leaves_no_water", arena(env, 400));
         test(event, "tsunami_wave_smashes_and_drains", arena(env, 400));
         test(event, "tornado_ef_table", new TestData<>(env, EMPTY, 20, 0, true));
         test(event, "tornado_tears_path", arena(env, 200));
@@ -822,6 +824,51 @@ public final class ModGameTests {
             helper.assertTrue(flowing == 0, flowing + " flowing water left (should dry up)");
             int mud = count(helper, 1, FLOOR_TOP, s -> s.is(Blocks.MUD));
             helper.assertTrue(mud > 0, "no mud left behind");
+        });
+    }
+
+    /**
+     * Something wakes the flood's quiet water while it's high (here: fluid
+     * ticks on a line of it), so it flows and makes new sources as the flood
+     * drains. The settle sweeps must still leave no water behind.
+     */
+    private static void wokenFloodLeavesNoWater(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        Flood flood = Flood.create(helper.absolutePos(CENTER), 3, new Flood.Params(12, 3, 40, 40, 60), 4L, 0);
+        DisasterManager.add(level, flood);
+        helper.runAfterDelay(60, () -> {
+            for (int dx = -10; dx <= 10; dx += 2) {
+                for (int y = 1; y <= 3; y++) {
+                    BlockPos p = helper.absolutePos(CENTER.offset(dx, y, 3));
+                    if (level.getFluidState(p).isSource()) level.scheduleTick(p, net.minecraft.world.level.material.Fluids.WATER, 1);
+                }
+            }
+        });
+        boolean[] checkedAfter = {false};
+        helper.succeedWhen(() -> {
+            if (checkedAfter[0]) {
+                // Once the flood is over, infinite water works there again as normal.
+                helper.assertTrue(helper.getBlockState(CENTER.offset(0, 1, 0)).getFluidState().isSource(), "no new source formed after the flood");
+                return;
+            }
+            helper.assertTrue(flood.isFinished(), "flood still running");
+            int left = count(helper, 1, FLOOR_TOP + 6, s -> !s.getFluidState().isEmpty());
+            int sources = count(helper, 1, FLOOR_TOP + 6, s -> s.getFluidState().isSource());
+            int outside = countOutside(helper, 1, FLOOR_TOP + 6, s -> !s.getFluidState().isEmpty());
+            StringBuilder where = new StringBuilder();
+            for (int x = 0; x < SIZE; x++)
+                for (int z = 0; z < SIZE; z++)
+                    for (int y = 1; y <= FLOOR_TOP + 6; y++) {
+                        var f = helper.getBlockState(new BlockPos(x, y, z)).getFluidState();
+                        if (f.isSource()) where.append(x - CENTER.getX()).append(',').append(y).append(',').append(z - CENTER.getZ()).append(' ');
+                    }
+            helper.assertTrue(left == 0, left + " water blocks left after a woken flood drained (" + sources + " sources, "
+                    + outside + " outside the flood radius); sources at " + where);
+            checkedAfter[0] = true;
+            helper.setBlock(CENTER.offset(-1, 1, 0), Blocks.WATER);
+            helper.setBlock(CENTER.offset(1, 1, 0), Blocks.WATER);
+            helper.fail("placed two sources, waiting for the infinite-water check");
         });
     }
 

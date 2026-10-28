@@ -670,6 +670,31 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
   - **Textures are placeholders**: recoloured vanilla iron/blackstone/
     lodestone textures. Replace with original art before publishing.
 
+## Flood leak fix (owner picked it)
+- Symptom: now and then (1 run in 7 under full test load) a flood left a
+  couple of permanent water sources behind; the hurricane surge and
+  volcano lava tests showed the same kind of flakiness earlier.
+- Cause: when something wakes a disaster's quiet water (anything that
+  updates a block next to it: debris landing, a player, a busy server),
+  the water flows into drained cells and the infinite-water rule makes new
+  sources there, which nothing tracked. A test that wakes a flood on
+  purpose left 1,037 water blocks (391 sources).
+- Also found: every water check in `WaterTracker` used `Fluids.WATER`,
+  which in Minecraft means still water only, so flowing water was never
+  drained or cleaned up at all.
+- Fix (**MINE**):
+  - Water checks match all water (`FluidTags.WATER`).
+  - While a flood, tsunami or hurricane surge has water placed, no new
+    water source can form within 16 blocks of it (NeoForge's
+    `CreateFluidSourceEvent`); normal infinite water works again once the
+    disaster is over (tested).
+  - After draining, two sweeps 5 s apart clear any water left in the cells
+    the disaster filled and up to 2 blocks around them, and nudge flowing
+    water next to removed cells so it recedes; the disaster ends 2.5 s
+    after the last sweep. Only cells the disaster itself filled (and their
+    edge) are touched, so real lakes stay.
+  - Result: the woken flood leaves 0 water, under full load too.
+
 ## Status (end of the freestyle night)
 All 12 disasters are in, each with game tests (28 total, stable over many
 runs) and checked in a real world: Earthquake, Meteor, Tornado, Hurricane,

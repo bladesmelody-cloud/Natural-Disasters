@@ -127,7 +127,7 @@ public class Hurricane extends Disaster {
         if (inWarning()) return false;
         int active = age - warningTicks;
         if (active >= params.durationTicks * 3) return true;
-        return active >= params.durationTicks && surge.size() == 0;
+        return active >= params.durationTicks && surge.settled();
     }
 
     /** Visual marker at the eye: clients draw the spiral cloud bands around it. */
@@ -232,6 +232,7 @@ public class Hurricane extends Disaster {
     }
 
     private void drainSurge(BlockWriter w) {
+        surge.settle(w);
         while (surge.size() > 0 && w.hasBudget()) {
             long[] c = surge.anyColumn();
             if (!surge.drain(w, (int) c[0], (int) c[1])) return;
@@ -294,6 +295,7 @@ public class Hurricane extends Disaster {
     @Override
     protected void onEnd(ServerLevel level) {
         SkyZones.remove(id);
+        surge.release();
         // It may sit in a chunk that doesn't tick, where it can't time out by itself.
         if (marker != null) marker.discard();
         marker = null;

@@ -109,7 +109,7 @@ public class Tsunami extends Disaster {
     public boolean isDone() {
         if (inWarning() || !aimed) return false;
         if (age - warningTicks > (rows / params.speed + 400) * 3) return true;
-        return nextRow >= rows && nextDrain >= rows && water.size() == 0;
+        return nextRow >= rows && nextDrain >= rows && water.settled();
     }
 
     /** Sets the travel direction; the wave starts a little out to sea and runs past the centre. */
@@ -173,6 +173,7 @@ public class Tsunami extends Disaster {
                 if (!drainRow(w, nextDrain)) break;
                 nextDrain++;
             }
+            if (nextDrain >= rows) water.settle(w);
         }
         if (activeTicks % 5 == 0) sweep(level);
         if (activeTicks % 60 == 0) roar(level);
@@ -274,6 +275,11 @@ public class Tsunami extends Disaster {
         if (nextRow >= rows) return;
         double fx = originX + dirX * nextRow, fz = originZ + dirZ * nextRow;
         level.playSound(null, fx, seaLevel + 2, fz, ModSounds.TSUNAMI_ROAR.get(), SoundSource.AMBIENT, 4.0F, 1.0F);
+    }
+
+    @Override
+    protected void onEnd(ServerLevel level) {
+        water.release();
     }
 
     @Override

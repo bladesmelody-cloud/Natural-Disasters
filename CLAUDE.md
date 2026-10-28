@@ -54,7 +54,8 @@ function in `FUNCTIONS` and the test in `onRegisterTests`.
   Hailstorm), each with a `Params` record (`forMagnitude`, saved with it) and a
   `create(...)` for tests. Shared: `Terrain` (columns, heights, discs), `Wind`
   (block resistance in mph), `WaterTracker` (water a disaster placed, to drain
-  exactly), `Places` (climate checks for random picks).
+  exactly; no new sources near it while active; `settle` sweeps after
+  draining), `Places` (climate checks for random picks).
 - `sky/`: `SkyZones` (storm/ash circles a disaster publishes, server + client
   copy, synced by `SkyZonesPayload`), `SkyLayers` (environment-attribute
   layers: sky/fog/cloud colour, fog distance, light, stars, `MONSTERS_BURN`),
@@ -103,6 +104,8 @@ function in `FUNCTIONS` and the test in `onRegisterTests`.
   `Config` (server config: budget, random timing, per-type toggles).
 
 ## Gotchas learned
+- `Fluids.WATER` is still water only; flowing water is `Fluids.FLOWING_WATER`.
+  To match any water use `fluidState.is(FluidTags.WATER)`.
 - Water/lava a disaster places must be set *and removed* with `setQuiet`, and
   nothing next to it may wake fluids (strip/smash with `setQuiet` too):
   woken quiet water flows and forms permanent new sources.
