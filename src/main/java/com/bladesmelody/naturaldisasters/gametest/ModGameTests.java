@@ -54,6 +54,7 @@ public final class ModGameTests {
         FUNCTIONS.register("magnitude_table", () -> ModGameTests::magnitudeTable);
         FUNCTIONS.register("earthquake_opens_fissures", () -> ModGameTests::earthquakeOpensFissures);
         FUNCTIONS.register("earthquake_shatters_and_cracks", () -> ModGameTests::earthquakeShattersAndCracks);
+        FUNCTIONS.register("earthquake_wrecks_house", () -> ModGameTests::earthquakeWrecksHouse);
         FUNCTIONS.register("earthquake_heaves_ground", () -> ModGameTests::earthquakeHeavesGround);
         FUNCTIONS.register("earthquake_save_roundtrip", () -> ModGameTests::earthquakeSaveRoundtrip);
         FUNCTIONS.register("command_start_list_stop", () -> ModGameTests::commandStartListStop);
@@ -74,6 +75,7 @@ public final class ModGameTests {
         test(event, "earthquake_opens_fissures", arena(env, 300));
         test(event, "earthquake_shatters_and_cracks", arena(env, 300));
         test(event, "earthquake_heaves_ground", arena(env, 300));
+        test(event, "earthquake_wrecks_house", arena(env, 500));
         test(event, "earthquake_save_roundtrip", arena(env, 20));
         test(event, "command_start_list_stop", arena(env, 40));
     }
@@ -154,7 +156,11 @@ public final class ModGameTests {
     }
 
     private static Earthquake startQuake(GameTestHelper helper, Earthquake.Params params, long seed) {
-        Earthquake quake = Earthquake.create(helper.absolutePos(CENTER), 3, params, seed, 0);
+        return startQuake(helper, 3, params, seed);
+    }
+
+    private static Earthquake startQuake(GameTestHelper helper, int magnitude, Earthquake.Params params, long seed) {
+        Earthquake quake = Earthquake.create(helper.absolutePos(CENTER), magnitude, params, seed, 0);
         DisasterManager.add(helper.getLevel(), quake);
         return quake;
     }
@@ -230,6 +236,47 @@ public final class ModGameTests {
             helper.assertTrue(cobble > 20, "only " + cobble + " stone cracked");
             int outsideGlass = countOutside(helper, FLOOR_TOP + 1, FLOOR_TOP + 1, s -> s.is(Blocks.GLASS));
             helper.assertTrue(outsideGlass == outsideColumns(), "glass outside the radius was broken");
+        });
+    }
+
+    /** An M8 quake knocks planks out of a hollow house and caves its roof in. */
+    private static void earthquakeWrecksHouse(GameTestHelper helper) {
+        fillFloor(helper);
+        int x0 = CENTER.getX() - 4, z0 = CENTER.getZ() - 4, y0 = FLOOR_TOP + 1, roof = FLOOR_TOP + 5;
+        int planks = 0;
+        for (int x = 0; x < 9; x++) {
+            for (int z = 0; z < 9; z++) {
+                boolean wall = x == 0 || z == 0 || x == 8 || z == 8;
+                for (int y = y0; y <= roof; y++) {
+                    if (wall || y == roof) {
+                        helper.setBlock(new BlockPos(x0 + x, y, z0 + z), Blocks.OAK_PLANKS);
+                        planks++;
+                    }
+                }
+            }
+        }
+        int planksBefore = planks;
+        // Long enough that each block gets sampled about as often as in a real M8 quake.
+        Earthquake.Params p = params(0, 0.01, 0);
+        Earthquake.Params longer = new Earthquake.Params(p.radius(), 300, 0, 0, 0, 0, p.shakeDensity(), 0, 0, 0, 0);
+        Earthquake quake = startQuake(helper, 8, longer, 4242L);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(quake.isFinished(), "quake still running");
+            int standing = 0, roofInterior = 0;
+            for (int x = 0; x < 9; x++) {
+                for (int z = 0; z < 9; z++) {
+                    boolean wall = x == 0 || z == 0 || x == 8 || z == 8;
+                    for (int y = y0; y <= roof; y++) {
+                        // Only where the house was built: rubble on the floor doesn't count.
+                        if ((wall || y == roof) && helper.getBlockState(new BlockPos(x0 + x, y, z0 + z)).is(Blocks.OAK_PLANKS)) {
+                            standing++;
+                            if (y == roof && x > 0 && z > 0 && x < 8 && z < 8) roofInterior++;
+                        }
+                    }
+                }
+            }
+            helper.assertTrue(standing < planksBefore * 0.8 && roofInterior < 49 - 15,
+                    standing + " of " + planksBefore + " planks still in place, " + roofInterior + " of 49 inner roof blocks");
         });
     }
 

@@ -39,6 +39,8 @@ import net.neoforged.neoforge.common.Tags;
 public class Earthquake extends Disaster {
     /** Blocks below the surface that shaking damage reaches. */
     private static final int SHAKE_DEPTH = 12;
+    /** Extra shaking from M5 up, aimed at the top blocks where buildings are. */
+    private static final int BUILDING_DEPTH = 8;
     /** How far down collapse looks for unsupported blocks. */
     private static final int COLLAPSE_DEPTH = 24;
     /** Depth of the ground slab a heave moves. */
@@ -234,7 +236,10 @@ public class Earthquake extends Disaster {
             double expected = params.shakeDensity * Math.PI * params.radius * params.radius;
             int samples = (int) expected + (random.nextDouble() < expected - (int) expected ? 1 : 0);
             samples = Math.min(samples, MAX_SAMPLES_PER_TICK);
-            for (int i = 0; i < samples && w.hasBudget(); i++) shakeDamage(w, random);
+            for (int i = 0; i < samples && w.hasBudget(); i++) shakeDamage(w, random, SHAKE_DEPTH);
+            if (magnitude >= 5) {
+                for (int i = 0; i < samples && w.hasBudget(); i++) shakeDamage(w, random, BUILDING_DEPTH);
+            }
             for (int i = 0; i < (samples + 1) / 2 && w.hasBudget(); i++) collapse(w, random);
         }
     }
@@ -276,15 +281,38 @@ public class Earthquake extends Disaster {
 
     // ---- Shaking damage ----
 
-    private void shakeDamage(BlockWriter w, RandomSource random) {
+    /** Samples a block within {@code depth} of the surface and shakes it. */
+    private void shakeDamage(BlockWriter w, RandomSource random, int depth) {
         ServerLevel level = w.level();
         BlockPos column = randomColumn(random);
         if (!BlockWriter.isLoaded(level, column)) return;
         int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, column.getX(), column.getZ()) - 1;
-        BlockPos pos = column.atY(top - random.nextInt(SHAKE_DEPTH));
+        BlockPos pos = column.atY(top - random.nextInt(depth));
         BlockState state = level.getBlockState(pos);
+        float knockOut = buildingDamage(state);
+        if (knockOut > 0 && random.nextFloat() < knockOut && movable(level, pos, state)) {
+            drop(w, pos, state, pos);
+            return;
+        }
         BlockState result = shaken(state, random);
         if (result != null) w.set(pos, result);
+    }
+
+    /**
+     * Chance that shaking knocks a building block loose (it then falls as
+     * rubble). Nothing below M5; 30 % at M6, 60 % at M8, 90 % at M10. Logs
+     * count half, so trees mostly survive.
+     */
+    float buildingDamage(BlockState state) {
+        float chance = Math.clamp((magnitude - 4) * 0.15F, 0F, 0.9F);
+        if (chance == 0) return 0;
+        if (state.is(BlockTags.PLANKS) || state.is(BlockTags.WOODEN_STAIRS) || state.is(BlockTags.WOODEN_SLABS)
+                || state.is(BlockTags.WOODEN_FENCES) || state.is(BlockTags.FENCE_GATES) || state.is(BlockTags.WOODEN_TRAPDOORS)
+                || state.is(BlockTags.WOOL) || state.is(BlockTags.TERRACOTTA) || state.is(Blocks.BRICKS)
+                || state.is(Blocks.MUD_BRICKS) || state.is(Blocks.HAY_BLOCK)) {
+            return chance;
+        }
+        return state.is(BlockTags.LOGS) ? chance / 2 : 0;
     }
 
     /** What shaking turns a block into, or null to leave it. */
@@ -322,7 +350,7 @@ public class Earthquake extends Disaster {
             pos.setY(y);
             BlockState state = level.getBlockState(pos);
             if (!movable(level, pos, state) || !empty(level.getBlockState(pos.below()))) continue;
-            if (supports(level, pos) < 2) {
+            if (supports(level, pos) < 2 || (random.nextFloat() < spanCollapse() && groundedNeighbors(level, pos) == 0)) {
                 drop(w, pos.immutable(), state, pos.immutable());
             }
             return;
@@ -336,6 +364,25 @@ public class Earthquake extends Disaster {
 
     private static boolean empty(BlockState state) {
         return state.isAir() || (state.canBeReplaced() && state.getFluidState().isEmpty());
+    }
+
+    /**
+     * Chance a block over air falls when none of its side neighbours rests on
+     * anything: roofs cave in from the middle, cave ceilings drop. Rises from
+     * 15 % at M4 to 100 % at M10.
+     */
+    private float spanCollapse() {
+        return Math.clamp((magnitude - 3) * 0.15F, 0F, 1F);
+    }
+
+    /** Side neighbours that are solid and have something solid under them. */
+    private static int groundedNeighbors(ServerLevel level, BlockPos pos) {
+        int n = 0;
+        for (Direction d : Direction.Plane.HORIZONTAL) {
+            BlockPos side = pos.relative(d);
+            if (BlockWriter.isLoaded(level, side) && !empty(level.getBlockState(side)) && !empty(level.getBlockState(side.below()))) n++;
+        }
+        return n;
     }
 
     private static int supports(ServerLevel level, BlockPos pos) {

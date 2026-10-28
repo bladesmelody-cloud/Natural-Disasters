@@ -114,6 +114,14 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
   60 % of the shaking. Knockback = 0.02 × magnitude every 5 ticks.
 - Random disasters skip players in dimensions with a ceiling (the Nether) for
   now; `/disaster start` there still works but treats the roof as surface.
+- Building damage (owner chose **"More building damage"** after the first
+  screenshots): from M5 an extra shaking pass hits the top 8 blocks; wood
+  (planks, stairs, slabs, fences, trapdoors), wool, terracotta, bricks, mud
+  bricks and hay are knocked loose and fall as rubble with chance 30 % at M6,
+  60 % at M8, 90 % at M10 (logs half that, so trees mostly survive). Blocks over
+  air whose side neighbours don't rest on anything (roof middles, cave
+  ceilings) fall with chance 15 % at M4 rising to 100 % at M10, so roofs cave in
+  from the middle.
 - Warning: low distant boom + ground particles at players' feet every 2 s.
 - **Deferred to visual polish**: client camera shake, custom sounds.
 - Measured (dev server, 400 chunks loaded, no players): M9 quake (radius 160)
@@ -123,5 +131,6 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
 ## Open questions
 - Rest of the build order after Meteor and Tornado.
 - Should disasters happen in the Nether / End, and how?
-- First screenshots: an M7 quake on a village is visible but fairly subtle
-  (fissures, buckled paths, water pouring in); houses mostly stand. Tune up?
+- After the building-damage pass an M7 quake leaves village houses holed with
+  rubble around them but still recognisable; higher magnitudes hit harder.
+  Owner to judge from play-testing.
