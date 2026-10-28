@@ -90,7 +90,8 @@ public class AshCloud extends Disaster {
     @Override
     public String describe() {
         return "ash cloud (" + (params.worldWide() ? "whole world" : "radius " + params.radius) + ", "
-                + Math.max(0, (params.durationTicks - (age - warningTicks)) / 24000.0) + " days left)";
+                + String.format(java.util.Locale.ROOT, "%.1f", Math.max(0, (params.durationTicks - (age - warningTicks)) / 24000.0))
+                + " days left)";
     }
 
     @Override

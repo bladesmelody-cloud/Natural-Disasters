@@ -238,8 +238,8 @@ have done tornados pretty well".
     if due with nobody online, waits for a player.
 - Implementation (**MINE** where not above): VEI 3+ starts with an earthquake
   (M3 for VEI3, M4 for VEI4, M5 for VEI5+) at the vent as the cone rises.
-  When it erupts, the heat wave rolls out at 1.5 blocks/s per… (1.5 + 0.5 per
-  VEI above 3 blocks/tick) to its reach (stops past every player's loaded
+  When it erupts, the heat wave rolls out at 1.5 blocks/tick (+0.5 per VEI
+  above 3) to its reach (stops past every player's loaded
   area); creatures under the open sky in its front die (new
   `naturaldisasters:pyroclastic` damage), sheltered ones take 8 damage and
   burn 10 s; vegetation in reach: leaves/plants/crops gone, trunks → charred
