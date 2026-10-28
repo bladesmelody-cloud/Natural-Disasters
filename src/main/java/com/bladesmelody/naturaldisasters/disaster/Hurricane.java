@@ -188,11 +188,8 @@ public class Hurricane extends Disaster {
         int top = Terrain.top(level, x, z);
         int surface = seaLevel + params.surge;
         if (top >= surface || top < seaLevel - 1 || surge.has(x, z)) return;
-        if (level.getFluidState(new BlockPos(x, top, z)).is(Fluids.WATER) && top <= seaLevel) {
-            // Open water: raise it.
-            surge.fill(w, x, z, top + 1, surface);
-            return;
-        }
+        // Open water itself isn't raised: column-by-column it would look like a bumpy, frozen sea.
+        if (level.getFluidState(new BlockPos(x, top, z)).is(Fluids.WATER)) return;
         // Land: only if open water is close by.
         for (int d = 1; d <= 6; d++) {
             for (int[] dir : new int[][] {{d, 0}, {-d, 0}, {0, d}, {0, -d}}) {

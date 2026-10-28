@@ -42,9 +42,27 @@ function in `FUNCTIONS` and the test in `onRegisterTests`.
   Put `onboardAccessibility:false` in `run/options.txt` to skip the first-run screen.
 
 ## Code map
-- `engine/`: `BlockWriter` (budgeted block edits), `Disaster` (base class,
-  warning → active, save/load), `DisasterType(s)` (registry), `DisasterData`
-  (per-dimension saved data), `DisasterManager` (tick loop, adaptive budget),
+- `engine/`: `BlockWriter` (budgeted block edits; `setQuiet` for water/lava a
+  disaster places itself), `Disaster` (base class, warning → active,
+  save/load, `keepWeather`), `DisasterType(s)` (registry, weights, `where`
+  placement rules), `DisasterData` (per-dimension saved data),
+  `DisasterManager` (tick loop, adaptive budget, fair time slices),
   `RandomDisasters` (scheduler).
-- `disaster/Earthquake.java`; `command/DisasterCommand.java`; `Config.java`
-  (server config).
+- `disaster/`: one class per disaster (Earthquake, Meteor, Tornado,
+  Hurricane, AcidRain, Drought, Flood, Tsunami, Volcano, Wildfire, Blizzard,
+  Hailstorm), each with a `Params` record (`forMagnitude`, saved with it) and a
+  `create(...)` for tests. Shared: `Terrain` (columns, heights, discs), `Wind`
+  (block resistance in mph), `WaterTracker` (water a disaster placed, to drain
+  exactly), `Places` (climate checks for random picks).
+- `entity/`: `MeteorEntity`, `TornadoEntity` — visual only, particles on the
+  client, never saved. `registry/ModRegistry` (meteorite blocks/items,
+  entities), `client/ClientSetup` (renderers), `command/DisasterCommand`,
+  `Config` (server config: budget, random timing, per-type toggles).
+
+## Gotchas learned
+- Water/lava a disaster places must be set *and removed* with `setQuiet`, and
+  nothing next to it may wake fluids (strip/smash with `setQuiet` too):
+  woken quiet water flows and forms permanent new sources.
+- Game tests share one world: keep each test's effects inside its 40×40
+  arena (small radii, tornado `throwDistance`/`debrisPerSecond` params), and
+  use the `arena(...)` TestData (sky access, else a barrier roof).

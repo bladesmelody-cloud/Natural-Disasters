@@ -167,6 +167,7 @@ public class Wildfire extends Disaster {
     /** From a burning spot, fire jumps to fuel nearby, much more readily downwind. */
     private void spreadFrom(BlockWriter w, RandomSource random, BlockPos pos, int tick) {
         ServerLevel level = w.level();
+        boolean raining = level.isRainingAt(pos.above());
         for (int dx = -2; dx <= 2; dx++) {
             for (int dz = -2; dz <= 2; dz++) {
                 for (int dy = -2; dy <= 2; dy++) {
@@ -177,6 +178,7 @@ public class Wildfire extends Disaster {
                     // Two blocks away only downwind (embers carried by the wind).
                     if (reach == 2 && windward < 0.5) continue;
                     double chance = params.spread * (1 + 0.7 * windward) / (reach * (1 + Math.abs(dy) * 0.3));
+                    if (raining) chance *= 0.5;
                     if (random.nextDouble() >= chance) continue;
                     BlockPos fuel = pos.offset(dx, dy, dz);
                     if (!Terrain.loaded(level, fuel.getX(), fuel.getZ())) continue;

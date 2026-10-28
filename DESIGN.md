@@ -161,8 +161,9 @@ have done tornados pretty well".
 - Creatures under open sky are pushed around the storm (counter-clockwise,
   slightly inward); indoors is safe. Lightning about every 2 s at M1 down to
   every 0.5 s at M10. Thunderstorm weather (rain only for tropical storms).
-- Storm surge 1–5 blocks: low land within 6 blocks of open water and the
-  water itself rise (quiet tracked water), drained once the storm passes.
+- Storm surge 1–5 blocks: low land within 6 blocks of open water floods
+  (quiet tracked water), drained once the storm passes. Open water itself
+  isn't raised (column by column it looked like a bumpy frozen sea).
 - Random hurricanes only near an ocean, weight 0.6.
 
 ### Volcano — freestyled, all **MINE**
@@ -187,6 +188,7 @@ have done tornados pretty well".
   light fuel up to 1 block away (2 downwind, embers), much likelier downwind,
   then burns out: logs gone or left as charred (stripped dark oak) trunks,
   leaves/planks/wool/hay/crops/plants gone, grass → coarse dirt.
+- Spreads half as fast where it's raining.
 - Own spread (works with fire tick off, stays inside the radius, capped at
   1500 + 500·M burning spots); vanilla fire may add to it. Smoke and crackle.
 - Random wildfires in forests, taigas, savannas, jungles or hot places,
@@ -316,7 +318,24 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
   averaged 8–10 ms/tick, P99 ≤ 26 ms, vs 5 ms idle; M7 on a village peaked at
   P99 16 ms.
 
+## Status (end of the freestyle night)
+All 12 disasters are in, each with game tests (28 total, stable over many
+runs) and checked in a real world: Earthquake, Meteor, Tornado, Hurricane,
+Acid Rain, Drought, Flood, Tsunami, Volcano, Wildfire, Blizzard, Hailstorm.
+Lag on the dev server stayed under the 50 ms tick target (worst P99 ~37–50 ms
+during an M6 volcano + M6 flood together, and around autosaves; typical
+10–25 ms) with up to three big disasters at once.
+
 ## Open questions
+- Review every **MINE** number together (owner: "we can go over the numbers
+  and magnitude later").
+- Wildfire is very strong on grassland (grass counts as fuel, so open plains
+  burn to coarse dirt quickly) — keep, or only forests?
+- Blizzard in a warm biome shows rain, not snow (vanilla weather follows the
+  biome); our snowflake particles are thin. Visual pass.
+- Hurricane has no visual of its own beyond the storm (eye/clouds). Visual pass.
+- Tornado funnel uses vanilla smoke particles (small); custom big funnel
+  particles in the visual pass.
 - Owner said to freestyle the rest; review all **MINE** numbers together.
 - Should disasters happen in the Nether / End, and how?
 - After the building-damage pass an M7 quake leaves village houses holed with
