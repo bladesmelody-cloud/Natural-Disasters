@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.protect.Protection;
 import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
@@ -136,6 +137,7 @@ public class Hailstorm extends Disaster {
         double r = params.radius;
         AABB box = new AABB(center.getX() - r, level.getMinY(), center.getZ() - r, center.getX() + r, level.getMaxY(), center.getZ() + r);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box)) {
+            if (Protection.spares(level, e)) continue;
             if (e.isSpectator() || !level.canSeeSky(e.blockPosition().above())) continue;
             if (Terrain.dist(e.getX(), e.getZ(), center.getX(), center.getZ()) > r) continue;
             if (random.nextFloat() < 0.25F + 0.1F * params.size) {

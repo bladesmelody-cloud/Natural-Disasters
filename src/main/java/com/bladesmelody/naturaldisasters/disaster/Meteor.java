@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.protect.Protection;
 import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.shake.Shake;
@@ -242,6 +243,7 @@ public class Meteor extends Disaster {
         double reach = radius * 1.5 + 2;
         float maxDamage = 2 + radius * 1.5F;
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(reach))) {
+            if (Protection.spares(level, e)) continue;
             if (e.isSpectator()) continue;
             Vec3 away = e.position().subtract(at);
             double dist = away.length();

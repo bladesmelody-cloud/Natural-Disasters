@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.protect.Protection;
 import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.Config;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
@@ -402,10 +403,11 @@ public class Earthquake extends Disaster {
     /** Drops a block from {@code from}, falling straight down from {@code start}. */
     private void drop(BlockWriter w, BlockPos from, BlockState state, BlockPos start) {
         ServerLevel level = w.level();
+        if (!w.canEdit(from) || !w.canEdit(start)) return;
         if (fallingThisSecond < Config.MAX_FALLING_BLOCKS_PER_SECOND.getAsInt()) {
             fallingThisSecond++;
             if (!from.equals(start)) w.set(from, Blocks.AIR.defaultBlockState());
-            FallingBlockEntity.fall(level, from.equals(start) ? from : start, state);
+            FallingBlockEntity.fall(level, from.equals(start) ? from : start, state).addTag(Protection.DEBRIS_TAG);
             w.spend(1);
             return;
         }
@@ -463,6 +465,7 @@ public class Earthquake extends Disaster {
         double r = params.radius;
         AABB box = new AABB(center).inflate(r, 48, r);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box)) {
+            if (Protection.spares(level, e)) continue;
             if (!e.onGround() || e.isSpectator()) continue;
             double dx = e.getX() - center.getX() - 0.5;
             double dz = e.getZ() - center.getZ() - 0.5;

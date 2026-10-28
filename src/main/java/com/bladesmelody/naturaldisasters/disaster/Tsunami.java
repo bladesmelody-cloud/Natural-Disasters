@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.protect.Protection;
 import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.engine.Disaster;
@@ -249,6 +250,7 @@ public class Tsunami extends Disaster {
         double reach = params.halfWidth + 4;
         AABB box = new AABB(fx - reach, seaLevel - 8, fz - reach, fx + reach, seaLevel + params.height + 8, fz + reach);
         for (Entity e : level.getEntitiesOfClass(Entity.class, box)) {
+            if (Protection.spares(level, e)) continue;
             if (e.isSpectator() || e.noPhysics) continue;
             double along = (e.getX() - originX) * dirX + (e.getZ() - originZ) * dirZ;
             if (along < front - WAVE_THICKNESS || along > front + 2 || !e.isInWater()) continue;

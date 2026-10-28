@@ -7,6 +7,7 @@ import com.bladesmelody.naturaldisasters.engine.DisasterManager;
 import com.bladesmelody.naturaldisasters.engine.DisasterType;
 import com.bladesmelody.naturaldisasters.engine.DisasterTypes;
 import com.bladesmelody.naturaldisasters.engine.RandomDisasters;
+import com.bladesmelody.naturaldisasters.protect.SafeZones;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -24,7 +25,8 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 /**
  * {@code /disaster start <type> [magnitude] [pos]}, {@code stop [id]},
- * {@code list}, {@code random on|off|now|eruption}. Ops only.
+ * {@code list}, {@code random on|off|now|eruption},
+ * {@code safezone add <name> <radius> [pos] | remove <name> | list}. Ops only.
  */
 public final class DisasterCommand {
     private DisasterCommand() {}
@@ -51,7 +53,50 @@ public final class DisasterCommand {
                         .then(Commands.literal("on").executes(c -> setRandom(c, true)))
                         .then(Commands.literal("off").executes(c -> setRandom(c, false)))
                         .then(Commands.literal("now").executes(DisasterCommand::randomNow))
-                        .then(Commands.literal("eruption").executes(DisasterCommand::greatEruptionNow))));
+                        .then(Commands.literal("eruption").executes(DisasterCommand::greatEruptionNow)))
+                .then(Commands.literal("safezone")
+                        .then(Commands.literal("add")
+                                .then(Commands.argument("name", StringArgumentType.word())
+                                        .then(Commands.argument("radius", IntegerArgumentType.integer(1, 10_000))
+                                                .executes(c -> addSafeZone(c, BlockPos.containing(c.getSource().getPosition())))
+                                                .then(Commands.argument("pos", BlockPosArgument.blockPos())
+                                                        .executes(c -> addSafeZone(c, BlockPosArgument.getBlockPos(c, "pos")))))))
+                        .then(Commands.literal("remove")
+                                .then(Commands.argument("name", StringArgumentType.word())
+                                        .suggests((c, b) -> SharedSuggestionProvider.suggest(
+                                                SafeZones.get(c.getSource().getServer()).zones().stream().map(SafeZones.Zone::name), b))
+                                        .executes(DisasterCommand::removeSafeZone)))
+                        .then(Commands.literal("list").executes(DisasterCommand::listSafeZones))));
+    }
+
+    private static int addSafeZone(CommandContext<CommandSourceStack> c, BlockPos pos) {
+        String name = StringArgumentType.getString(c, "name");
+        int radius = IntegerArgumentType.getInteger(c, "radius");
+        ServerLevel level = c.getSource().getLevel();
+        SafeZones.get(c.getSource().getServer()).put(new SafeZones.Zone(name, level.dimension().identifier(), pos.getX(), pos.getZ(), radius));
+        c.getSource().sendSuccess(() -> Component.literal("Safe zone '" + name + "': radius " + radius + " around "
+                + pos.getX() + ", " + pos.getZ() + " in " + level.dimension().identifier() + ". Disasters won't change blocks there."), true);
+        return 1;
+    }
+
+    private static int removeSafeZone(CommandContext<CommandSourceStack> c) {
+        String name = StringArgumentType.getString(c, "name");
+        if (!SafeZones.get(c.getSource().getServer()).remove(name)) {
+            c.getSource().sendFailure(Component.literal("No safe zone named '" + name + "'."));
+            return 0;
+        }
+        c.getSource().sendSuccess(() -> Component.literal("Removed safe zone '" + name + "'."), true);
+        return 1;
+    }
+
+    private static int listSafeZones(CommandContext<CommandSourceStack> c) {
+        List<SafeZones.Zone> zones = SafeZones.get(c.getSource().getServer()).zones();
+        c.getSource().sendSuccess(() -> Component.literal(zones.isEmpty() ? "No safe zones." : zones.size() + " safe zone(s):"), false);
+        for (SafeZones.Zone z : zones) {
+            c.getSource().sendSuccess(() -> Component.literal(" " + z.name() + ": radius " + z.radius() + " around "
+                    + z.x() + ", " + z.z() + " in " + z.dimension()), false);
+        }
+        return zones.size();
     }
 
     private static int start(CommandContext<CommandSourceStack> c, int magnitude, BlockPos pos) throws CommandSyntaxException {

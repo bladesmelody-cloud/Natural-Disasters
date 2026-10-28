@@ -18,7 +18,8 @@ Claude-only proposals **MINE**.
 ./gradlew runGameTestServer  # all game tests; exits non-zero on failure
 ./gradlew runClient / runServer
 ```
-`./gradlew runGameTestServer -Ptests=flood,tsunami` runs only tests whose names
+`./gradlew runGameTestServer -PwithClaims` also loads Open Parties and Claims
+and Flan (adds their tests). `-Ptests=flood,tsunami` runs only tests whose names
 contain one of those words. Game tests live in `src/main/java/.../gametest/ModGameTests.java`: register the
 function in `FUNCTIONS` and the test in `onRegisterTests`.
 
@@ -66,6 +67,11 @@ function in `FUNCTIONS` and the test in `onRegisterTests`.
   `InstrumentData` (saved positions per dimension), `Instruments` (once-a-second
   sensing, chat, alarm; `anyInRange` doubles a new disaster's warning in
   `DisasterManager.add`).
+- `protect/`: `Protection` (is a block protected: OPAC/Flan claims and safe
+  zones, cached per chunk per tick; `spares(entity)`; debris crumbling),
+  `SafeZones` (saved, `/disaster safezone`), `OpacClaims`/`FlanClaims` (only
+  touched when that mod is loaded). Claim mods are compileOnly from the
+  Modrinth maven; `-PwithClaims` loads them in dev runs (`gametest/ClaimTests`).
 - `registry/ModSounds` + `assets/.../sounds.json`: disaster sounds made from
   vanilla files (pitch is clamped to 0.5–2.0).
 - `shake/`: `ShakePayload` + `Shake.near(...)` (server sends camera shake);
@@ -94,5 +100,7 @@ function in `FUNCTIONS` and the test in `onRegisterTests`.
   use the `arena(...)` TestData (sky access, else a barrier roof).
 - On world day 1 the "day" timeline has no earlier keyframe, so
   `MONSTERS_BURN` is false until the first dawn; tests sample at day-2 noon.
+- `Protection` caches answers per tick: anything that changes protection
+  (e.g. adding a safe zone) must call `Protection.invalidate()`.
 - Don't put doubles that change every tick into a `SkyZones.Zone`: any change
   re-sends the zone list to every player.

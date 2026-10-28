@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.engine;
 
+import com.bladesmelody.naturaldisasters.protect.Protection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -60,13 +61,9 @@ public final class BlockWriter {
         changed += amount;
     }
 
-    /** True if disasters may change this position: loaded chunk, in build height, breakable. */
+    /** True if disasters may change this position: loaded chunk, in build height, breakable, not protected. */
     public boolean canEdit(BlockPos pos) {
-        return canEdit(pos, level.getBlockState(pos));
-    }
-
-    private boolean canEdit(BlockPos pos, BlockState current) {
-        return isLoaded(level, pos) && current.getDestroySpeed(level, pos) >= 0;
+        return isLoaded(level, pos) && level.getBlockState(pos).getDestroySpeed(level, pos) >= 0 && !Protection.isProtected(level, pos);
     }
 
     public static boolean isLoaded(ServerLevel level, BlockPos pos) {
@@ -81,7 +78,7 @@ public final class BlockWriter {
         if (!isLoaded(level, pos)) return false;
         BlockState current = level.getBlockState(pos);
         if (current == state) return true;
-        if (current.getDestroySpeed(level, pos) < 0) return false;
+        if (current.getDestroySpeed(level, pos) < 0 || Protection.isProtected(level, pos)) return false;
         level.setBlock(pos, state, FLAGS);
         remaining--;
         changed++;
@@ -101,7 +98,7 @@ public final class BlockWriter {
         if (!isLoaded(level, pos)) return false;
         BlockState current = level.getBlockState(pos);
         if (current == state) return true;
-        if (current.getDestroySpeed(level, pos) < 0) return false;
+        if (current.getDestroySpeed(level, pos) < 0 || Protection.isProtected(level, pos)) return false;
         level.setBlock(pos, state, FLAGS | Block.UPDATE_SKIP_ON_PLACE);
         remaining--;
         changed++;

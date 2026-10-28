@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.protect.Protection;
 import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.sky.SkyZones;
@@ -167,6 +168,7 @@ public class Blizzard extends Disaster {
         AABB box = new AABB(center.getX() - r, level.getMinY(), center.getZ() - r, center.getX() + r, level.getMaxY(), center.getZ() + r);
         int add = (int) Math.round(5 * params.freezeRate);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box)) {
+            if (Protection.spares(level, e)) continue;
             if (!e.canFreeze() || e.isSpectator() || !level.canSeeSky(e.blockPosition().above())) continue;
             if (Terrain.dist(e.getX(), e.getZ(), center.getX(), center.getZ()) > r) continue;
             e.setTicksFrozen(Math.min(e.getTicksRequiredToFreeze() + 40, e.getTicksFrozen() + add));

@@ -76,3 +76,21 @@ neoForge.ideSyncTask generateModMetadata
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
+
+// Optional claim mods: disasters leave claimed land alone when one is installed.
+// Compile-only; `-PwithClaims` also loads them in dev runs (game tests, client, server).
+repositories {
+    exclusiveContent {
+        forRepository { maven { name = 'Modrinth'; url = 'https://api.modrinth.com/maven' } }
+        filter { includeGroup 'maven.modrinth' }
+    }
+}
+
+dependencies {
+    compileOnly 'maven.modrinth:open-parties-and-claims:neoforge-26.1.2-0.33.0'
+    compileOnly 'maven.modrinth:flan:26.1.2-1.12.8-neoforge'
+    if (project.hasProperty('withClaims')) {
+        runtimeOnly 'maven.modrinth:open-parties-and-claims:neoforge-26.1.2-0.33.0'
+        runtimeOnly 'maven.modrinth:flan:26.1.2-1.12.8-neoforge'
+    }
+}

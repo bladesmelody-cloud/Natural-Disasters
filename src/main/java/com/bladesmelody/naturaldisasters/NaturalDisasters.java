@@ -5,6 +5,7 @@ import com.bladesmelody.naturaldisasters.command.DisasterCommand;
 import com.bladesmelody.naturaldisasters.engine.DisasterManager;
 import com.bladesmelody.naturaldisasters.gametest.ModGameTests;
 import com.bladesmelody.naturaldisasters.instrument.Instruments;
+import com.bladesmelody.naturaldisasters.protect.Protection;
 import com.bladesmelody.naturaldisasters.registry.ModRegistry;
 import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.mojang.logging.LogUtils;
@@ -29,6 +30,7 @@ public class NaturalDisasters {
         ModGameTests.register(modBus);
         NeoForge.EVENT_BUS.addListener(DisasterManager::onServerTick);
         NeoForge.EVENT_BUS.addListener(Instruments::onServerTick);
+        NeoForge.EVENT_BUS.addListener(Protection::onEntityTick);
         NeoForge.EVENT_BUS.addListener(DisasterCommand::register);
     }
 }

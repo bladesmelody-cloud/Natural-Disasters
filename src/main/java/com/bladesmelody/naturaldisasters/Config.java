@@ -20,6 +20,7 @@ public final class Config {
     public static final ModConfigSpec.IntValue STRIKE_MIN_DISTANCE;
     public static final ModConfigSpec.IntValue STRIKE_MAX_DISTANCE;
     public static final ModConfigSpec.DoubleValue IGNORE_BUILDS_CHANCE;
+    public static final ModConfigSpec.BooleanValue PROTECT_CLAIMS;
     public static final ModConfigSpec.DoubleValue GREAT_ERUPTION_DAYS;
     public static final ModConfigSpec.BooleanValue WORLD_DARKNESS;
 
@@ -59,6 +60,12 @@ public final class Config {
                 .defineInRange("greatEruptionDays", 800.0, 0.0, 100_000.0);
         WORLD_DARKNESS = b.comment("VEI 5+ eruptions darken the whole Overworld (clock stopped at midnight). If false they darken a 10,000-block radius instead.")
                 .define("worldDarkness", true);
+        b.pop();
+
+        b.push("protection");
+        PROTECT_CLAIMS = b.comment("Disasters never change blocks in land claimed with Open Parties and Claims or Flan (creatures there are still hurt).",
+                        "Safe zones made with /disaster safezone are always protected.")
+                .define("protectClaims", true);
         b.pop();
 
         for (String name : DISASTERS) {

@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.protect.Protection;
 import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.Config;
 import com.bladesmelody.naturaldisasters.NaturalDisasters;
@@ -327,6 +328,7 @@ public class Volcano extends Disaster {
         double r = params.baseRadius;
         AABB box = new AABB(center).inflate(r, params.height + 8, r);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box)) {
+            if (Protection.spares(level, e)) continue;
             BlockPos feet = e.blockPosition();
             if (Terrain.empty(level.getBlockState(feet))) continue;
             e.teleportTo(e.getX(), Terrain.ground(level, feet.getX(), feet.getZ()) + 1, e.getZ());
@@ -336,6 +338,7 @@ public class Volcano extends Disaster {
     private void shake(ServerLevel level, RandomSource random) {
         double r = params.baseRadius * 1.5;
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(center).inflate(r, 32, r))) {
+            if (Protection.spares(level, e)) continue;
             if (e.onGround()) e.push((random.nextDouble() - 0.5) * 0.2, 0.05, (random.nextDouble() - 0.5) * 0.2);
         }
     }
@@ -461,6 +464,7 @@ public class Volcano extends Disaster {
             }
             Vec3 at = Vec3.atCenterOf(hit.above());
             for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(4))) {
+                if (Protection.spares(level, e)) continue;
                 e.hurtServer(level, level.damageSources().explosion(null, null), 6.0F);
                 e.igniteForTicks(80);
             }
@@ -572,6 +576,7 @@ public class Volcano extends Disaster {
     private void scorchCreatures(ServerLevel level, double from, double to) {
         for (Entity e : level.getAllEntities()) {
             if (!(e instanceof LivingEntity living) || living.isSpectator() || !living.isAlive()) continue;
+            if (Protection.spares(level, e)) continue;
             double d = Terrain.dist(e.getX(), e.getZ(), center.getX() + 0.5, center.getZ() + 0.5);
             if (d < from || d > to) continue;
             if (level.canSeeSky(BlockPos.containing(e.getX(), e.getEyeY(), e.getZ()))) {

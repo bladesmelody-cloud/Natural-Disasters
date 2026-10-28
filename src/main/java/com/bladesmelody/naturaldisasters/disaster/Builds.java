@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.protect.Protection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -24,7 +25,19 @@ public final class Builds {
         score += (int) Math.min(50, level.getPoiManager().getCountInRange(t -> true, center, radius, PoiManager.Occupancy.ANY));
         score += blockEntities(level, center, radius);
         score += sampledBlocks(level, center, radius);
+        score += 25 * protectedChunks(level, center, radius);
         return score;
+    }
+
+    /** Claimed or safe-zone chunks nearby (owner: claims count like builds). */
+    private static int protectedChunks(ServerLevel level, BlockPos center, int radius) {
+        int n = 0;
+        for (int cx = (center.getX() - radius) >> 4; cx <= (center.getX() + radius) >> 4; cx++) {
+            for (int cz = (center.getZ() - radius) >> 4; cz <= (center.getZ() + radius) >> 4; cz++) {
+                if (Protection.touchesChunk(level, cx, cz)) n++;
+            }
+        }
+        return n;
     }
 
     /** Chests, furnaces, signs etc. near the surface (not deep cave loot). */

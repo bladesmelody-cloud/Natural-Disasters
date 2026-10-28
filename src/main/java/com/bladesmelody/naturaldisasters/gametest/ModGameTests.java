@@ -100,6 +100,14 @@ public final class ModGameTests {
         FUNCTIONS.register("all_types_save_roundtrip", () -> ModGameTests::allTypesSaveRoundtrip);
         FUNCTIONS.register("builds_are_detected", () -> ModGameTests::buildsAreDetected);
         FUNCTIONS.register("instruments_sense_and_warn", () -> ModGameTests::instrumentsSenseAndWarn);
+        FUNCTIONS.register("safe_zone_stops_quake", () -> ModGameTests::safeZoneStopsQuake);
+        FUNCTIONS.register("safe_zone_spares_and_crumbles", () -> ModGameTests::safeZoneSparesAndCrumbles);
+        if (net.neoforged.fml.ModList.get().isLoaded("openpartiesandclaims")) {
+            FUNCTIONS.register("opac_claim_is_protected", () -> ClaimTests::opacClaimIsProtected);
+        }
+        if (net.neoforged.fml.ModList.get().isLoaded("flan")) {
+            FUNCTIONS.register("flan_claim_is_protected", () -> ClaimTests::flanClaimIsProtected);
+        }
         FUNCTIONS.register("volcano_vei_table", () -> ModGameTests::volcanoVeiTable);
         FUNCTIONS.register("volcano_heat_wave_and_ash", () -> ModGameTests::volcanoHeatWaveAndAsh);
         FUNCTIONS.register("ash_cloud_stops_the_clock", () -> ModGameTests::ashCloudStopsTheClock);
@@ -131,6 +139,10 @@ public final class ModGameTests {
         test(event, "ash_zone_lets_monsters_spawn", arena(env, 40));
         test(event, "builds_are_detected", arena(env, 20));
         test(event, "instruments_sense_and_warn", arena(env, 20));
+        test(event, "safe_zone_stops_quake", arena(env, 300));
+        test(event, "safe_zone_spares_and_crumbles", arena(env, 60));
+        if (net.neoforged.fml.ModList.get().isLoaded("openpartiesandclaims")) test(event, "opac_claim_is_protected", arena(env, 20));
+        if (net.neoforged.fml.ModList.get().isLoaded("flan")) test(event, "flan_claim_is_protected", arena(env, 20));
         test(event, "all_types_save_roundtrip", arena(env, 20));
         test(event, "acid_rain_corrodes", arena(env, 300));
         test(event, "drought_dries_out", arena(env, 550));
@@ -310,6 +322,62 @@ public final class ModGameTests {
             helper.assertTrue(cobble > 20, "only " + cobble + " stone cracked");
             int outsideGlass = countOutside(helper, FLOOR_TOP + 1, FLOOR_TOP + 1, s -> s.is(Blocks.GLASS));
             helper.assertTrue(outsideGlass == outsideColumns(), "glass outside the radius was broken");
+        });
+    }
+
+    /** The shattering quake above, but the arena is a safe zone: not one block changes. */
+    private static void safeZoneStopsQuake(GameTestHelper helper) {
+        fillFloor(helper);
+        fill(helper, FLOOR_TOP + 1, FLOOR_TOP + 1, Blocks.GLASS.defaultBlockState());
+        BlockPos c = helper.absolutePos(CENTER);
+        String zone = "test_quake_" + c.getX() + "_" + c.getZ();
+        com.bladesmelody.naturaldisasters.protect.SafeZones.get(helper.getLevel().getServer()).put(
+                new com.bladesmelody.naturaldisasters.protect.SafeZones.Zone(zone, helper.getLevel().dimension().identifier(), c.getX(), c.getZ(), SIZE / 2));
+        Earthquake quake = startQuake(helper, params(2, 0.05, 1), 99L);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(quake.isFinished(), "quake still running");
+            com.bladesmelody.naturaldisasters.protect.SafeZones.get(helper.getLevel().getServer()).remove(zone);
+            int glass = count(helper, FLOOR_TOP + 1, FLOOR_TOP + 1, s -> s.is(Blocks.GLASS));
+            helper.assertTrue(glass == SIZE * SIZE, (SIZE * SIZE - glass) + " glass broken in a safe zone");
+            int stone = count(helper, 1, FLOOR_TOP, s -> s.is(Blocks.STONE));
+            helper.assertTrue(stone == SIZE * SIZE * FLOOR_TOP, (SIZE * SIZE * FLOOR_TOP - stone) + " stone changed in a safe zone");
+        });
+    }
+
+    /**
+     * In a safe zone: blocks can't be set, armor stands are spared but pigs
+     * aren't, and thrown debris crumbles instead of landing.
+     */
+    private static void safeZoneSparesAndCrumbles(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        BlockPos c = helper.absolutePos(CENTER.above());
+        String zone = "test_spare_" + c.getX() + "_" + c.getZ();
+        var zones = com.bladesmelody.naturaldisasters.protect.SafeZones.get(level.getServer());
+        int scoreBefore = com.bladesmelody.naturaldisasters.disaster.Builds.score(level, c, 16);
+        zones.put(new com.bladesmelody.naturaldisasters.protect.SafeZones.Zone(zone, level.dimension().identifier(), c.getX(), c.getZ(), 6));
+        try {
+            BlockWriter w = new BlockWriter(level, 100, Long.MAX_VALUE);
+            helper.assertTrue(!w.set(c, Blocks.GLASS.defaultBlockState()) && level.getBlockState(c).isAir(), "set a block in a safe zone");
+            helper.assertTrue(w.set(c.east(10), Blocks.GLASS.defaultBlockState()), "couldn't set a block outside the zone");
+            helper.assertTrue(com.bladesmelody.naturaldisasters.disaster.Builds.score(level, c, 16) > scoreBefore + 20, "zone didn't count as built-up");
+            var stand = helper.spawn(EntityType.ARMOR_STAND, CENTER.above());
+            var pig = helper.spawn(EntityType.PIG, CENTER.above().north());
+            var outside = helper.spawn(EntityType.ARMOR_STAND, CENTER.above().east(10));
+            helper.assertTrue(com.bladesmelody.naturaldisasters.protect.Protection.spares(level, stand), "armor stand in the zone not spared");
+            helper.assertTrue(!com.bladesmelody.naturaldisasters.protect.Protection.spares(level, pig), "pig in the zone spared");
+            helper.assertTrue(!com.bladesmelody.naturaldisasters.protect.Protection.spares(level, outside), "armor stand outside spared");
+        } catch (RuntimeException e) {
+            zones.remove(zone);
+            throw e;
+        }
+        var debris = net.minecraft.world.entity.item.FallingBlockEntity.fall(level, c.above(4), Blocks.SAND.defaultBlockState());
+        debris.addTag(com.bladesmelody.naturaldisasters.protect.Protection.DEBRIS_TAG);
+        helper.runAfterDelay(20, () -> {
+            zones.remove(zone);
+            helper.assertTrue(debris.isRemoved(), "debris still flying");
+            helper.assertTrue(!level.getBlockState(c).is(Blocks.SAND), "debris landed in the safe zone");
+            helper.succeed();
         });
     }
 

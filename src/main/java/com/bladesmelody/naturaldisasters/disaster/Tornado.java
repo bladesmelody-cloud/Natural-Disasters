@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.protect.Protection;
 import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.Config;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
@@ -202,6 +203,7 @@ public class Tornado extends Disaster {
     /** What happens to a torn-off block: spinning debris, thrown rubble, or gone. */
     private void fling(BlockWriter w, RandomSource random, BlockPos pos, BlockState state, double wind) {
         ServerLevel level = w.level();
+        if (!w.canEdit(pos)) return;
         boolean solid = !state.getCollisionShape(level, pos).isEmpty();
         int debrisCap = params.debrisPerSecond == Params.CONFIG_DEBRIS ? Config.MAX_FALLING_BLOCKS_PER_SECOND.getAsInt() : params.debrisPerSecond;
         if (solid && fallingThisSecond < debrisCap) {
@@ -211,6 +213,7 @@ public class Tornado extends Disaster {
             debris.setDeltaMovement(spin.x, 0.6 + random.nextDouble() * 0.6, spin.z);
             debris.setHurtsEntities(1.0F, 10);
             debris.dropItem = false;
+            debris.addTag(Protection.DEBRIS_TAG);
             w.spend(1);
             return;
         }
@@ -241,6 +244,7 @@ public class Tornado extends Disaster {
         AABB box = new AABB(x - reach, groundY - 4, z - reach, x + reach, top, z + reach);
         double pullScale = 0.04 + 0.02 * params.ef;
         for (Entity e : level.getEntitiesOfClass(Entity.class, box)) {
+            if (Protection.spares(level, e)) continue;
             if (e instanceof TornadoEntity || e.isSpectator() || e.noPhysics) continue;
             if (e instanceof Player p && (p.isCreative() && p.getAbilities().flying)) continue;
             double dx = x - e.getX(), dz = z - e.getZ();

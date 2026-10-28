@@ -1,5 +1,6 @@
 package com.bladesmelody.naturaldisasters.disaster;
 
+import com.bladesmelody.naturaldisasters.protect.Protection;
 import com.bladesmelody.naturaldisasters.registry.ModSounds;
 import com.bladesmelody.naturaldisasters.engine.BlockWriter;
 import com.bladesmelody.naturaldisasters.entity.HurricaneEntity;
@@ -236,6 +237,7 @@ public class Hurricane extends Disaster {
         double r = params.radius;
         AABB box = new AABB(eyeX - r, level.getMinY(), eyeZ - r, eyeX + r, level.getMaxY(), eyeZ + r);
         for (Entity e : level.getEntitiesOfClass(Entity.class, box)) {
+            if (Protection.spares(level, e)) continue;
             if (e.isSpectator() || e.noPhysics) continue;
             if (e instanceof Player p && p.getAbilities().flying) continue;
             if (!level.canSeeSky(e.blockPosition().above())) continue;

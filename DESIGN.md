@@ -554,6 +554,36 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
 - Not a mod issue: /forceload of new chunks on this slow container blocked a
   tick for 60 s (world generation) and the watchdog stopped the server.
 
+## Land claims and safe zones
+- Owner picks: respect **Open Parties and Claims + Flan + built-in safe
+  zones**; claimed land gets **no block damage but stays dangerous**
+  (creatures there are still hurt, the sky still darkens); random disasters
+  **prefer unclaimed spots** (claims count like builds); **commands respect
+  claims too**, a server config option turns protection off.
+- Built (details **MINE**):
+  - One check (`protect/Protection`) asks OPAC (whole chunks), Flan (exact
+    claim areas) and safe zones; answers are cached per chunk per tick.
+  - Blocks: no disaster can change a protected block (all edits go through
+    `BlockWriter`). Thrown debris crumbles at the edge of protected land
+    instead of landing on it.
+  - Creatures and players in claims are still pushed and hurt. Things that
+    aren't creatures (armor stands, item frames, dropped items, minecarts)
+    are left alone there, since they're part of a build.
+  - Placement: each protected chunk within 48 blocks adds 25 to the build
+    score, so random disasters pick unclaimed spots (the 5 % "ignore builds"
+    chance still applies; blocks stay protected either way).
+  - Safe zones: `/disaster safezone add <name> <radius> [pos]`, `remove
+    <name>`, `list`. Circles from bedrock to sky, saved per world, always
+    protected (also without a claim mod).
+  - Config: `[protection] protectClaims = true` (OPAC and Flan).
+- Verified: game tests with and without both mods (38/38 with them), and an
+  M7 quake under two identical houses, one in a safe zone: that one kept
+  all its blocks, the other lost about half.
+- Known gaps: water or lava a disaster already placed can't be drained if
+  the land is claimed while the disaster runs; fire on unprotected land
+  next to a claim can still spread in by vanilla fire spread (claim mods
+  have their own fire protection).
+
 ## Status (end of the freestyle night)
 All 12 disasters are in, each with game tests (28 total, stable over many
 runs) and checked in a real world: Earthquake, Meteor, Tornado, Hurricane,
@@ -567,7 +597,6 @@ during an M6 volcano + M6 flood together, and around autosaves; typical
   judge.
 - Sounds are vanilla-made, owner **"Passable for now"**; real recordings
   later?
-- Not started (offered, not yet chosen): meteorite uses, land-claim
-  support, admin tools (undo, safe zones), scaling with player count,
+- Not started (offered, not yet chosen): meteorite uses, admin tools (undo, safe zones), scaling with player count,
   advancements, other dimensions (Nether), proper textures, release prep,
   in-game config screen.
