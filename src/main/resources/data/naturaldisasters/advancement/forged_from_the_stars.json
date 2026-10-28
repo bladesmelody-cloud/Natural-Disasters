@@ -1,0 +1,71 @@
+{
+  "parent": "naturaldisasters:star_metal",
+  "display": {
+    "icon": {
+      "id": "naturaldisasters:meteoric_chestplate"
+    },
+    "title": {
+      "translate": "advancements.naturaldisasters.forged_from_the_stars.title"
+    },
+    "description": {
+      "translate": "advancements.naturaldisasters.forged_from_the_stars.description"
+    },
+    "frame": "goal"
+  },
+  "criteria": {
+    "helmet": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "naturaldisasters:meteoric_helmet"
+          }
+        ]
+      }
+    },
+    "chestplate": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "naturaldisasters:meteoric_chestplate"
+          }
+        ]
+      }
+    },
+    "leggings": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "naturaldisasters:meteoric_leggings"
+          }
+        ]
+      }
+    },
+    "boots": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "naturaldisasters:meteoric_boots"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "helmet"
+    ],
+    [
+      "chestplate"
+    ],
+    [
+      "leggings"
+    ],
+    [
+      "boots"
+    ]
+  ]
+}

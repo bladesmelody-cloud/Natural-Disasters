@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "O": "minecraft:obsidian",
+    "I": "naturaldisasters:meteoric_iron_ingot",
+    "A": "minecraft:amethyst_shard"
+  },
+  "pattern": [
+    "OIO",
+    "IAI",
+    "OIO"
+  ],
+  "result": {
+    "count": 1,
+    "id": "naturaldisasters:disaster_ward"
+  }
+}

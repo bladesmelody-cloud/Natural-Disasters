@@ -71,13 +71,9 @@ public final class SafeZones extends SavedData {
         byte state = Protection.FREE;
         for (Zone zone : zones) {
             if (!zone.dimension().equals(dim)) continue;
-            // Nearest and farthest chunk corners from the zone's centre.
-            double nx = Math.clamp(zone.x(), cx * 16, cx * 16 + 16) - zone.x(), nz = Math.clamp(zone.z(), cz * 16, cz * 16 + 16) - zone.z();
-            if (nx * nx + nz * nz > (double) zone.radius() * zone.radius()) continue;
-            double fx = Math.max(Math.abs(cx * 16 - zone.x()), Math.abs(cx * 16 + 16 - zone.x()));
-            double fz = Math.max(Math.abs(cz * 16 - zone.z()), Math.abs(cz * 16 + 16 - zone.z()));
-            if (fx * fx + fz * fz <= (double) zone.radius() * zone.radius()) return Protection.ALL;
-            state = Protection.PARTLY;
+            byte s = Protection.circle(cx, cz, zone.x(), zone.z(), zone.radius());
+            if (s == Protection.ALL) return Protection.ALL;
+            if (s == Protection.PARTLY) state = Protection.PARTLY;
         }
         return state;
     }

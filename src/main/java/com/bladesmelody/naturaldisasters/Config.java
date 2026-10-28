@@ -21,6 +21,7 @@ public final class Config {
     public static final ModConfigSpec.IntValue STRIKE_MAX_DISTANCE;
     public static final ModConfigSpec.DoubleValue IGNORE_BUILDS_CHANCE;
     public static final ModConfigSpec.BooleanValue PROTECT_CLAIMS;
+    public static final ModConfigSpec.BooleanValue WARDS;
     public static final ModConfigSpec.IntValue UNDO_RECORDS;
     public static final ModConfigSpec.IntValue MAX_UNDO_BLOCKS;
     public static final ModConfigSpec.DoubleValue GREAT_ERUPTION_DAYS;
@@ -68,6 +69,8 @@ public final class Config {
         PROTECT_CLAIMS = b.comment("Disasters never change blocks in land claimed with Open Parties and Claims or Flan (creatures there are still hurt).",
                         "Safe zones made with /disaster safezone are always protected.")
                 .define("protectClaims", true);
+        WARDS = b.comment("Disaster wards (meteoric iron blocks players craft) protect the blocks around them.")
+                .define("wards", true);
         b.pop();
 
         b.push("undo");

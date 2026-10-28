@@ -273,7 +273,7 @@ public class Hurricane extends Disaster {
         bolt.setVisualOnly(true);
         level.addFreshEntity(bolt);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(3, 4, 3))) {
-            e.hurtServer(level, level.damageSources().lightningBolt(), 5.0F);
+            hurt(level, e, level.damageSources().lightningBolt(), 5.0F);
             e.igniteForTicks(160);
         }
     }

@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/cube_bottom_top", "textures": {"top": "naturaldisasters:block/disaster_ward_top", "bottom": "naturaldisasters:block/disaster_ward_top", "side": "naturaldisasters:block/disaster_ward_side"}}

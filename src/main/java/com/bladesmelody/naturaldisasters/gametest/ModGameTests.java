@@ -104,6 +104,10 @@ public final class ModGameTests {
         FUNCTIONS.register("safe_zone_stops_quake", () -> ModGameTests::safeZoneStopsQuake);
         FUNCTIONS.register("undo_restores_without_dupes", () -> ModGameTests::undoRestoresWithoutDupes);
         FUNCTIONS.register("survivor_advancement", () -> ModGameTests::survivorAdvancement);
+        FUNCTIONS.register("meteoric_gear_beats_netherite", () -> ModGameTests::meteoricGearBeatsNetherite);
+        FUNCTIONS.register("meteoric_armor_resists_disasters", () -> ModGameTests::meteoricArmorResistsDisasters);
+        FUNCTIONS.register("ward_protects_its_radius", () -> ModGameTests::wardProtectsItsRadius);
+        FUNCTIONS.register("ward_radius_cycles", () -> ModGameTests::wardRadiusCycles);
         FUNCTIONS.register("safe_zone_spares_and_crumbles", () -> ModGameTests::safeZoneSparesAndCrumbles);
         if (net.neoforged.fml.ModList.get().isLoaded("openpartiesandclaims")) {
             FUNCTIONS.register("opac_claim_is_protected", () -> ClaimTests::opacClaimIsProtected);
@@ -148,6 +152,10 @@ public final class ModGameTests {
         test(event, "safe_zone_stops_quake", arena(env, 300));
         test(event, "undo_restores_without_dupes", arena(env, 100));
         test(event, "survivor_advancement", arena(withPlayers, 400));
+        test(event, "meteoric_gear_beats_netherite", new TestData<>(env, EMPTY, 20, 0, true));
+        test(event, "meteoric_armor_resists_disasters", arena(env, 20));
+        test(event, "ward_protects_its_radius", arena(env, 20));
+        test(event, "ward_radius_cycles", arena(withPlayers, 20));
         test(event, "safe_zone_spares_and_crumbles", arena(env, 60));
         if (net.neoforged.fml.ModList.get().isLoaded("openpartiesandclaims")) test(event, "opac_claim_is_protected", arena(env, 20));
         if (net.neoforged.fml.ModList.get().isLoaded("flan")) test(event, "flan_claim_is_protected", arena(env, 20));
@@ -402,7 +410,7 @@ public final class ModGameTests {
         var advancements = level.getServer().getAdvancements();
         for (String name : List.of("root", "survivor", "seen_it_all", "the_big_one", "not_in_kansas", "category_five",
                 "year_without_summer", "eye_of_the_storm", "ride_the_wind", "no_rest", "seismograph", "barometer",
-                "sky_watcher", "forewarned", "fallen_star", "star_metal")) {
+                "sky_watcher", "forewarned", "fallen_star", "star_metal", "forged_from_the_stars", "warded")) {
             helper.assertTrue(advancements.get(net.minecraft.resources.Identifier.fromNamespaceAndPath("naturaldisasters", name)) != null,
                     "advancement " + name + " didn't load");
         }
@@ -425,6 +433,90 @@ public final class ModGameTests {
             level.getServer().getPlayerList().remove(lives);
             level.getServer().getPlayerList().remove(dies);
         });
+    }
+
+    /** Meteoric gear is a step above netherite, and every new recipe loads. */
+    private static void meteoricGearBeatsNetherite(GameTestHelper helper) {
+        var mat = com.bladesmelody.naturaldisasters.meteorite.MeteoricMaterials.TOOLS;
+        var neth = net.minecraft.world.item.ToolMaterial.NETHERITE;
+        helper.assertTrue(mat.durability() > neth.durability() && mat.speed() > neth.speed() && mat.attackDamageBonus() > neth.attackDamageBonus(),
+                "meteoric tools not above netherite");
+        var armor = com.bladesmelody.naturaldisasters.meteorite.MeteoricMaterials.ARMOR;
+        var nArmor = net.minecraft.world.item.equipment.ArmorMaterials.NETHERITE;
+        int ours = armor.defense().values().stream().mapToInt(Integer::intValue).sum(), theirs = nArmor.defense().values().stream().mapToInt(Integer::intValue).sum();
+        helper.assertTrue(ours > theirs && armor.toughness() > nArmor.toughness() && armor.durability() > nArmor.durability(), "meteoric armor not above netherite");
+        var recipes = helper.getLevel().getServer().getRecipeManager();
+        for (String r : List.of("meteoric_sword", "meteoric_pickaxe", "meteoric_axe", "meteoric_shovel", "meteoric_hoe", "meteoric_spear",
+                "meteoric_helmet", "meteoric_chestplate", "meteoric_leggings", "meteoric_boots", "disaster_ward", "meteoric_iron_block",
+                "meteoric_iron_ingot_from_block", "raw_meteorite_block", "meteorite_chunk_from_raw_block", "polished_meteorite",
+                "meteorite_bricks", "meteorite_brick_stairs", "meteorite_brick_slab", "meteorite_brick_slab_stonecutting")) {
+            var key = net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE,
+                    net.minecraft.resources.Identifier.fromNamespaceAndPath("naturaldisasters", r));
+            helper.assertTrue(recipes.byKey(key).isPresent(), "recipe " + r + " didn't load");
+        }
+        helper.succeed();
+    }
+
+    /** The same hail hit: a full meteoric set takes 60 % less when it comes from a disaster. */
+    private static void meteoricArmorResistsDisasters(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        var zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, CENTER.above());
+        zombie.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new net.minecraft.world.item.ItemStack(com.bladesmelody.naturaldisasters.meteorite.MeteoriteItems.HELMET.get()));
+        zombie.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, new net.minecraft.world.item.ItemStack(com.bladesmelody.naturaldisasters.meteorite.MeteoriteItems.CHESTPLATE.get()));
+        zombie.setItemSlot(net.minecraft.world.entity.EquipmentSlot.LEGS, new net.minecraft.world.item.ItemStack(com.bladesmelody.naturaldisasters.meteorite.MeteoriteItems.LEGGINGS.get()));
+        zombie.setItemSlot(net.minecraft.world.entity.EquipmentSlot.FEET, new net.minecraft.world.item.ItemStack(com.bladesmelody.naturaldisasters.meteorite.MeteoriteItems.BOOTS.get()));
+        helper.assertTrue(com.bladesmelody.naturaldisasters.meteorite.DisasterResistance.pieces(zombie) == 4, "armor not recognised");
+        var hail = level.damageSources().source(com.bladesmelody.naturaldisasters.disaster.Hailstorm.HAIL);
+        float before = zombie.getHealth();
+        zombie.hurtServer(level, hail, 10.0F);
+        float plain = before - zombie.getHealth();
+        zombie.setHealth(zombie.getMaxHealth());
+        zombie.invulnerableTime = 0;
+        before = zombie.getHealth();
+        com.bladesmelody.naturaldisasters.meteorite.DisasterResistance.during(() -> zombie.hurtServer(level, hail, 10.0F));
+        float resisted = before - zombie.getHealth();
+        helper.assertTrue(plain > 0 && Math.abs(resisted - plain * 0.4F) < 0.05F, "damage " + plain + " plain vs " + resisted + " from a disaster (expected 40 %)");
+        helper.succeed();
+    }
+
+    /** A ward (radius 8 by default) protects blocks within its radius only, and stops when broken. */
+    private static void wardProtectsItsRadius(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        BlockPos ward = CENTER.above();
+        helper.setBlock(ward, com.bladesmelody.naturaldisasters.meteorite.MeteoriteItems.WARD.get());
+        BlockWriter w = new BlockWriter(level, 100, Long.MAX_VALUE);
+        helper.assertTrue(!w.set(helper.absolutePos(ward.east(6)), Blocks.GLASS.defaultBlockState()), "block 6 from a ward changed");
+        helper.assertTrue(w.set(helper.absolutePos(ward.east(10)), Blocks.GLASS.defaultBlockState()), "block 10 from a ward not changeable");
+        helper.setBlock(ward, Blocks.AIR);
+        helper.assertTrue(w.set(helper.absolutePos(ward.east(6)), Blocks.GLASS.defaultBlockState()), "still protected after the ward was broken");
+        helper.succeed();
+    }
+
+    /** Right-clicking a ward cycles its radius 8 → 12 → 16 → 4, and protection follows. */
+    private static void wardRadiusCycles(GameTestHelper helper) {
+        fillFloor(helper);
+        ServerLevel level = helper.getLevel();
+        BlockPos ward = CENTER.above();
+        helper.setBlock(ward, com.bladesmelody.naturaldisasters.meteorite.MeteoriteItems.WARD.get());
+        var player = helper.makeMockServerPlayerInLevel();
+        BlockPos at10 = helper.absolutePos(ward.east(10));
+        try {
+            helper.assertTrue(!com.bladesmelody.naturaldisasters.protect.Protection.isProtected(level, at10), "radius 8 reaches 10");
+            helper.useBlock(ward, player);
+            int radius = com.bladesmelody.naturaldisasters.meteorite.WardBlock.radius(level.getBlockState(helper.absolutePos(ward)));
+            helper.assertTrue(radius == 12, "radius after one click: " + radius);
+            helper.assertTrue(com.bladesmelody.naturaldisasters.protect.Protection.isProtected(level, at10), "radius 12 doesn't reach 10");
+            helper.useBlock(ward, player);
+            helper.useBlock(ward, player);
+            radius = com.bladesmelody.naturaldisasters.meteorite.WardBlock.radius(level.getBlockState(helper.absolutePos(ward)));
+            helper.assertTrue(radius == 4, "radius after three clicks: " + radius);
+            helper.assertTrue(!com.bladesmelody.naturaldisasters.protect.Protection.isProtected(level, helper.absolutePos(ward.east(6))), "radius 4 reaches 6");
+        } finally {
+            level.getServer().getPlayerList().remove(player);
+        }
+        helper.succeed();
     }
 
     /** The shattering quake above, but the arena is a safe zone: not one block changes. */

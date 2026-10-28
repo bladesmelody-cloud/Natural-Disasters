@@ -6,6 +6,8 @@ import com.bladesmelody.naturaldisasters.command.DisasterCommand;
 import com.bladesmelody.naturaldisasters.engine.DisasterManager;
 import com.bladesmelody.naturaldisasters.gametest.ModGameTests;
 import com.bladesmelody.naturaldisasters.instrument.Instruments;
+import com.bladesmelody.naturaldisasters.meteorite.DisasterResistance;
+import com.bladesmelody.naturaldisasters.meteorite.MeteoriteItems;
 import com.bladesmelody.naturaldisasters.protect.Protection;
 import com.bladesmelody.naturaldisasters.undo.Undo;
 import com.bladesmelody.naturaldisasters.registry.ModRegistry;
@@ -29,6 +31,7 @@ public class NaturalDisasters {
         ModRegistry.register(modBus);
         ModSounds.register(modBus);
         ModTriggers.register(modBus);
+        MeteoriteItems.register(modBus);
         SkyEvents.register(modBus);
         ModGameTests.register(modBus);
         NeoForge.EVENT_BUS.addListener(DisasterManager::onServerTick);
@@ -42,6 +45,7 @@ public class NaturalDisasters {
         NeoForge.EVENT_BUS.addListener(Undo::onBlockBreak);
         NeoForge.EVENT_BUS.addListener(Undo::onBlockPlace);
         NeoForge.EVENT_BUS.addListener(ModTriggers::onDeath);
+        NeoForge.EVENT_BUS.addListener(DisasterResistance::onDamage);
         NeoForge.EVENT_BUS.addListener(DisasterCommand::register);
     }
 }

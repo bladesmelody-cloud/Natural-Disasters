@@ -249,7 +249,7 @@ public class Meteor extends Disaster {
             double dist = away.length();
             if (dist > reach) continue;
             double falloff = 1 - dist / reach;
-            e.hurtServer(level, level.damageSources().explosion(null, null), (float) (maxDamage * falloff));
+            hurt(level, e, level.damageSources().explosion(null, null), (float) (maxDamage * falloff));
             Vec3 push = (dist < 0.01 ? new Vec3(0, 1, 0) : away.normalize()).scale(1.5 * falloff);
             e.push(push.x, push.y * 0.5 + 0.4 * falloff, push.z);
             carried(e);

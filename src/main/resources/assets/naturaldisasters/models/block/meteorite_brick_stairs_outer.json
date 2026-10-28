@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/outer_stairs", "textures": {"bottom": "naturaldisasters:block/meteorite_bricks", "top": "naturaldisasters:block/meteorite_bricks", "side": "naturaldisasters:block/meteorite_bricks"}}

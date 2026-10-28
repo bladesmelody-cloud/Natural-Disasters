@@ -1,0 +1,36 @@
+{
+  "parent": "naturaldisasters:star_metal",
+  "display": {
+    "icon": {
+      "id": "naturaldisasters:disaster_ward"
+    },
+    "title": {
+      "translate": "advancements.naturaldisasters.warded.title"
+    },
+    "description": {
+      "translate": "advancements.naturaldisasters.warded.description"
+    }
+  },
+  "criteria": {
+    "placed": {
+      "trigger": "minecraft:placed_block",
+      "conditions": {
+        "location": [
+          {
+            "condition": "minecraft:location_check",
+            "predicate": {
+              "block": {
+                "blocks": "naturaldisasters:disaster_ward"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "placed"
+    ]
+  ]
+}

@@ -160,7 +160,7 @@ public class AcidRain extends Disaster {
                 helmet.hurtAndBreak(1 + params.potency / 3, e, EquipmentSlot.HEAD);
                 continue;
             }
-            if (e.hurtServer(level, level.damageSources().source(ACID), damage)) {
+            if (hurt(level, e, level.damageSources().source(ACID), damage)) {
                 level.playSound(null, e.getX(), e.getY(), e.getZ(), ModSounds.ACID_SIZZLE.get(), SoundSource.WEATHER, 0.4F, 1.0F);
             }
         }

@@ -1,1 +1,15 @@
-{"values": ["naturaldisasters:meteorite_ore", "naturaldisasters:seismograph", "naturaldisasters:barometer", "naturaldisasters:sky_watcher"]}
+{
+  "values": [
+    "naturaldisasters:barometer",
+    "naturaldisasters:disaster_ward",
+    "naturaldisasters:meteoric_iron_block",
+    "naturaldisasters:meteorite_brick_slab",
+    "naturaldisasters:meteorite_brick_stairs",
+    "naturaldisasters:meteorite_bricks",
+    "naturaldisasters:meteorite_ore",
+    "naturaldisasters:polished_meteorite",
+    "naturaldisasters:raw_meteorite_block",
+    "naturaldisasters:seismograph",
+    "naturaldisasters:sky_watcher"
+  ]
+}

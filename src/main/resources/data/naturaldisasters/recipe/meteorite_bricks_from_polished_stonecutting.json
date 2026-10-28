@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "naturaldisasters:polished_meteorite",
+  "result": {
+    "count": 1,
+    "id": "naturaldisasters:meteorite_bricks"
+  }
+}

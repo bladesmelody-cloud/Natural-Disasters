@@ -114,6 +114,11 @@ public abstract class Disaster {
         if (e instanceof ServerPlayer p) p.connection.resetFlyingTicks();
     }
 
+    /** Damage from a disaster (meteoric armor resists it). */
+    protected static boolean hurt(ServerLevel level, net.minecraft.world.entity.Entity e, net.minecraft.world.damagesource.DamageSource source, float amount) {
+        return com.bladesmelody.naturaldisasters.meteorite.DisasterResistance.during(() -> e.hurtServer(level, source, amount));
+    }
+
     protected java.util.List<ServerPlayer> playersNear(ServerLevel level, double range) {
         double r2 = range * range;
         return level.getPlayers(p -> !p.isSpectator() && p.distanceToSqr(center.getX() + 0.5, p.getY(), center.getZ() + 0.5) <= r2);

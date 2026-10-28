@@ -465,7 +465,7 @@ public class Volcano extends Disaster {
             Vec3 at = Vec3.atCenterOf(hit.above());
             for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(4))) {
                 if (Protection.spares(level, e)) continue;
-                e.hurtServer(level, level.damageSources().explosion(null, null), 6.0F);
+                hurt(level, e, level.damageSources().explosion(null, null), 6.0F);
                 e.igniteForTicks(80);
             }
             level.sendParticles(ParticleTypes.EXPLOSION, false, true, at.x, at.y, at.z, 1, 0, 0, 0, 0);
@@ -580,9 +580,9 @@ public class Volcano extends Disaster {
             double d = Terrain.dist(e.getX(), e.getZ(), center.getX() + 0.5, center.getZ() + 0.5);
             if (d < from || d > to) continue;
             if (level.canSeeSky(BlockPos.containing(e.getX(), e.getEyeY(), e.getZ()))) {
-                living.hurtServer(level, level.damageSources().source(PYROCLASTIC), 1000.0F);
+                hurt(level, living, level.damageSources().source(PYROCLASTIC), 1000.0F);
             } else {
-                living.hurtServer(level, level.damageSources().source(PYROCLASTIC), 8.0F);
+                hurt(level, living, level.damageSources().source(PYROCLASTIC), 8.0F);
                 living.igniteForTicks(200);
             }
         }

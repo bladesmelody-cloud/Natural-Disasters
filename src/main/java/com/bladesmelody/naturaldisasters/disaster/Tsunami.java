@@ -259,7 +259,7 @@ public class Tsunami extends Disaster {
             e.hurtMarked = true;
             carried(e);
             if (e instanceof LivingEntity living && along > front - 2 && level.getRandom().nextInt(4) == 0) {
-                living.hurtServer(level, level.damageSources().drown(), 1.0F + params.height / 6.0F);
+                hurt(level, living, level.damageSources().drown(), 1.0F + params.height / 6.0F);
             }
         }
         RandomSource r = level.getRandom();

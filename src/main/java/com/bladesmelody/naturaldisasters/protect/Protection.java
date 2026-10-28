@@ -1,6 +1,7 @@
 package com.bladesmelody.naturaldisasters.protect;
 
 import com.bladesmelody.naturaldisasters.Config;
+import com.bladesmelody.naturaldisasters.meteorite.WardData;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -39,6 +40,7 @@ public final class Protection {
         if (state == FREE) return false;
         if (state == ALL) return true;
         return SafeZones.get(level.getServer()).contains(level, pos.getX(), pos.getZ())
+                || (wards() && inWard(level, pos.getX(), pos.getZ()))
                 || (FLAN && claims() && FlanClaims.claimed(level, pos));
     }
 
@@ -56,9 +58,32 @@ public final class Protection {
         return !(e instanceof Mob || e instanceof Player) && isProtected(level, e.blockPosition());
     }
 
-    /** Forget cached answers (a safe zone was added or removed). */
-    static void invalidate() {
+    /** Forget cached answers (a safe zone or ward was added, changed or removed). */
+    public static void invalidate() {
         CACHE.clear();
+    }
+
+    private static boolean wards() {
+        return Config.WARDS.getAsBoolean();
+    }
+
+    private static boolean inWard(ServerLevel level, int x, int z) {
+        for (var w : WardData.get(level).entries()) {
+            BlockPos p = BlockPos.of(w.getLongKey());
+            long dx = x - p.getX(), dz = z - p.getZ(), r = w.getIntValue();
+            if (dx * dx + dz * dz <= r * r) return true;
+        }
+        return false;
+    }
+
+    /** Whether a chunk lies wholly, partly or not at all in a circle (bedrock to sky). */
+    static byte circle(int cx, int cz, int x, int z, int radius) {
+        double r2 = (double) radius * radius;
+        double nx = Math.clamp(x, cx * 16, cx * 16 + 15) - x, nz = Math.clamp(z, cz * 16, cz * 16 + 15) - z;
+        if (nx * nx + nz * nz > r2) return FREE;
+        double fx = Math.max(Math.abs(cx * 16 - x), Math.abs(cx * 16 + 15 - x));
+        double fz = Math.max(Math.abs(cz * 16 - z), Math.abs(cz * 16 + 15 - z));
+        return fx * fx + fz * fz <= r2 ? ALL : PARTLY;
     }
 
     private static boolean claims() {
@@ -81,7 +106,16 @@ public final class Protection {
 
     private static byte compute(ServerLevel level, int cx, int cz) {
         byte state = SafeZones.get(level.getServer()).chunkState(level, cx, cz);
-        if (state == ALL || !claims()) return state;
+        if (state == ALL) return state;
+        if (wards()) {
+            for (var w : WardData.get(level).entries()) {
+                BlockPos p = BlockPos.of(w.getLongKey());
+                byte s = circle(cx, cz, p.getX(), p.getZ(), w.getIntValue());
+                if (s == ALL) return ALL;
+                if (s == PARTLY) state = PARTLY;
+            }
+        }
+        if (!claims()) return state;
         if (OPAC && OpacClaims.claimed(level, cx, cz)) return ALL;
         if (FLAN && FlanClaims.anyIn(level, cx, cz)) return PARTLY;
         return state;

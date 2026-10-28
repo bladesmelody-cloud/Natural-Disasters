@@ -141,7 +141,7 @@ public class Hailstorm extends Disaster {
             if (e.isSpectator() || !level.canSeeSky(e.blockPosition().above())) continue;
             if (Terrain.dist(e.getX(), e.getZ(), center.getX(), center.getZ()) > r) continue;
             if (random.nextFloat() < 0.25F + 0.1F * params.size) {
-                e.hurtServer(level, level.damageSources().source(HAIL), params.size);
+                hurt(level, e, level.damageSources().source(HAIL), params.size);
             }
         }
     }

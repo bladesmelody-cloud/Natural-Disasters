@@ -1,1 +1,6 @@
-{"values":["naturaldisasters:meteorite_ore"]}
+{
+  "values": [
+    "naturaldisasters:meteorite_ore",
+    "naturaldisasters:raw_meteorite_block"
+  ]
+}

@@ -632,6 +632,44 @@ Numbers/choices below are **MINE** unless quoted; all tunable.
     alive when it ends on its own; dying in between doesn't count, nor
     does a disaster stopped by command.
 
+## Meteorite uses
+- Owner picks: **tools and armor**, a **disaster ward block** and
+  **decorative blocks** (not instrument upgrades). Gear strength **above
+  netherite** ("since meteorite is so rare"); perk **disaster resistance**
+  (each armor piece takes 15 % off disaster damage, so a full set takes
+  60 % less; tools have no perk); crafted **like iron gear, ingots only**.
+- Ward: radius **adjustable 4–16** (right-click cycles 4, 8, 12, 16, no
+  extra cost); recipe **4 meteoric iron ingots + 4 obsidian + an amethyst
+  shard**; protects **blocks only** (like claims: creatures there are still
+  hurt).
+- Built (numbers **MINE**):
+  | | Meteoric | Netherite |
+  |---|---|---|
+  | Tool uses / speed / bonus damage | 2600 / 10 / +5 | 2031 / 9 / +4 |
+  | Sword damage | 9 | 8 |
+  | Enchantability | 18 | 15 |
+  | Armor (boots/legs/chest/helm) | 3 / 7 / 9 / 3 = 22 | 3 / 6 / 8 / 3 = 20 |
+  | Toughness / knockback resist | 4 / 0.15 | 3 / 0.1 |
+  | Armor durability multiplier | 42 | 37 |
+  - Sword, pickaxe, axe, shovel, hoe, spear (26.1 has spears; numbers one
+    step past netherite's), helmet, chestplate, leggings, boots. Fire- and
+    lava-proof like netherite, trimmable, repaired with meteoric iron.
+  - Disaster resistance counts damage from any disaster's own hits (hail,
+    acid, heat wave, eruption bombs, meteor blasts, hurricane lightning,
+    tsunami drowning) and thrown debris; not fall damage after being flung,
+    not fire after being set alight.
+  - Ward: shows its edge as a particle ring when placed or resized; can be
+    turned off server-wide (`[protection] wards`). Breaking it ends the
+    protection.
+  - Decorative: Block of Meteoric Iron (9 ingots, beacon base), Block of
+    Raw Meteorite (9 chunks), Polished Meteorite (8 polished blackstone +
+    1 chunk → 8), Meteorite Bricks (4 polished → 4, or stonecutter), brick
+    stairs and slab.
+  - Advancements: Forged from the Stars (full armor set), Warded (place a
+    ward).
+  - **Textures are placeholders**: recoloured vanilla iron/blackstone/
+    lodestone textures. Replace with original art before publishing.
+
 ## Status (end of the freestyle night)
 All 12 disasters are in, each with game tests (28 total, stable over many
 runs) and checked in a real world: Earthquake, Meteor, Tornado, Hurricane,
@@ -645,6 +683,5 @@ during an M6 volcano + M6 flood together, and around autosaves; typical
   judge.
 - Sounds are vanilla-made, owner **"Passable for now"**; real recordings
   later?
-- Not started (offered, not yet chosen): meteorite uses, scaling with
-  player count, other dimensions (Nether), proper textures, release prep,
+- Not started (offered, not yet chosen): scaling with player count, other dimensions (Nether), proper textures, release prep,
   in-game config screen.

@@ -82,6 +82,10 @@ function in `FUNCTIONS` and the test in `onRegisterTests`.
   min_magnitude), `EventTrigger` (`naturaldisasters:event`), `ModTriggers`
   (registration, `disasterSurvived`, death listener). `Disaster` tracks
   witnesses (`caughtIn`). Advancement JSONs in `data/naturaldisasters/advancement`.
+- `meteorite/`: `MeteoricMaterials` (tool/armor materials), `MeteoriteItems`
+  (gear, ward, decorative blocks), `DisasterResistance` (armor perk; disasters
+  hit through `Disaster.hurt(...)` so it can tell), `WardBlock` + `WardData`
+  (wards feed `Protection`).
 - `registry/ModSounds` + `assets/.../sounds.json`: disaster sounds made from
   vanilla files (pitch is clamped to 0.5–2.0).
 - `shake/`: `ShakePayload` + `Shake.near(...)` (server sends camera shake);
@@ -112,6 +116,8 @@ function in `FUNCTIONS` and the test in `onRegisterTests`.
   `MONSTERS_BURN` is false until the first dawn; tests sample at day-2 noon.
 - `Protection` caches answers per tick: anything that changes protection
   (e.g. adding a safe zone) must call `Protection.invalidate()`.
+- Disaster damage must go through `Disaster.hurt(...)`, not `hurtServer`,
+  or meteoric armor won't resist it.
 - Payloads are optional (vanilla clients can join): check
   `player.connection.hasChannel(TYPE)` before sending, or it throws.
 - Game tests with mock players go in the `with_players` environment (own

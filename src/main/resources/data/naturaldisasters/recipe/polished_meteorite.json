@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "B": "minecraft:polished_blackstone",
+    "C": "naturaldisasters:meteorite_chunk"
+  },
+  "pattern": [
+    "BBB",
+    "BCB",
+    "BBB"
+  ],
+  "result": {
+    "count": 8,
+    "id": "naturaldisasters:polished_meteorite"
+  }
+}
